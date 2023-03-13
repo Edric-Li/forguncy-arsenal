@@ -8,7 +8,7 @@ namespace Arsenal;
 
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/icon.png")]
-public class Arsenal : CellType
+public class Arsenal : CellType, INeedUploadFileByUser
 {
     [DisplayName("文件夹路径")]
     [Description("如无特殊需求,不建议填写,一旦自定义,则无法使用断点续传功能")]

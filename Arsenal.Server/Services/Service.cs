@@ -229,6 +229,11 @@ internal static class FileUploadService
     {
         var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
 
+        if (virtualFile == null)
+        {
+            return null;
+        }
+        
         var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
 
         if (diskFile != null)
