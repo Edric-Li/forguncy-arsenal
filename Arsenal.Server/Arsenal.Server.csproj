@@ -33,13 +33,13 @@
 			<Private>False</Private>
 		</Reference>
 		<PackageReference Include="LevelDB.Standard" Version="2.1.7-beta1" />
-		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" >
+		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0">
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="6.0.0-preview.4.21253.5" >
+		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="6.0.0-preview.4.21253.5">
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" >
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3">
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
 	</ItemGroup>

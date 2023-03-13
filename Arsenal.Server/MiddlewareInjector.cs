@@ -1,8 +1,8 @@
-﻿using Arsenal.WebApi.Middlewares;
+﻿using Arsenal.Server.Middlewares;
 using GrapeCity.Forguncy.ServerApi;
 using Microsoft.AspNetCore.Builder;
 
-namespace Arsenal.WebApi;
+namespace Arsenal.Server;
 
 public class ArsenalMiddlewareInjector : MiddlewareInjector
 {

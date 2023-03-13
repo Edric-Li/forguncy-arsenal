@@ -1,4 +1,4 @@
-﻿namespace Arsenal.WebApi.Model;
+﻿namespace Arsenal.Server.Model;
 
 public class AppConfig
 {

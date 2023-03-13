@@ -1,4 +1,4 @@
-﻿namespace Arsenal.WebApi.Common;
+﻿namespace Arsenal.Server.Common;
 
 public static class HttpClientHelper
 {

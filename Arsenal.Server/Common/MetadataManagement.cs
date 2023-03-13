@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
-using Arsenal.WebApi.Model;
+using Arsenal.Server.Model;
 
-namespace Arsenal.WebApi.Common;
+namespace Arsenal.Server.Common;
 
 public static class MetadataManagement
 {
-    private static readonly ConcurrentDictionary<string,FileMetaData> FileMetaDataDic = new ConcurrentDictionary<string, FileMetaData>();
+    private static readonly ConcurrentDictionary<string,FileMetaData> FileMetaDataDic = new();
 
     public static void Set(string key, FileMetaData value)
     {

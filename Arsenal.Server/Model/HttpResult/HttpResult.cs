@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Arsenal.WebApi.Model.HttpResult;
+namespace Arsenal.Server.Model.HttpResult;
 
 public abstract class HttpResult
 {

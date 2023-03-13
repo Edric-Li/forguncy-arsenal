@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
-using Arsenal.WebApi.Common;
-using Arsenal.WebApi.Model.Params;
+using Arsenal.Server.Common;
+using Arsenal.Server.Model.Params;
 using Microsoft.AspNetCore.Http;
 using File = System.IO.File;
 
-namespace Arsenal.WebApi.Services;
+namespace Arsenal.Server.Services;
 
 internal static class FileUploadService
 {

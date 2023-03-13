@@ -15,6 +15,8 @@
 	  <None Remove="Web\node_modules\**" />
 	  <Page Remove="ReferenceDll\**" />
 	  <Page Remove="Web\node_modules\**" />
+	  <None Remove="Resources\dist.js" />
+	  <None Remove="Resources\dist.js.map" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Resources\images\Icon.png" />

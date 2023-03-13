@@ -7,18 +7,9 @@ interface Props {
 }
 
 const ReactCellTypeWrapper = (props: Props) => {
-  const ref = useRef<ReactCellTypeRef>(null);
+  const ref = useRef<Forguncy.Plugin.CellTypeBase>(null);
 
-  useEffect(() => {
-    const containerId = props.cellType.getContainer().attr('id');
-
-    window.__reactCellTypes[containerId] = {
-      cellType: props.cellType,
-      component: ref.current as ReactCellTypeRef,
-    };
-
-    props.cellType.onReactComponentLoaded();
-  }, [ref, props.cellType]);
+  useEffect(() => props.cellType.onReactComponentLoaded(), [ref, props.cellType]);
 
   let Component: any = React.Fragment;
 
@@ -26,7 +17,7 @@ const ReactCellTypeWrapper = (props: Props) => {
     Component = PCUpload;
   }
 
-  return <Component ref={ref} cellType={props.cellType} />;
+  return <Component cellType={props.cellType} />;
 };
 
 export default ReactCellTypeWrapper;

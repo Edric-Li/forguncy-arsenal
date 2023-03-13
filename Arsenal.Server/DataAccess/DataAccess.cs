@@ -1,6 +1,6 @@
 ﻿using LevelDB;
 
-namespace Arsenal.WebApi.DataAccess;
+namespace Arsenal.Server.DataAccess;
 
 /// <summary>
 /// 数据访问层

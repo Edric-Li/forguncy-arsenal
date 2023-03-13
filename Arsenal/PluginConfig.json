@@ -7,7 +7,7 @@
     "Resources/dist.js"
   ],
   "serverApiAssembly": [
-    "Arsenal.WebApi.dll"
+    "Arsenal.Server.dll"
   ],
   "image": "Resources/images/image@100.png",
   "description": "支持大文件分块上传,以及自定义文件夹",

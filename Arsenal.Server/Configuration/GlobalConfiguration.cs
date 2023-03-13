@@ -1,7 +1,7 @@
 ﻿using System.Xml;
-using Arsenal.WebApi.Model;
+using Arsenal.Server.Model;
 
-namespace Arsenal.WebApi.Configuration;
+namespace Arsenal.Server.Configuration;
 
 public abstract class GlobalConfiguration
 {

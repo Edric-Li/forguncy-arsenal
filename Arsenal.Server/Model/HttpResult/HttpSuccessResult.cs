@@ -1,4 +1,4 @@
-﻿namespace Arsenal.WebApi.Model.HttpResult;
+﻿namespace Arsenal.Server.Model.HttpResult;
 
 public class HttpSuccessResult : HttpResult
 {

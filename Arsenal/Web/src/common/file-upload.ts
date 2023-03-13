@@ -62,14 +62,16 @@ class FileUpload {
       new BigNumber(file.size).div(new BigNumber(FileHashCalculationEngine.chunkSize)).toNumber(),
     );
 
-    if (this.enableResumableUpload) {
+    if (this.enableResumableUpload && this.getTargetFolderPath() === null) {
       const res = await requestHelper.checkFileInfo(uploadId);
 
       if (res.data.exist) {
         const createVirtualFileRes = await requestHelper.createSoftLink(uploadId, file.name);
         callback({
           percent: 100,
-          name: createVirtualFileRes.data,
+          status: 'success',
+          uid: createVirtualFileRes.data,
+          url: Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/' + createVirtualFileRes.data,
         });
         return;
       }
@@ -105,6 +107,7 @@ class FileUpload {
     callback({
       percent: 100,
       status: 'success',
+      name: completeMultipartUploadRes.data.fileName,
       uid: completeMultipartUploadRes.data.fileId,
       url: Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/' + completeMultipartUploadRes.data.fileId,
     });

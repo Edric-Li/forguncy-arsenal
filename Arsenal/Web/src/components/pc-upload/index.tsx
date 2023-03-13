@@ -27,46 +27,38 @@ interface IProps {
   cellType: CellType;
 }
 
-const PCUpload = forwardRef<ReactCellTypeRef, IProps>((props, ref) => {
+const PCUpload = (props: IProps) => {
   const [config] = useState<CellTypeConfig>(props.cellType.CellElement.CellType as CellTypeConfig);
-
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const fileListRef = useRef<UploadFile[]>([]);
-
   const fileUpload = useMemo(() => new FileUpload(config, props.cellType), []);
-
   const listType: UploadListType = useMemo(() => ListType[config.ListType] as UploadListType, [config]);
 
-  useImperativeHandle(ref, () => {
-    return {
-      setValue: (value: string) => {
-        if (!value) {
-          return;
-        }
-        const files = value.split('|');
+  useEffect(() => {
+    props.cellType.setValueToElement = (jelement, value) => {
+      if (!value) {
+        return;
+      }
+      const files = value.split('|');
 
-        fileListRef.current = files.map((i) => {
-          return {
-            uid: i,
-            name: i.substring(37),
-            status: 'done',
-            percent: 0,
-          };
-        });
+      fileListRef.current = files.map((i: string) => {
+        return {
+          uid: i,
+          name: i.substring(37),
+          status: 'done',
+          percent: 0,
+        };
+      });
 
-        updateFileList();
-      },
-      getValue: () => {
-        return fileListRef.current.map((file) => file.uid).join('|');
-      },
+      syncFileListRefDataToState();
     };
-  });
 
-  useEffect(() => {}, []);
+    props.cellType.getValueFromDataModel = () => {
+      return fileListRef.current.map((file) => file.uid).join('|');
+    };
+  }, [fileList]);
 
-  const updateFileList = () => {
-    setFileList([...fileListRef.current]);
-  };
+  const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
   const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
     const uploadFile: UploadFile = {
@@ -78,14 +70,14 @@ const PCUpload = forwardRef<ReactCellTypeRef, IProps>((props, ref) => {
 
     fileListRef.current = [...fileListRef.current, uploadFile];
 
-    updateFileList();
+    syncFileListRefDataToState();
 
     await fileUpload.addTask(file, (callbackInfo) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
         props.cellType.commitValue();
       }
-      updateFileList();
+      syncFileListRefDataToState();
     });
     return false;
   };
@@ -93,7 +85,7 @@ const PCUpload = forwardRef<ReactCellTypeRef, IProps>((props, ref) => {
   const handleRemove: UploadProps['onRemove'] = (file) => {
     const index = fileListRef.current.findIndex((item) => item.uid === file.uid);
     fileListRef.current.splice(index, 1);
-    updateFileList();
+    syncFileListRefDataToState();
     props.cellType.commitValue();
   };
 
@@ -122,6 +114,6 @@ const PCUpload = forwardRef<ReactCellTypeRef, IProps>((props, ref) => {
       </Upload>
     </ConfigProvider>
   );
-});
+};
 
 export default PCUpload;

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Arsenal.WebApi.Model.Params;
+namespace Arsenal.Server.Model.Params;
 
 public class InitMultipartUploadParam
 {

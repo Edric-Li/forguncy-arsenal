@@ -1,14 +1,14 @@
 ﻿using System.Diagnostics;
-using Arsenal.WebApi.Common;
-using Arsenal.WebApi.Model;
-using Arsenal.WebApi.Model.HttpResult;
-using Arsenal.WebApi.Model.Params;
-using Arsenal.WebApi.Services;
+using Arsenal.Server.Common;
+using Arsenal.Server.Model;
+using Arsenal.Server.Model.HttpResult;
+using Arsenal.Server.Model.Params;
+using Arsenal.Server.Services;
 using GrapeCity.Forguncy.ServerApi;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace Arsenal.WebApi.Controllers;
+namespace Arsenal.Server.Controllers;
 
 public class Arsenal : ForguncyApi
 {

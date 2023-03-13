@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Arsenal.WebApi.Middlewares;
+namespace Arsenal.Server.Middlewares;
 
 internal class Middleware
 {
@@ -11,7 +11,7 @@ internal class Middleware
         _next = next;
     }
 
-    private static DataAccess.DataAccess DataAccess => WebApi.DataAccess.DataAccess.Instance;
+    private static DataAccess.DataAccess DataAccess => Server.DataAccess.DataAccess.Instance;
 
     public async Task InvokeAsync(HttpContext context)
     {

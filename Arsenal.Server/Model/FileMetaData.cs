@@ -1,6 +1,6 @@
-﻿using Arsenal.WebApi.Model.Params;
+﻿using Arsenal.Server.Model.Params;
 
-namespace Arsenal.WebApi.Model;
+namespace Arsenal.Server.Model;
 
 public class FileMetaData
 {

@@ -1,8 +1,6 @@
-﻿using Arsenal.WebApi.Common;
-using Arsenal.WebApi.Model;
-using Microsoft.AspNetCore.Http;
+﻿using Arsenal.Server.Model;
 
-namespace Arsenal.WebApi.Configuration;
+namespace Arsenal.Server.Configuration;
 
 public class Configuration
 {
