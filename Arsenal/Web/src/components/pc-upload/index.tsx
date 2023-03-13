@@ -47,6 +47,7 @@ const PCUpload = (props: IProps) => {
           name: i.substring(37),
           status: 'done',
           percent: 0,
+          url: fileUpload.getFileUrl(i),
         };
       });
 
@@ -110,7 +111,8 @@ const PCUpload = (props: IProps) => {
         beforeUpload={handleBeforeUpload}
         listType={listType}
         onRemove={handleRemove}
-        multiple={config.AllowMultipleSelection}>
+        multiple={config.AllowMultipleSelection}
+        accept={config.AllowedFileTypes}>
         <div>{renderButton}</div>
       </Upload>
     </ConfigProvider>

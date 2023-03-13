@@ -342,3 +342,5 @@ healthchecksdb
 
 Arsenal/Resources/dist.js
 Arsenal/Resources/dist.js.map
+Arsenal/Resources/react.dist.js
+Arsenal/Web/vite.config.js

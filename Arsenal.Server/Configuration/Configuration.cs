@@ -22,7 +22,8 @@ public class Configuration
     /// <returns></returns>
     private bool IsRunAtLocal()
     {
-        return GetRunAtLocalUploadFolderPath().StartsWith(@"C:\ProgramData\Forguncy");
+        var programdataFolder = Environment.ExpandEnvironmentVariables("%programdata%");
+        return GetRunAtLocalUploadFolderPath().StartsWith(Path.Combine(programdataFolder, "Forguncy"));
     }
 
     /// <summary>

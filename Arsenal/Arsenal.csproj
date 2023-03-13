@@ -17,6 +17,7 @@
 	  <Page Remove="Web\node_modules\**" />
 	  <None Remove="Resources\dist.js" />
 	  <None Remove="Resources\dist.js.map" />
+	  <None Remove="Resources\react.dist.js" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Resources\images\Icon.png" />
@@ -68,6 +69,9 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Resource Include="Resources\images\Icon.png" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Web\dist\assets" />
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="&quot;C:\Users\edricli\Downloads\forguncyPluginBuilder_V9\bin\ForguncyPluginPackageTool.exe&quot; $(ProjectDir) &quot;C:\Program Files\Forguncy 9&quot; " />
