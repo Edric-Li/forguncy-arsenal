@@ -1,0 +1,22 @@
+{
+  "assembly": [
+    "Arsenal.dll"
+  ],
+  "css": [],
+  "javascript": [
+    "Resources/dist.js"
+  ],
+  "serverApiAssembly": [
+    "Arsenal.WebApi.dll"
+  ],
+  "image": "Resources/images/image@100.png",
+  "description": "支持大文件分块上传,以及自定义文件夹",
+  "name": "Arsenal",
+  "name_cn": "文件上传",
+  "pluginType": "cellType,command",
+  "guid": "8748d7da-994d-45b8-80f9-f510cfcac6ac",
+  "version": "1.0.0.0",
+  "dependenceVersion": "9.0.0.0",
+  "bundleJavaScript": true,
+  "bundleCSS": true
+}

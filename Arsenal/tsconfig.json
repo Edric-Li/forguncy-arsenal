@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "es5",
+    "lib": [
+      "ES2015",
+      "DOM",
+      "ES2016.Array.Include"
+    ],
+    "outFile": "Resources/dist.js"
+  },
+  "compileOnSave": true,
+  "include": [
+    "Resources/Declaration/jquery.d.ts",
+    "Resources/**/*",
+    "Resources/Declaration/forguncy.Internal.d.ts",
+    "Resources/Declaration/forguncy.d.ts",
+    "Resources/Declaration/forguncy.Plugin.d.ts"
+  ]
+}

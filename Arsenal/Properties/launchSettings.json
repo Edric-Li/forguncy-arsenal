@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Arsenal": {
+      "commandName": "Executable",
+      "executablePath": "D:\\Code\\GC\\forguncy\\Forguncy.Server2\\designerBin\\Forguncy.exe"
+    }
+  }
+}
