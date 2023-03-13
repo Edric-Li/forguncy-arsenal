@@ -7,12 +7,12 @@ public abstract class GlobalConfiguration
 {
     private static XmlElement? _xmlElement;
 
-    private static string GetCommonDocumentsFolder()
+    private static string GetForguncyServerFolder()
     {
-        return Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments);
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "ForguncyServer");
     }
 
-    private static string GetGlobalConfigXmlPath => Path.Combine(GetCommonDocumentsFolder(), "GlobalConfig.xml");
+    private static string GetGlobalConfigXmlPath => Path.Combine(GetForguncyServerFolder(), "GlobalConfig.xml");
 
     private static string GetGlobalValueByXPath(string xPath)
     {
@@ -109,7 +109,7 @@ public abstract class GlobalConfiguration
 
         var (uploadFolderPath, storageType) = GetUploadFolderPathAndStorageTypeByAppName(appName);
 
-        var defaultLocalUploadFolderPath = Path.Combine(GetCommonDocumentsFolder(), appName, "Upload");
+        var defaultLocalUploadFolderPath = Path.Combine(GetForguncyServerFolder(), appName, "Upload");
 
         // 如果应用的存储类型为空，则使用全局的存储类型
         if (storageType == string.Empty)

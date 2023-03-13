@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Arsenal.Server.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Arsenal.Server.Middlewares;
 
@@ -15,26 +16,35 @@ internal class Middleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        Configuration.Configuration.EnsureInit();
+        Configuration.Configuration.Instance.Value.EnsureInit();
 
         if (context.Request.Path.Value.StartsWith("/Upload/"))
         {
             var filepath = context.Request.Path.Value?.Replace("/Upload/", "");
 
-            var virtualFile = DataAccess.GetVirtualFile(filepath);
+            var stream = FileUploadService.GetDiskFileStreamBySoftLink(filepath);
 
-            if (virtualFile != null)
+            if (stream != null)
             {
-                var diskFile = DataAccess.GetDiskFile(virtualFile);
+                await stream.CopyToAsync(context.Response.Body);
+                await stream.DisposeAsync();
+                return;
+            }
+        }
+        else if (context.Request.Path.Value.StartsWith("/FileDownloadUpload/Download"))
+        {
+            var fileId = context.Request.Query["file"];
 
-                if (diskFile != null)
-                {
-                    var filePath = Path.Combine(Configuration.Configuration.UploadFolderPath, diskFile);
-                    using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    await stream.CopyToAsync(context.Response.Body);
+            var stream = FileUploadService.GetDiskFileStreamBySoftLink(fileId);
 
-                    return;
-                }
+            if (stream != null)
+            {
+                context.Response.Headers.Add("Content-Type", "application/octet-stream");
+                context.Response.Headers.Add("content-disposition", "attachment;filename=" + fileId.ToString()[37..]);
+
+                await stream.CopyToAsync(context.Response.Body);
+                await stream.DisposeAsync();
+                return;
             }
         }
 

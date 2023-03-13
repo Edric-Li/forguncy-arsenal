@@ -53,7 +53,8 @@ const PCUpload = (props: IProps) => {
       syncFileListRefDataToState();
     };
 
-    props.cellType.getValueFromDataModel = () => {
+    // @ts-ignore
+    props.cellType.getValueFromElement = () => {
       return fileListRef.current.map((file) => file.uid).join('|');
     };
   }, [fileList]);

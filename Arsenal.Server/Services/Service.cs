@@ -225,5 +225,28 @@ internal static class FileUploadService
         }
     }
 
+    public static string? GetDiskFilePathBySoftLink(string fileId)
+    {
+        var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
+
+        var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
+
+        if (diskFile != null)
+        {
+            var filePath = Path.Combine(Configuration.Configuration.UploadFolderPath, diskFile);
+
+            return File.Exists(filePath) ? filePath : null;
+        }
+
+        return null;
+    }
+
+    public static Stream? GetDiskFileStreamBySoftLink(string fileId)
+    {
+        var diskFilePath = GetDiskFilePathBySoftLink(fileId);
+
+        return diskFilePath == null ? null : new FileStream(diskFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+    }
+
     #endregion
 }
