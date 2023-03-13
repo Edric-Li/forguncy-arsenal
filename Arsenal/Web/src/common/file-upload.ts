@@ -49,6 +49,19 @@ class FileUpload {
     return Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/' + fileName;
   }
 
+  public getDownloadUrl(fileName: string): string {
+    return (
+      Forguncy.Helper.SpecialPath.getBaseUrl() + 'FileDownloadUpload/Download?file=' + encodeURIComponent(fileName)
+    );
+  }
+
+  public download(uid: string) {
+    const a = document.createElement('a');
+    a.href = this.getDownloadUrl(uid);
+    a.click();
+    a.remove();
+  }
+
   public async addTask(file: File, callback: (callbackInfo: Partial<UploadFile>) => void) {
     const initMultipartUploadResult = await this.initMultipartUpload(file);
     if (!initMultipartUploadResult.result) {

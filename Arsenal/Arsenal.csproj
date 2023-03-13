@@ -17,7 +17,6 @@
 	  <Page Remove="Web\node_modules\**" />
 	  <None Remove="Resources\dist.js" />
 	  <None Remove="Resources\dist.js.map" />
-	  <None Remove="Resources\react.dist.js" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Resources\images\Icon.png" />
