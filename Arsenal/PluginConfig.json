@@ -4,7 +4,8 @@
   ],
   "css": [],
   "javascript": [
-    "Resources/dist.js"
+    "Resources/dist.js",
+    "Resources/react.dist.js"
   ],
   "serverApiAssembly": [
     "Arsenal.Server.dll"
@@ -14,7 +15,7 @@
   "name": "Arsenal",
   "name_cn": "文件上传",
   "pluginType": "cellType,command",
-  "guid": "8748d7da-994d-45b8-80f9-f510cfcac6ac",
+  "guid": "8748d7dc-994d-45b8-80f9-f510cfcac6ac",
   "version": "1.0.0.0",
   "dependenceVersion": "9.0.0.0",
   "bundleJavaScript": true,
