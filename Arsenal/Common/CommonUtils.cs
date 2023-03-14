@@ -38,8 +38,16 @@ public abstract class CommonUtils
 
         foreach (var iFilePath in allUsedUploadFilePaths)
         {
+            var targetFilePath =  Path.Combine(designerUploadFolderPath, iFilePath.Replace(webSiteUploadFolder + '\\', string.Empty));
+            var targetFolder = Path.GetDirectoryName(targetFilePath);
+
+            if (!Directory.Exists(targetFolder))
+            {
+                Directory.CreateDirectory(targetFolder);
+            }
+
             File.Copy(iFilePath,
-                Path.Combine(designerUploadFolderPath, iFilePath.Replace(webSiteUploadFolder + '\\', string.Empty)),
+                targetFilePath,
                 true);
         }
 
