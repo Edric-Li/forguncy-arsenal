@@ -1,11 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  DeleteOutlined,
-  DownloadOutlined,
-  EyeOutlined,
-  PlusOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
@@ -127,6 +121,11 @@ const PCUpload = (props: IProps) => {
       const activeIndex = fileListRef.current.findIndex((i) => i.uid === active.id);
       const overIndex = fileListRef.current.findIndex((i) => i.uid === over?.id);
 
+      // 如果超7,该次拖拽直接取消
+      if (activeIndex === -1 || overIndex === -1) {
+        return;
+      }
+      
       const tem = fileListRef.current[activeIndex];
       fileListRef.current[activeIndex] = fileListRef.current[overIndex];
       fileListRef.current[overIndex] = tem;

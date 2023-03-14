@@ -30,9 +30,6 @@ public class Arsenal : CellType, INeedUploadFileByUser
     [DisplayName("文件列表类型")]
     public ListType ListType { get; set; } = ListType.Text;
 
-    [DisplayName("允许拖拽顺序")] 
-    public bool AllowFragAndDropOrder { get; set; } = true;
-
     public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
     {
         return default;
