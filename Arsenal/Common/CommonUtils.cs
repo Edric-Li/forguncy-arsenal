@@ -32,23 +32,32 @@ public abstract class CommonUtils
         var webSiteUploadFolder = Path.Combine(workFolder, "WebSite", "Upload");
         var webSiteUploadArsenalFolder = Path.Combine(webSiteUploadFolder, "arsenal");
 
-        var allUsedUploadFilePaths = Directory
-            .GetFiles(webSiteUploadArsenalFolder, "*.*", SearchOption.AllDirectories)
-            .ToList();
-
-        foreach (var iFilePath in allUsedUploadFilePaths)
+        if (Directory.Exists(webSiteUploadArsenalFolder))
         {
-            var targetFilePath =  Path.Combine(designerUploadFolderPath, iFilePath.Replace(webSiteUploadFolder + '\\', string.Empty));
-            var targetFolder = Path.GetDirectoryName(targetFilePath);
+            var allUsedUploadFilePaths = Directory
+                .GetFiles(webSiteUploadArsenalFolder, "*.*", SearchOption.AllDirectories)
+                .ToList();
 
-            if (!Directory.Exists(targetFolder))
+            foreach (var iFilePath in allUsedUploadFilePaths)
             {
-                Directory.CreateDirectory(targetFolder);
-            }
+                var targetFilePath = Path.Combine(designerUploadFolderPath,
+                    iFilePath.Replace(webSiteUploadFolder + '\\', string.Empty));
+                var targetFolder = Path.GetDirectoryName(targetFilePath);
 
-            File.Copy(iFilePath,
-                targetFilePath,
-                true);
+                if (!Directory.Exists(targetFolder))
+                {
+                    Directory.CreateDirectory(targetFolder);
+                }
+
+                File.Copy(iFilePath,
+                    targetFilePath,
+                    true);
+            }
+        }
+
+        if (!Directory.Exists(designerUploadFolderPath))
+        {
+            Directory.CreateDirectory(designerUploadFolderPath);
         }
 
         File.WriteAllText(Path.Combine(designerUploadFolderPath, ".arsenal-keep"), string.Empty);
