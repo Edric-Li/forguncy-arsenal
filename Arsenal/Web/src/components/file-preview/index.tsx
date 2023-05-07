@@ -8,16 +8,18 @@ import _ from 'lodash';
 import DocxPreview from './components/docx';
 import MonacoEditorView from './components/monaco-editor';
 import {isSuffixInLanguageMap} from './components/monaco-editor/utils';
+// @ts-ignore
+import s from './index.module.css';
 
 const viewMap:{
     type: RegExp;
     Component: React.ComponentType<IPreviewComponentProps>;
 }[] = [
-    { type: /video|audio|link/, Component: IframeView },
-    { type: /jpeg|jpg|png|gif|bmp]/, Component: ImagePreview },
-    { type: /xlsx|csv|xls/, Component: ExcelPreview },
+    { type: /"mp4|webm|ogg|avi|wmv|mp3|aac|wav/, Component: IframeView },
+    { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
+    { type: /xlsx|xls/, Component: ExcelPreview },
     { type: /pdf/, Component: PdfPreview },
-    { type: /docx/, Component: DocxPreview },
+    { type: /doc|docx/, Component: DocxPreview },
 ];
 
 const FilePreview = (props:IProps) => {
@@ -52,12 +54,15 @@ const FilePreview = (props:IProps) => {
         }
     }
 
-    if (!url || !Component) {
+    if (!url) {
         return null;
     }
 
-    return <Component url={url} cellType={props.cellType} suffix={fileExtension}/>;
+    if (!Component) {
+        return <div className={s.notSupported}>暂不支持该文件类型</div>;
+    }
 
+    return <Component url={url} cellType={props.cellType} suffix={fileExtension}/>;
 };
 
 export default FilePreview;

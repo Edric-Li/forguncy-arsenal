@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import requestHelper, { HttpHandlerResult, IInitMultipartUploadResult } from './request-helper';
 import { ConflictStrategy } from '../declarations/types';
 import { UploadFile } from 'antd/es/upload/interface';
-import { CellTypeConfig } from '../components/pc-upload';
+import { CellTypeConfig } from '../components/upload';
 
 class FileUpload {
   public cellType: CellType;
