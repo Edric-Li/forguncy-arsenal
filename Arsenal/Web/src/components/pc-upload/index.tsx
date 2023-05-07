@@ -99,7 +99,7 @@ const PCUpload = (props: IProps) => {
           name: i.substring(37),
           status: 'done',
           percent: 0,
-          url: fileUpload.getFileUrl(i),
+          url: FileUpload.getFileUrl(i),
         };
       });
 
@@ -125,7 +125,7 @@ const PCUpload = (props: IProps) => {
       if (activeIndex === -1 || overIndex === -1) {
         return;
       }
-      
+
       const tem = fileListRef.current[activeIndex];
       fileListRef.current[activeIndex] = fileListRef.current[overIndex];
       fileListRef.current[overIndex] = tem;

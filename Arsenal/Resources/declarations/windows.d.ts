@@ -1,13 +1,13 @@
 import CellTypeBase = Forguncy.Plugin.CellTypeBase;
 
 declare class CellType extends CellTypeBase {
-  onReactComponentLoaded();
+    onReactComponentLoaded();
 }
 
 interface Window {
-  __reactCellTypes: {
-    [key: string]: CellType
-  };
+    __reactCellTypes: {
+        [key: string]: CellType
+    };
 
-  createReactComponent: (cellType: CellType) => void;
+    createReactComponent: (cellType: CellType, componentName: string) => void;
 }

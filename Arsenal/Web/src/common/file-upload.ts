@@ -45,7 +45,7 @@ class FileUpload {
     return file.slice(start, end);
   }
 
-  public getFileUrl(fileName: string): string {
+  public static getFileUrl(fileName: string): string {
     return Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/' + fileName;
   }
 
@@ -88,7 +88,7 @@ class FileUpload {
           percent: 100,
           status: 'success',
           uid: createVirtualFileRes.data,
-          url: this.getFileUrl(createVirtualFileRes.data),
+          url: FileUpload.getFileUrl(createVirtualFileRes.data),
         });
         return;
       }
@@ -126,7 +126,7 @@ class FileUpload {
       status: 'success',
       name: completeMultipartUploadRes.data.fileName,
       uid: completeMultipartUploadRes.data.fileId,
-      url: this.getFileUrl(completeMultipartUploadRes.data.fileId),
+      url: FileUpload.getFileUrl(completeMultipartUploadRes.data.fileId),
     });
   }
 }

@@ -1,5 +1,6 @@
 import PCUpload from '../pc-upload';
 import React, { useEffect, useRef } from 'react';
+import ExcelPreview from '../excel-preview';
 
 interface Props {
   componentName: string;
@@ -15,6 +16,8 @@ const ReactCellTypeWrapper = (props: Props) => {
 
   if (props.componentName === 'PCUpload') {
     Component = PCUpload;
+  }else if (props.componentName === 'ExcelPreview') {
+    Component = ExcelPreview;
   }
 
   return <Component cellType={props.cellType} />;

@@ -1,12 +1,12 @@
 function runDev() {
     const origin = "http://localhost:5173";
-    
+
     const fragment = document.createDocumentFragment();
 
     const creatModuleScriptElement = (src) => {
         const script = document.createElement('script');
         script.type = 'module';
-        script.src = origin+src;
+        script.src = origin + src;
         return script;
     };
 
@@ -37,6 +37,8 @@ namespace Arsenal {
     }
 
     export class ReactCellType extends Forguncy.Plugin.CellTypeBase {
+
+        ComponentName: string;
 
         _reactComponentLoaded = false;
 
@@ -88,7 +90,7 @@ namespace Arsenal {
         onPageLoaded(info) {
             const timer = setInterval(() => {
                 if (window.createReactComponent) {
-                    window.createReactComponent(this);
+                    window.createReactComponent(this, this.ComponentName);
                     return clearInterval(timer);
                 }
             }, 25);
@@ -99,6 +101,14 @@ namespace Arsenal {
         }
     }
 
+    export class PCUpload extends ReactCellType {
+        ComponentName = 'PCUpload';
+    }
 
-    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.Arsenal, Arsenal', ReactCellType);
+    export class ExcelPreview extends ReactCellType {
+        ComponentName = 'ExcelPreview';
+    }
+
+    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.Arsenal, Arsenal', PCUpload);
+    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.FilePreview, Arsenal', ExcelPreview);
 }
