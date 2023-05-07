@@ -8,7 +8,7 @@ interface IProps {
   cellType: CellType;
 }
 
-interface IPreviewComponentProps extends IProps {
+interface IPreviewComponentProps {
   url: string;
   suffix: string;
 }

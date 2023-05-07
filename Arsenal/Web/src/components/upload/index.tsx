@@ -11,6 +11,9 @@ import { DndContext, DragEndEvent, PointerSensor, useSensor } from '@dnd-kit/cor
 import { CSS } from '@dnd-kit/utilities';
 import { css } from '@emotion/css';
 import ImgCrop from 'antd-img-crop';
+import FilePreview from '../file-preview';
+import FilePreviewInner from '../file-preview/inner';
+import Dialog from '../dialog';
 
 enum ListType {
   text,
@@ -237,9 +240,15 @@ const PCUpload = (props: IProps) => {
 
   return (
     <ConfigProvider locale={zhCN}>
-      <Modal open={previewOpen} title={previewTitle} footer={null} onCancel={handleCancel} centered>
-        <img alt='example' style={{ width: '100%' }} src={previewImage} />
-      </Modal>
+      {
+        previewOpen && (
+              <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={1200}>
+                <div style={{width:'100%',height:1000}}>
+                  <FilePreviewInner url={previewImage} />
+                </div>
+              </Dialog>
+          )
+      }
 
       {renderContent()}
     </ConfigProvider>
