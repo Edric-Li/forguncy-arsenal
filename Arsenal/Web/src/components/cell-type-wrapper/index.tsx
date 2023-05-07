@@ -1,4 +1,4 @@
-import PCUpload from '../pc-upload';
+import PCUpload from '../upload';
 import React, { useEffect, useRef } from 'react';
 import FilePreview from '../file-preview';
 
@@ -7,7 +7,7 @@ interface Props {
   cellType: CellType;
 }
 
-const ReactCellTypeWrapper = (props: Props) => {
+const Index = (props: Props) => {
   const ref = useRef<Forguncy.Plugin.CellTypeBase>(null);
 
   useEffect(() => props.cellType.onReactComponentLoaded(), [ref, props.cellType]);
@@ -23,4 +23,4 @@ const ReactCellTypeWrapper = (props: Props) => {
   return <Component cellType={props.cellType} />;
 };
 
-export default ReactCellTypeWrapper;
+export default Index;
