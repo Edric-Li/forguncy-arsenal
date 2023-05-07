@@ -7,8 +7,12 @@ import PdfPreview from './components/pdf';
 import _ from 'lodash';
 import DocxPreview from './components/docx';
 import MonacoEditorView from './components/monaco-editor';
+import {isSuffixInLanguageMap} from './components/monaco-editor/utils';
 
-const viewMap = [
+const viewMap:{
+    type: RegExp;
+    Component: React.ComponentType<IPreviewComponentProps>;
+}[] = [
     { type: /video|audio|link/, Component: IframeView },
     { type: /jpeg|jpg|png|gif|bmp]/, Component: ImagePreview },
     { type: /xlsx|csv|xls/, Component: ExcelPreview },
@@ -38,14 +42,21 @@ const FilePreview = (props:IProps) => {
         setValidUrl(props.cellType.getValueFromDataModel());
     }, []);
 
-    const fileExtension = useMemo(()=>url?.split('.').pop(),[url]) || '';
+    const fileExtension = useMemo(() => url?.split('.').pop(), [url]) || '';
 
-    const Component = _.find(viewMap, m => m.type.test(fileExtension))?.Component || MonacoEditorView;
+    let Component: React.ComponentType<IPreviewComponentProps> | null = _.find(viewMap, m => m.type.test(fileExtension))?.Component ?? null;
 
-    if(!url){
+    if (Component === null) {
+        if (isSuffixInLanguageMap(fileExtension)) {
+            Component = MonacoEditorView;
+        }
+    }
+
+    if (!url || !Component) {
         return null;
     }
-    return <Component url={url} cellType={props.cellType} />;
+
+    return <Component url={url} cellType={props.cellType} suffix={fileExtension}/>;
 
 };
 

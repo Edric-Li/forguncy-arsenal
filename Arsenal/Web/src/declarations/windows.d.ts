@@ -10,6 +10,7 @@ interface IProps {
 
 interface IPreviewComponentProps extends IProps {
   url: string;
+  suffix: string;
 }
 
 enum ComponentName {
