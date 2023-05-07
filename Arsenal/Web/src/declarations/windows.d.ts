@@ -8,6 +8,10 @@ interface IProps {
   cellType: CellType;
 }
 
+interface IPreviewComponentProps extends IProps {
+  url: string;
+}
+
 enum ComponentName {
   PCUpload = 'PCUpload',
   ExcelPreview = 'ExcelPreview',

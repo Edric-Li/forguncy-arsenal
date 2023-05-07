@@ -1,3 +1,7 @@
+/**
+ * 加载脚本
+ * @param url
+ */
 const loadScript = async (url: string) => {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -5,9 +9,9 @@ const loadScript = async (url: string) => {
         script.async = true;
         script.onload = () => {
             resolve(null);
-        }
+        };
         document.body.appendChild(script);
-    })
-}
+    });
+};
 
 export default loadScript;

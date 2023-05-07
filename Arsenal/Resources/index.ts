@@ -105,10 +105,10 @@ namespace Arsenal {
         ComponentName = 'PCUpload';
     }
 
-    export class ExcelPreview extends ReactCellType {
-        ComponentName = 'ExcelPreview';
+    export class FilePreview extends ReactCellType {
+        ComponentName = 'FilePreview';
     }
 
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.Arsenal, Arsenal', PCUpload);
-    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.FilePreview, Arsenal', ExcelPreview);
+    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.FilePreview, Arsenal', FilePreview);
 }

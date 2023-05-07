@@ -1,4 +1,5 @@
 import React, {useEffect} from 'react';
+import loadStyle from '../../../../common/load-style';
 
 /**
  * ppt预览组件
@@ -7,8 +8,10 @@ import React, {useEffect} from 'react';
  */
 const PowerPointPreview = (props:IProps) => {
     useEffect(() => {
+        loadStyle('');
     }, []);
     return null;
 };
 
 export default PowerPointPreview;
+
