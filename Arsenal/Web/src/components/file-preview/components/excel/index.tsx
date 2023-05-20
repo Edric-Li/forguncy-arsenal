@@ -51,10 +51,15 @@ const ExcelPreview = (props:IPreviewComponentProps) => {
                 // 禁用右键菜单
                 spread.contextMenu = false;
 
-                const sheet = getSpread().getActiveSheet();
-                spread.options.newTabVisible = false;
-                sheet.showRow(0, -1);
-                sheet.showColumn(0, -1);
+                spread.sheets.forEach((sheet: any) => {
+                    sheet.options.isProtected = true;
+                    sheet.options.protectionOptions.allowResizeColumns = true;
+                    sheet.options.protectionOptions.allowResizeRows = true;
+
+                    spread.options.newTabVisible = false;
+                    sheet.showRow(0, -1);
+                    sheet.showColumn(0, -1);
+                });
 
             }, function (e: any) {
                 message.error(e.errorMessage);

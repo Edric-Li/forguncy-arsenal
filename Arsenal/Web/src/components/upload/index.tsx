@@ -11,8 +11,7 @@ import { DndContext, DragEndEvent, PointerSensor, useSensor } from '@dnd-kit/cor
 import { CSS } from '@dnd-kit/utilities';
 import { css } from '@emotion/css';
 import ImgCrop from 'antd-img-crop';
-import FilePreview from '../file-preview';
-import FilePreviewInner from '../file-preview/inner';
+import FilePreviewInner from '../file-preview/FilePreviewInner';
 import Dialog from '../dialog';
 
 enum ListType {
@@ -78,6 +77,9 @@ const DraggableUploadListItem = ({ originNode, file }: DraggableUploadListItemPr
     </div>
   );
 };
+
+const maxDialogWidth = ~~(document.body.clientWidth * 0.8);
+const maxDialogHeight = ~~(document.body.clientHeight * 0.8);
 
 const PCUpload = (props: IProps) => {
   const [config] = useState<CellTypeConfig>(props.cellType.CellElement.CellType as CellTypeConfig);
@@ -242,8 +244,8 @@ const PCUpload = (props: IProps) => {
     <ConfigProvider locale={zhCN}>
       {
         previewOpen && (
-              <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={1200}>
-                <div style={{width:'100%',height:1000}}>
+              <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
+                <div style={{width:'100%',height:maxDialogHeight}}>
                   <FilePreviewInner url={previewImage} />
                 </div>
               </Dialog>

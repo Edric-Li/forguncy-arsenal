@@ -9,7 +9,7 @@ import s from './index.module.css';
  */
 const ImagePreview = (props:IPreviewComponentProps) => {
     return <div className={s.root}>
-        <img alt='example' src={props.url} />
+        <img alt='' src={props.url} />
     </div>;
 };
 

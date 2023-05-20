@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import FileUpload from '../../common/file-upload';
-import FilePreviewInner from './inner';
+import FilePreviewInner from './FilePreviewInner';
 
 
 const FilePreview = (props:IProps) => {
@@ -16,6 +16,14 @@ const FilePreview = (props:IProps) => {
         }
         setUrl(url);
     };
+
+    useEffect(() => {
+        props.cellType.setValueToElement = (jelement, value) => {
+            setValidUrl(value);
+        };
+
+        setValidUrl(props.cellType.getValueFromDataModel());
+    }, []);
 
     return <FilePreviewInner url={url} />;
 };

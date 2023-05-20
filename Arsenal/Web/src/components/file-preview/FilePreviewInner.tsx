@@ -2,7 +2,6 @@ import React, {useMemo} from 'react';
 import IframeView from './components/iframe';
 import ImagePreview from './components/image';
 import ExcelPreview from './components/excel';
-import PdfPreview from './components/pdf';
 import DocxPreview from './components/docx';
 import _ from 'lodash';
 import {isSuffixInLanguageMap} from './components/monaco-editor/utils';
@@ -14,10 +13,9 @@ const viewMap:{
     type: RegExp;
     Component: React.ComponentType<IPreviewComponentProps>;
 }[] = [
-    { type: /"mp4|webm|ogg|avi|wmv|mp3|aac|wav/, Component: IframeView },
+    { type: /mp4|webm|ogg|avi|wmv|mp3|aac|wav|pdf/, Component: IframeView },
     { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
     { type: /xlsx|xls/, Component: ExcelPreview },
-    { type: /pdf/, Component: PdfPreview },
     { type: /doc|docx/, Component: DocxPreview },
 ];
 

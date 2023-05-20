@@ -9,3 +9,5 @@ function createReactComponent(cellType: CellType, componentName: ComponentName) 
 }
 
 window.createReactComponent = createReactComponent;
+
+window.$ = window.jQuery;

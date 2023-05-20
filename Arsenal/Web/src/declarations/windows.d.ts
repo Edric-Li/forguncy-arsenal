@@ -24,6 +24,7 @@ interface Window {
   };
 
   createReactComponent: (cellType: CellType, componentName: ComponentName) => void;
+  $:JQueryStatic;
 
   GC: {
     Spread: {
