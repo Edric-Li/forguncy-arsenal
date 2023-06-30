@@ -8,7 +8,8 @@
     "build": "node scripts/build.js",
     "preview": "vite preview",
     "lint-check": "eslint ./src/**/*.ts ./src/**/*.tsx",
-    "lint-fix": "eslint --fix ./src/**/*.ts ./src/**/*.tsx"
+    "lint-fix": "eslint --fix ./src/**/*.ts ./src/**/*.tsx",
+    "prettier-format": "npx prettier --write ."
   },
   "dependencies": {
     "@ant-design/icons": "^5.0.1",

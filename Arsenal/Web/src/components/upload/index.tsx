@@ -220,7 +220,8 @@ const PCUpload = (props: IProps) => {
               previewIcon: <EyeOutlined />,
               removeIcon: <DeleteOutlined />,
             }}
-            itemRender={(originNode, file) => <DraggableUploadListItem originNode={originNode} file={file} />}>
+            itemRender={(originNode, file) => <DraggableUploadListItem originNode={originNode} file={file} />}
+          >
             <div>{renderButton}</div>
           </Upload>
         </SortableContext>
@@ -242,15 +243,13 @@ const PCUpload = (props: IProps) => {
 
   return (
     <ConfigProvider locale={zhCN}>
-      {
-        previewOpen && (
-              <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
-                <div style={{width:'100%',height:maxDialogHeight}}>
-                  <FilePreviewInner url={previewImage} />
-                </div>
-              </Dialog>
-          )
-      }
+      {previewOpen && (
+        <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
+          <div style={{ width: '100%', height: maxDialogHeight }}>
+            <FilePreviewInner url={previewImage} />
+          </div>
+        </Dialog>
+      )}
 
       {renderContent()}
     </ConfigProvider>

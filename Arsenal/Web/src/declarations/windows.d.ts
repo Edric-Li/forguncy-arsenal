@@ -24,16 +24,16 @@ interface Window {
   };
 
   createReactComponent: (cellType: CellType, componentName: ComponentName) => void;
-  $:JQueryStatic;
+  $: JQueryStatic;
 
   GC: {
     Spread: {
       Sheets: {
-        Workbook
-      }
+        Workbook;
+      };
       Excel: {
-        IO
-      }
-    }
-  }
+        IO;
+      };
+    };
+  };
 }

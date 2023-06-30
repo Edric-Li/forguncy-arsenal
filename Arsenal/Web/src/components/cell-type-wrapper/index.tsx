@@ -16,7 +16,7 @@ const Index = (props: Props) => {
 
   if (props.componentName === 'PCUpload') {
     Component = PCUpload;
-  }else if (props.componentName === 'FilePreview') {
+  } else if (props.componentName === 'FilePreview') {
     Component = FilePreview;
   }
 

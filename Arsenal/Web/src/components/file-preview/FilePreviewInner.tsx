@@ -1,50 +1,51 @@
-import React, {useMemo} from 'react';
+import React, { useMemo } from 'react';
 import IframeView from './components/iframe';
 import ImagePreview from './components/image';
 import ExcelPreview from './components/excel';
 import DocxPreview from './components/docx';
 import _ from 'lodash';
-import {isSuffixInLanguageMap} from './components/monaco-editor/utils';
+import { isSuffixInLanguageMap } from './components/monaco-editor/utils';
 import MonacoEditorView from './components/monaco-editor';
 
 const notSupportedStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
-    width: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '100%',
+  width: '100%',
 };
 
-const viewMap:{
-    type: RegExp;
-    Component: React.ComponentType<IPreviewComponentProps>;
+const viewMap: {
+  type: RegExp;
+  Component: React.ComponentType<IPreviewComponentProps>;
 }[] = [
-    { type: /mp4|webm|ogg|avi|wmv|mp3|aac|wav|pdf/, Component: IframeView },
-    { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
-    { type: /xlsx|xls/, Component: ExcelPreview },
-    { type: /doc|docx/, Component: DocxPreview },
+  { type: /mp4|webm|ogg|avi|wmv|mp3|aac|wav|pdf/, Component: IframeView },
+  { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
+  { type: /xlsx|xls/, Component: ExcelPreview },
+  { type: /doc|docx/, Component: DocxPreview },
 ];
 
-const FilePreviewInner = (props:{url:string | null | undefined}) => {
-    const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
+const FilePreviewInner = (props: { url: string | null | undefined }) => {
+  const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
 
-    let Component: React.ComponentType<IPreviewComponentProps> | null = _.find(viewMap, m => m.type.test(fileExtension))?.Component ?? null;
+  let Component: React.ComponentType<IPreviewComponentProps> | null =
+    _.find(viewMap, (m) => m.type.test(fileExtension))?.Component ?? null;
 
-    if (Component === null) {
-        if (isSuffixInLanguageMap(fileExtension)) {
-            Component = MonacoEditorView;
-        }
+  if (Component === null) {
+    if (isSuffixInLanguageMap(fileExtension)) {
+      Component = MonacoEditorView;
     }
+  }
 
-    if (!props.url) {
-        return null;
-    }
+  if (!props.url) {
+    return null;
+  }
 
-    if (!Component) {
-        return <div style={notSupportedStyle}>暂不支持该文件类型</div>;
-    }
+  if (!Component) {
+    return <div style={notSupportedStyle}>暂不支持该文件类型</div>;
+  }
 
-    return <Component url={props.url} suffix={fileExtension}/>;
+  return <Component url={props.url} suffix={fileExtension} />;
 };
 
 export default FilePreviewInner;

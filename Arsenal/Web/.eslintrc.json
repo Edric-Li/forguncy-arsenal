@@ -16,7 +16,7 @@
       }
     }
   },
-  "ignorePatterns": ["node_modules/", "dist/", "build/", "src/localization"],
+  "ignorePatterns": ["node_modules/", "dist/", "build/", "src/localization", "src/declarations"],
   "rules": {
     "@typescript-eslint/no-empty-interface": "off",
     "react/display-name": "off",

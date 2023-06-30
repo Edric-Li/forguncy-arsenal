@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import loadStyle from '../../../../common/load-style';
 
 /**
@@ -6,12 +6,11 @@ import loadStyle from '../../../../common/load-style';
  * @param props
  * @constructor
  */
-const PowerPointPreview = (props:IProps) => {
-    useEffect(() => {
-        loadStyle('');
-    }, []);
-    return null;
+const PowerPointPreview = (props: IProps) => {
+  useEffect(() => {
+    loadStyle('');
+  }, []);
+  return null;
 };
 
 export default PowerPointPreview;
-

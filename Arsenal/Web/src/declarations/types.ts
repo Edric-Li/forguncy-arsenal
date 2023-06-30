@@ -1,5 +1,5 @@
 export enum ConflictStrategy {
-    Overwrite,
-    Rename,
-    Reject,
+  Overwrite,
+  Rename,
+  Reject,
 }
