@@ -6,8 +6,14 @@ import DocxPreview from './components/docx';
 import _ from 'lodash';
 import {isSuffixInLanguageMap} from './components/monaco-editor/utils';
 import MonacoEditorView from './components/monaco-editor';
-// @ts-ignore
-import s from './index.module.css';
+
+const notSupportedStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    width: '100%',
+};
 
 const viewMap:{
     type: RegExp;
@@ -35,7 +41,7 @@ const FilePreviewInner = (props:{url:string | null | undefined}) => {
     }
 
     if (!Component) {
-        return <div className={s.notSupported}>暂不支持该文件类型</div>;
+        return <div style={notSupportedStyle}>暂不支持该文件类型</div>;
     }
 
     return <Component url={props.url} suffix={fileExtension}/>;

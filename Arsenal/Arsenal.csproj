@@ -68,6 +68,8 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Resource Include="Resources\images\Icon.png" />
+	  <None Remove="Resources\images\preview.png" />
+	  <Resource Include="Resources\images\preview.png" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Web\dist\assets" />

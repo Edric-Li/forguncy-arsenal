@@ -1,16 +1,24 @@
-// @ts-ignore
-import s from './index.module.css';
+import {CSSProperties} from 'react';
+
+const style:CSSProperties = {
+    flex:1,
+    display: 'flex',
+    flexDirection:'column',
+    justifyContent:'center',
+    alignItems:'center',
+    width:'100%',
+    height:'100%',
+};
 
 const IframeView = (props:IPreviewComponentProps) => {
-    return(
+    return (
         <iframe
-            style={{flex:1}}
+            style={style}
             title="preview"
             name="printfFrame"
             frameBorder="0"
             src={props.url}
             allowFullScreen
-            className={s.root}
         />);
 };
 

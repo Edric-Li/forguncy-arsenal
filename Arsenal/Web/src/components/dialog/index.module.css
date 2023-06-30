@@ -1,9 +1,0 @@
-.title {
-  /* 在这里将Title禁用选择是为了规避拖拽时会引发Bug,如果后续想拿掉这个样式，需务必保证Bug不会出现。 */
-  user-select: none;
-  cursor: move;
-}
-
-.readonly :global(.ant-modal-content) {
-  pointer-events: none;
-}

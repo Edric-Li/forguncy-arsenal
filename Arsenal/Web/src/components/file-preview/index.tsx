@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import FileUpload from '../../common/file-upload';
 import FilePreviewInner from './FilePreviewInner';
 
-
 const FilePreview = (props:IProps) => {
     const [url, setUrl] = useState<string | null>(null);
 

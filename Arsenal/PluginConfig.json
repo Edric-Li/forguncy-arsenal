@@ -18,6 +18,6 @@
   "guid": "8748d7dc-994d-45b8-80f9-f510cfcac6ac",
   "version": "3.0.0.0",
   "dependenceVersion": "9.0.0.0",
-  "bundleJavaScript": true,
-  "bundleCSS": true
+  "bundleJavaScript": false,
+  "bundleCSS": false
 }

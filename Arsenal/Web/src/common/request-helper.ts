@@ -76,7 +76,7 @@ const createSoftLink = (uploadId: string, fileName: string): HttpHandlerResult<s
 };
 
 const completeMultipartUpload = (uploadId: string): HttpHandlerResult<ICompleteMultipartUploadResult> => {
-  return axios.post('completeMultipartUpload', { uploadId });
+  return axios.post('/completeMultipartUpload', { uploadId });
 };
 
 const requestHelper = {
