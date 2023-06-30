@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import loadScript from '../../../../common/load-script';
-import getFileObjectFromUrl from '../../../../common/get-file-object-from-url';
-import loadStyle from '../../../../common/load-style';
 import { message } from 'antd';
+import getFileObjectFromUrl from '../../../../common/get-file-object-from-url';
+import moduleLoader from '../../../../common/module-loader';
 
 /**
  * Excel 预览组件
@@ -32,7 +31,7 @@ const ExcelPreview = (props: IPreviewComponentProps) => {
   };
 
   useEffect(() => {
-    loadStyle(Forguncy.Helper.SpecialPath.getBaseUrl() + 'Resources/Content/gc.spread.sheets.excel2013lightGray.css');
+    moduleLoader.loadSpreadCss();
   }, []);
 
   useEffect(() => {
@@ -41,11 +40,7 @@ const ExcelPreview = (props: IPreviewComponentProps) => {
         return;
       }
 
-      if (!window.GC.Spread.Excel) {
-        await loadScript(
-          Forguncy.Helper.SpecialPath.getBaseUrl() + 'Resources/Scripts/SpreadJS/interop/gc.spread.excelio.min.js',
-        );
-      }
+      await moduleLoader.loadImportExcelModule();
 
       const file = await getFileObjectFromUrl(props.url);
 

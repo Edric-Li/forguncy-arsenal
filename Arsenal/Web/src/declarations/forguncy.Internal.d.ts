@@ -24,6 +24,7 @@
   }
 
   class ForguncyData {
+    static ForguncyRoot: string;
     static pageInfo: PageInfo;
     static initListviewPaginationInfo(runTimePageName: string, listviewName: string, pageSize: number);
   }
@@ -45,6 +46,8 @@
 
   class ModuleLoader {
     static getCdnUrl(url: string);
+    static LoadCss(files: string[], root: string);
+    static LoadModels(modules: string[], forguncyRoot: string);
   }
   class FormatHelper {
     static format(formatString: string, value: any): any;

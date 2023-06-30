@@ -1,8 +1,8 @@
-import loader, {Monaco} from '@monaco-editor/loader';
+import loader, { Monaco } from '@monaco-editor/loader';
 import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import getBlobObjectFromUrl from '../../../../common/get-blob-object-from-url';
 import { getLanguageNameBySuffix } from './utils';
-import {editor} from '../../../../declarations/editor.api';
+import { editor } from '../../../../declarations/editor.api';
 
 loader.config({
   paths: {
@@ -20,9 +20,9 @@ const style: CSSProperties = {
 };
 
 const MonacoEditorView = (props: IPreviewComponentProps) => {
-  const rootRef = useRef<HTMLDivElement|null>(null);
-  const editorRef = useRef<editor.IStandaloneCodeEditor|null>(null);
-  const loaderRef = useRef<Promise<Monaco>|null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const loaderRef = useRef<Promise<Monaco> | null>(null);
 
   const [value, setValue] = useState('');
   const [language, setLanguage] = useState<string | null>(null);
