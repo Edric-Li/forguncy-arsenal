@@ -1,7 +1,8 @@
-import loader from '@monaco-editor/loader';
+import loader, {Monaco} from '@monaco-editor/loader';
 import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import getBlobObjectFromUrl from '../../../../common/get-blob-object-from-url';
 import { getLanguageNameBySuffix } from './utils';
+import {editor} from '../../../../declarations/editor.api';
 
 loader.config({
   paths: {
@@ -11,7 +12,6 @@ loader.config({
     availableLanguages: { '*': 'zh-cn' },
   },
 });
-const initPromise = loader.init();
 
 const style: CSSProperties = {
   width: '100%',
@@ -20,17 +20,18 @@ const style: CSSProperties = {
 };
 
 const MonacoEditorView = (props: IPreviewComponentProps) => {
-  const rootRef = useRef(null);
-  const editorRef = useRef(null);
+  const rootRef = useRef<HTMLDivElement|null>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor|null>(null);
+  const loaderRef = useRef<Promise<Monaco>|null>(null);
+
   const [value, setValue] = useState('');
   const [language, setLanguage] = useState<string | null>(null);
 
-  useMemo(() => {
-    setLanguage(getLanguageNameBySuffix(props.suffix).toLowerCase());
-  }, [props.suffix]);
+  useMemo(() => setLanguage(getLanguageNameBySuffix(props.suffix).toLowerCase()), [props.suffix]);
 
   useEffect(() => {
     (async () => {
+      loaderRef.current = loader.init();
       const blob = await getBlobObjectFromUrl(props.url);
       setValue(await blob.text());
     })();
@@ -45,16 +46,13 @@ const MonacoEditorView = (props: IPreviewComponentProps) => {
     if (!language || !value) {
       return;
     }
-    initPromise.then(() => {
-      // @ts-ignore
-      editorRef.current = window.monaco.editor.create(rootRef.current, {
-        width: '100%',
-        height: '100%',
+    loaderRef.current?.then((monaco) => {
+      editorRef.current = monaco.editor.create(rootRef.current!, {
         language: language,
         value: value,
         selectOnLineNumbers: true,
         readOnly: true,
-      });
+      }) as editor.IStandaloneCodeEditor;
     });
   }, [value, language]);
 
