@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { message } from 'antd';
-import getFileObjectFromUrl from '../../../../common/get-file-object-from-url';
 import moduleLoader from '../../../../common/module-loader';
+import requestHelper from '../../../../common/request-helper';
 
 /**
  * Excel 预览组件
@@ -42,7 +42,7 @@ const ExcelPreview = (props: IPreviewComponentProps) => {
 
       await moduleLoader.loadImportExcelModule();
 
-      const file = await getFileObjectFromUrl(props.url);
+      const file = await requestHelper.getSpreadFile(props.url);
 
       getExcelIo().open(
         file,

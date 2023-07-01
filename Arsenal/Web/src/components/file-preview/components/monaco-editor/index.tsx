@@ -1,8 +1,8 @@
 import loader, { Monaco } from '@monaco-editor/loader';
 import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
-import getBlobObjectFromUrl from '../../../../common/get-blob-object-from-url';
 import { getLanguageNameBySuffix } from './utils';
 import { editor } from '../../../../declarations/editor.api';
+import requestHelper from '../../../../common/request-helper';
 
 loader.config({
   paths: {
@@ -32,8 +32,7 @@ const MonacoEditorView = (props: IPreviewComponentProps) => {
   useEffect(() => {
     (async () => {
       loaderRef.current = loader.init();
-      const blob = await getBlobObjectFromUrl(props.url);
-      setValue(await blob.text());
+      setValue(await requestHelper.getText(props.url));
     })();
 
     return () => {

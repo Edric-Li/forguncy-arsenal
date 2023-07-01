@@ -6,6 +6,7 @@ import DocxPreview from './components/docx';
 import _ from 'lodash';
 import { isSuffixInLanguageMap } from './components/monaco-editor/utils';
 import MonacoEditorView from './components/monaco-editor';
+import SVGPreview from './components/svg';
 
 const notSupportedStyle = {
   display: 'flex',
@@ -21,6 +22,7 @@ const viewMap: {
 }[] = [
   { type: /mp4|webm|ogg|avi|wmv|mp3|aac|wav|pdf/, Component: IframeView },
   { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
+  { type: /svg/, Component: SVGPreview },
   { type: /xlsx|xls/, Component: ExcelPreview },
   { type: /doc|docx/, Component: DocxPreview },
 ];

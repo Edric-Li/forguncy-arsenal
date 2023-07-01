@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { renderAsync } from 'docx-preview';
-import getBlobObjectFromUrl from '../../../../common/get-blob-object-from-url';
+import requestHelper from '../../../../common/request-helper';
 
 /**
  * Word预览组件
@@ -12,7 +12,7 @@ const DocxPreview = (props: IPreviewComponentProps) => {
 
   useEffect(() => {
     (async () => {
-      const buffer = await getBlobObjectFromUrl(props.url);
+      const buffer = await requestHelper.getBlob(props.url);
       await renderAsync(buffer, rootRef.current as HTMLElement);
     })();
   }, [props.url]);

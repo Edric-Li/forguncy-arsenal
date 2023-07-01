@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { ConflictStrategy } from '../declarations/types';
 import { message } from 'antd';
+import cacheService from './cache-service';
 
 interface HttpResultData<T = { [name: string]: any }> {
   result: boolean;
@@ -46,6 +47,12 @@ export interface ICompleteMultipartUploadResult {
   fileName: string;
 }
 
+const excelFileTypeMap: { [key: string]: string } = {
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  xls: 'application/vnd.ms-excel',
+  unknown: 'unknown',
+};
+
 const checkFileInfo = (uploadId: string): HttpHandlerResult<{ exist: boolean; parts: number[] }> => {
   return axios.get('/checkFileInfo', {
     params: {
@@ -79,12 +86,33 @@ const completeMultipartUpload = (uploadId: string): HttpHandlerResult<ICompleteM
   return axios.post('/completeMultipartUpload', { uploadId });
 };
 
+const getBlob = async (url: string): Promise<Blob> => {
+  return cacheService.getValueAndSet<Blob>(url, async () => {
+    return (await fetch(url)).blob();
+  });
+};
+
+const getText = async (url: string): Promise<string> => {
+  return cacheService.getValueAndSet(url, async () => (await fetch(url)).text());
+};
+
+const getSpreadFile = async (url: string): Promise<File> => {
+  return await cacheService.getValueAndSet<File>(url, async () => {
+    const fileExt = url?.split('.').pop() ?? 'xlsx';
+    const blob = await requestHelper.getBlob(url);
+    return new File([blob], 'file.' + fileExt, { type: blob.type || excelFileTypeMap[fileExt] });
+  });
+};
+
 const requestHelper = {
   checkFileInfo,
   initMultipartUpload,
   createSoftLink,
   uploadPart,
   completeMultipartUpload,
+  getBlob,
+  getText,
+  getSpreadFile,
 };
 
 export default requestHelper;

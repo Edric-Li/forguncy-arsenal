@@ -3,10 +3,7 @@
     "Arsenal.dll"
   ],
   "css": [],
-  "javascript": [
-    "Resources/dist.js",
-    "Resources/react.dist.js"
-  ],
+  "javascript": ["Resources/dist.js"],
   "serverApiAssembly": [
     "Arsenal.Server.dll"
   ],
