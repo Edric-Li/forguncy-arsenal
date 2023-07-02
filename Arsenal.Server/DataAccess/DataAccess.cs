@@ -12,7 +12,11 @@ public class DataAccess
     /// </summary>
     private readonly DB _diskFilesDb;
 
+    /// <summary>
+    /// 软链接数据库
+    /// </summary>
     private readonly DB _softLinksFilesDb;
+
 
     private static DataAccess? _instance;
 
@@ -22,8 +26,13 @@ public class DataAccess
     {
         var options = new Options { CreateIfMissing = true, };
 
-        _diskFilesDb = new DB(options, Path.Combine(Configuration.Configuration.DataFolderPath, "diskfiles.db"));
-        _softLinksFilesDb = new DB(options, Path.Combine(Configuration.Configuration.DataFolderPath, "softLinks.db"));
+        _diskFilesDb = new DB(options, GetDbPath("diskfiles.db"));
+        _softLinksFilesDb = new DB(options, GetDbPath("softLinks.db"));
+    }
+
+    private static string GetDbPath(string dbName)
+    {
+        return Path.Combine(Configuration.Configuration.DataFolderPath, dbName);
     }
 
     private static Dictionary<string, string> GetKeyValuesByDb(DB db)
@@ -58,14 +67,9 @@ public class DataAccess
         _softLinksFilesDb.Put(key, value);
     }
 
-    public string GetVirtualFile(string key)
+    public string? GetVirtualFile(string key)
     {
         return _softLinksFilesDb.Get(key);
-    }
-
-    public void DeleteVirtualFile(string key)
-    {
-        _softLinksFilesDb.Delete(key);
     }
 
     public Dictionary<string, string> GetDiskFiles()

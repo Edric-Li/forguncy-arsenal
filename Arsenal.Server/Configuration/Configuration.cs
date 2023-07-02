@@ -4,17 +4,19 @@ namespace Arsenal.Server.Configuration;
 
 public class Configuration
 {
-    private static AppConfig? _appConfig;
-
-    private static string RootFolderPath => Path.Combine(_appConfig?.LocalUploadFolderPath ?? string.Empty, "arsenal");
+    private static string RootFolderPath => Path.Combine(AppConfig?.LocalUploadFolderPath ?? string.Empty, "arsenal");
 
     public static string UploadFolderPath => Path.Combine(RootFolderPath, "files");
 
     public static string TempFolderPath => Path.Combine(RootFolderPath, "temp");
 
     public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
-    
+
     public static readonly Lazy<Configuration> Instance = new(() => new Configuration());
+
+    public static AppConfig? AppConfig { get; private set; }
+
+    public const string DefaultUserServiceUrl = "http://127.0.0.1:22345/UserService";
 
     /// <summary>
     /// 运行的是否是绿版
@@ -88,6 +90,11 @@ public class Configuration
         var workFolder = GetParents(GetType().Assembly.Location, 4).FullName;
 
         var designerFolder = Path.Combine(workFolder, "Designer", "arsenal");
+
+        if (!Directory.Exists(designerFolder))
+        {
+            return;
+        }
         
         var designerFiles = Directory.GetFiles(designerFolder, "*", SearchOption.AllDirectories);
         
@@ -104,7 +111,7 @@ public class Configuration
     /// </summary>
     public void EnsureInit()
     {
-        if (_appConfig != null)
+        if (AppConfig != null)
         {
             return;
         }
@@ -112,17 +119,19 @@ public class Configuration
         var instance = new Configuration();
         if (instance.IsRunAtLocal())
         {
-            _appConfig = new AppConfig()
+            AppConfig = new AppConfig()
             {
-                LocalUploadFolderPath = instance.GetRunAtLocalUploadFolderPath()
+                LocalUploadFolderPath = instance.GetRunAtLocalUploadFolderPath(),
+                UserServiceUrl = DefaultUserServiceUrl
             };
+
+            CopyDesignerFilesToWebSite();
         }
         else
         {
-            _appConfig = GlobalConfiguration.GetAppConfig(GetAppName());
+            AppConfig = GlobalConfiguration.GetAppConfig(GetAppName());
         }
 
         CreateFolders();
-        CopyDesignerFilesToWebSite();
     }
 }

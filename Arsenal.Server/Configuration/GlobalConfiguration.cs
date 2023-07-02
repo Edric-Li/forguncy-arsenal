@@ -1,5 +1,6 @@
 ﻿using System.Xml;
 using Arsenal.Server.Model;
+using Newtonsoft.Json.Linq;
 
 namespace Arsenal.Server.Configuration;
 
@@ -33,7 +34,12 @@ public abstract class GlobalConfiguration
 
     private static string GetGlobalUploadFolderPath()
     {
-        return GetGlobalValueByXPath("UploadFolderPath");
+        return GetGlobalValueByXPath("UploadRootPath");
+    }
+
+    private static string? GetGlobalUsePublicUrl()
+    {
+        return GetGlobalValueByXPath("UsePublicUrl");
     }
 
     private static string? GetAppNameByXmlNode(XmlNode node)
@@ -41,18 +47,28 @@ public abstract class GlobalConfiguration
         return node.Attributes?.GetNamedItem("AppName")?.Value;
     }
 
-    private static (string, string) GetUploadFolderPathAndStorageTypeByAppName(string appName)
+    private static bool GetEnableUserServiceSsl()
     {
+        var xmlNodeList = _xmlElement?.SelectNodes("/GlobalConfiguration/UserService/EnableUserServiceSSL");
+
+        if (xmlNodeList is null)
+        {
+            return false;
+        }
+
+        return xmlNodeList[0]?.InnerText == "true";
+    }
+
+    private static AppStorageInfo GetAppAppStorageInfoByAppName(string appName)
+    {
+        var appStorageInfo = new AppStorageInfo();
+
         var listNodes = _xmlElement?.SelectNodes("/GlobalConfiguration/Apps/AppConfiguration");
 
         if (listNodes is null)
         {
             throw new ArgumentException("listNodes is null");
         }
-
-        var storageType = "";
-
-        var uploadFolderPath = "";
 
         foreach (var item in listNodes)
         {
@@ -78,11 +94,18 @@ public abstract class GlobalConfiguration
                 switch (childNode.Name)
                 {
                     case "StorageType":
-                        storageType = childNode.InnerText;
+                        appStorageInfo.StorageType = childNode.InnerText;
                         continue;
 
                     case "UploadFolderPath":
-                        uploadFolderPath = childNode.InnerText;
+                        appStorageInfo.UploadFolderPath = childNode.InnerText;
+                        continue;
+
+                    case "UsePubicUrl":
+                        if (!string.IsNullOrWhiteSpace(childNode.InnerText))
+                        {
+                            appStorageInfo.UsePubicUrl = childNode.InnerText == "true";
+                        }
                         continue;
                 }
             }
@@ -90,7 +113,21 @@ public abstract class GlobalConfiguration
             break;
         }
 
-        return (uploadFolderPath, storageType);
+        return appStorageInfo;
+    }
+
+    private static string GetUserServiceUrl(string appName)
+    {
+        var serverInfosFilePath = Path.Combine(GetForguncyServerFolder(), appName, "Files", "Forguncy_ServerInfos");
+        var jsonContent = File.ReadAllText(serverInfosFilePath);
+        var jsonObject = JObject.Parse(jsonContent);
+
+        var userServiceURL = (string)jsonObject["UserServiceURL"] ?? Configuration.DefaultUserServiceUrl;
+        var enableUserServiceSSL = GetEnableUserServiceSsl();
+
+        return enableUserServiceSSL
+            ? userServiceURL.Replace("http://", "https://")
+            : userServiceURL.Replace("https://", "http://");
     }
 
     public static AppConfig GetAppConfig(string appName)
@@ -107,41 +144,48 @@ public abstract class GlobalConfiguration
 
         var globalUploadFolderPath = GetGlobalUploadFolderPath();
 
-        var (uploadFolderPath, storageType) = GetUploadFolderPathAndStorageTypeByAppName(appName);
+        var globalUsePublicUrl = GetGlobalUsePublicUrl();
+
+        var appStorageInfo = GetAppAppStorageInfoByAppName(appName);
 
         var defaultLocalUploadFolderPath = Path.Combine(GetForguncyServerFolder(), appName, "Upload");
 
         // 如果应用的存储类型为空，则使用全局的存储类型
-        if (storageType == string.Empty)
+        if (appStorageInfo.StorageType == string.Empty)
         {
-            storageType = globalStorageType;
+            appStorageInfo.StorageType = globalStorageType;
         }
 
         // 如果存储类型为LOCAL-STORAGE，则使用本地存储
-        if (storageType == "LOCAL-STORAGE")
+        if (appStorageInfo.StorageType == "LOCAL-STORAGE")
         {
-            storageType = null;
+            appStorageInfo.StorageType = null;
         }
 
-        // 如果上传路径为空，则使用全局+应用名的路径+Upload
-        if (uploadFolderPath == string.Empty)
+        if (appStorageInfo.UploadFolderPath == string.Empty &&
+            (globalUploadFolderPath != string.Empty || appStorageInfo.StorageType != null))
         {
-            uploadFolderPath = $"{globalUploadFolderPath}/{appName}/Upload";
+            appStorageInfo.UploadFolderPath = $"{globalUploadFolderPath}/{appName}/";
         }
 
         // 是云存储,那么LocalUploadFolderPath的值就是默认值
-        if (storageType != null)
+        if (appStorageInfo.StorageType != null)
         {
+            appConfig.UseCloudStorage = true;
             appConfig.LocalUploadFolderPath = defaultLocalUploadFolderPath;
+            appConfig.CloudStorageUploadFolderPath = appStorageInfo.UploadFolderPath;
+            appConfig.UsePublicUrl = appStorageInfo.UsePubicUrl ?? globalUsePublicUrl == "true";
         }
         else
         {
             appConfig.LocalUploadFolderPath =
-                uploadFolderPath == string.Empty ? defaultLocalUploadFolderPath : uploadFolderPath;
-            appConfig.CloudStorageUploadFolderPath = uploadFolderPath;
+                appStorageInfo.UploadFolderPath == string.Empty
+                    ? defaultLocalUploadFolderPath
+                    : appStorageInfo.UploadFolderPath;
         }
 
-        appConfig.StorageType = storageType;
+        appConfig.StorageType = appStorageInfo.StorageType;
+        appConfig.UserServiceUrl = GetUserServiceUrl(appName);
 
         return appConfig;
     }

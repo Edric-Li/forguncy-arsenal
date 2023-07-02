@@ -15,12 +15,29 @@ internal static class FileUploadService
         return File.Exists(filePath);
     }
 
-    public static bool ExistsFileInDiskFilesDb(string fileName)
+    public static async Task<bool> ExistsFileInDiskFilesDbAsync(string fileName)
     {
         var diskFilePath = DataAccess.DataAccess.Instance.GetDiskFile(fileName);
 
-        return diskFilePath != null &&
-               ExistsFile(Path.Combine(Configuration.Configuration.UploadFolderPath, diskFilePath));
+        if (diskFilePath == null)
+        {
+            return false;
+        }
+
+        var existsFile = ExistsFile(Path.Combine(Configuration.Configuration.UploadFolderPath, diskFilePath));
+
+        if (!existsFile && Configuration.Configuration.AppConfig.UseCloudStorage)
+        {
+            existsFile =
+                await CloudStorageService.FileExistsAsync(CloudStorageService.GetCloudStorageFilePath(diskFilePath));
+
+            if (!existsFile)
+            {
+                DataAccess.DataAccess.Instance.DeleteDiskFile(fileName);
+            }
+        }
+
+        return diskFilePath != null && existsFile;
     }
 
     private static async Task CopyStreamAsync(Stream stream, string destPath)
@@ -186,6 +203,12 @@ internal static class FileUploadService
 
         CleanUpFileJunkFiles(mergedFilePath, uploadId);
 
+        if (Configuration.Configuration.AppConfig.UseCloudStorage)
+        {
+            _ = CloudStorageService.CreateTaskAsync(
+                targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
+        }
+
         return targetFilePath;
     }
 
@@ -225,7 +248,7 @@ internal static class FileUploadService
         }
     }
 
-    public static string? GetDiskFilePathBySoftLink(string fileId)
+    public static string? GetDiskFilePathByFileId(string fileId)
     {
         var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
 
@@ -233,24 +256,15 @@ internal static class FileUploadService
         {
             return null;
         }
-        
-        var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
 
-        if (diskFile != null)
-        {
-            var filePath = Path.Combine(Configuration.Configuration.UploadFolderPath, diskFile);
-
-            return File.Exists(filePath) ? filePath : null;
-        }
-
-        return null;
+        return DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
     }
 
-    public static Stream? GetDiskFileStreamBySoftLink(string fileId)
+    public static Stream? GetDiskFileStreamBySoftLink(string diskFilePath)
     {
-        var diskFilePath = GetDiskFilePathBySoftLink(fileId);
+        var filePath = Path.Combine(Configuration.Configuration.UploadFolderPath, diskFilePath);
 
-        return diskFilePath == null ? null : new FileStream(diskFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return File.Exists(filePath) ? new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read) : null;
     }
 
     #endregion

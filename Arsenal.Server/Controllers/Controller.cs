@@ -76,13 +76,13 @@ public class Arsenal : ForguncyApi
     }
 
     [Get]
-    public void CheckFileInfo()
+    public async Task CheckFileInfo()
     {
-        SecurityExecutionAction(() =>
+        await SecurityExecutionFuncAsync(async () =>
         {
             var uploadId = Context.Request.Query["uploadId"];
 
-            var exist = FileUploadService.ExistsFileInDiskFilesDb(uploadId);
+            var exist = await FileUploadService.ExistsFileInDiskFilesDbAsync(uploadId);
 
             var parts = FileUploadService.ListParts(uploadId);
 
