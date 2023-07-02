@@ -59,8 +59,8 @@ const DraggableUploadListItem = ({ originNode, file }: DraggableUploadListItemPr
     transform: CSS.Transform.toString(transform),
     transition,
     cursor: 'move',
-    width:'100%',
-    height:'100%'
+    width: '100%',
+    height: '100%',
   };
 
   // prevent preview event when drag end

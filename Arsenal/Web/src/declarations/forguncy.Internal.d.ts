@@ -6,6 +6,10 @@
     Korean = 'KR',
   }
 
+  class StaticData {
+    public static UseBundle: boolean;
+  }
+
   class FocusMoveHelper {
     public static AllowMoveFocusByEnterKey(control: JQuery, isInListview: boolean): void;
   }

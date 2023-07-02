@@ -7,12 +7,15 @@ const loadImportExcelModule = (): Promise<void> => {
 };
 
 const loadSpreadCss = () => {
-  if(loadedSpreadCss){
+  if (loadedSpreadCss) {
     return;
   }
 
   loadedSpreadCss = true;
-  Forguncy.ModuleLoader.LoadCss(['Bundle/spread.css'], Forguncy.ForguncyData.ForguncyRoot + 'Resources/');
+  Forguncy.ModuleLoader.LoadCss(
+    [Forguncy.StaticData.UseBundle ? 'Bundle/spread.css' : 'Content/gc.spread.sheets.excel2013lightGray.css'],
+    Forguncy.ForguncyData.ForguncyRoot + 'Resources/',
+  );
 };
 
 const moduleLoader = {
