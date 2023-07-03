@@ -27,7 +27,7 @@ function runDev() {
 
 window.__reactCellTypes = window.__reactCellTypes || {};
 
-runDev();
+// runDev();
 
 namespace Arsenal {
 

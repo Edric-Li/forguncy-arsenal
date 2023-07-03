@@ -37,15 +37,20 @@ public sealed class CloudStorageService
         return Path.Combine(Configuration.Configuration.UploadFolderPath, fileName);
     }
 
-    public static Task InitializeAsync()
+    public static void EnsureInitialization()
     {
         if (_isInitialized)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         _isInitialized = true;
 
+        _ = InitializeAsync();
+    }
+
+    private static Task InitializeAsync()
+    {
         if (!Configuration.Configuration.AppConfig.UseCloudStorage)
         {
             return Task.CompletedTask;

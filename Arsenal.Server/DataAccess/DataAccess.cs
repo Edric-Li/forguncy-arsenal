@@ -1,4 +1,5 @@
-﻿using LevelDB;
+﻿using Arsenal.Server.Services;
+using LevelDB;
 
 namespace Arsenal.Server.DataAccess;
 
@@ -17,22 +18,116 @@ public class DataAccess
     /// </summary>
     private readonly DB _softLinksFilesDb;
 
+    /// <summary>
+    /// 懒加载实例
+    /// </summary>
+    private static readonly Lazy<DataAccess> LazyInstance = new(() => new DataAccess());
 
-    private static DataAccess? _instance;
+    /// <summary>
+    /// 数据层访问实例
+    /// </summary>
+    public static DataAccess Instance => LazyInstance.Value;
 
-    public static DataAccess Instance => _instance ??= new DataAccess();
+    /// <summary>
+    /// 时间戳, RunAtLocal时使用
+    /// </summary>
+    private readonly string _unixTimestampStr;
+
+    private bool _isInitialized;
 
     private DataAccess()
     {
+        if (Configuration.Configuration.RunAtLocal)
+        {
+            var directories = Directory.GetDirectories(Configuration.Configuration.DataFolderPath);
+
+            if (directories.Length > 0)
+            {
+                long maxLongValue = 0;
+
+                foreach (var item in directories)
+                {
+                    if (long.TryParse(Path.GetFileName(item), out var longValue))
+                    {
+                        if (longValue > maxLongValue)
+                        {
+                            maxLongValue = longValue;
+                        }
+                    }
+                }
+
+                if (maxLongValue != 0)
+                {
+                    _unixTimestampStr = maxLongValue.ToString();
+                }
+            }
+
+            _unixTimestampStr ??= DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
+        }
+
         var options = new Options { CreateIfMissing = true, };
 
         _diskFilesDb = new DB(options, GetDbPath("diskfiles.db"));
         _softLinksFilesDb = new DB(options, GetDbPath("softLinks.db"));
     }
 
-    private static string GetDbPath(string dbName)
+    private string GetDbPath(string dbName)
     {
-        return Path.Combine(Configuration.Configuration.DataFolderPath, dbName);
+        return Configuration.Configuration.RunAtLocal
+            ? Path.Combine(Configuration.Configuration.DataFolderPath, _unixTimestampStr, dbName)
+            : Path.Combine(Configuration.Configuration.DataFolderPath, dbName);
+    }
+
+    public void EnsureInitialization()
+    {
+        if (_isInitialized)
+        {
+            return;
+        }
+
+        _isInitialized = true;
+        _ = MergeDatabaseAsync();
+    }
+
+    private static async Task MergeDatabaseAsync()
+    {
+        var directories = Directory.GetDirectories(Configuration.Configuration.DataFolderPath);
+
+        if (directories.Length < 1)
+        {
+            return;
+        }
+
+        foreach (var item in directories)
+        {
+            if (!long.TryParse(Path.GetFileName(item), out _))
+            {
+                continue;
+            }
+
+            var diskFilesDb = new DB(new Options { CreateIfMissing = true, }, Path.Combine(item, "diskfiles.db"));
+            var softLinksFilesDb = new DB(new Options { CreateIfMissing = true, }, Path.Combine(item, "softLinks.db"));
+
+            foreach (var keyValuePair in GetKeyValuesByDb(diskFilesDb))
+            {
+                if (await FileUploadService.ExistsFileInUploadFolderAsync(keyValuePair.Key))
+                {
+                    continue;
+                }
+
+                Instance.PutDiskFile(keyValuePair.Key, keyValuePair.Value);
+            }
+
+            foreach (var softLinksFile in GetKeyValuesByDb(softLinksFilesDb))
+            {
+                Instance.PutVirtualFile(softLinksFile.Key, softLinksFile.Value);
+            }
+
+            diskFilesDb.Dispose();
+            softLinksFilesDb.Dispose();
+
+            Directory.Delete(item, true);
+        }
     }
 
     private static Dictionary<string, string> GetKeyValuesByDb(DB db)

@@ -37,7 +37,7 @@ public abstract class GlobalConfiguration
         return GetGlobalValueByXPath("UploadRootPath");
     }
 
-    private static string? GetGlobalUsePublicUrl()
+    private static string GetGlobalUsePublicUrl()
     {
         return GetGlobalValueByXPath("UsePublicUrl");
     }
@@ -179,7 +179,7 @@ public abstract class GlobalConfiguration
         else
         {
             appConfig.LocalUploadFolderPath =
-                appStorageInfo.UploadFolderPath == string.Empty
+                string.IsNullOrEmpty(appStorageInfo.UploadFolderPath)
                     ? defaultLocalUploadFolderPath
                     : appStorageInfo.UploadFolderPath;
         }

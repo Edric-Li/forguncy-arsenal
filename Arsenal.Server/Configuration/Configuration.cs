@@ -6,15 +6,22 @@ public class Configuration
 {
     private static string RootFolderPath => Path.Combine(AppConfig?.LocalUploadFolderPath ?? string.Empty, "arsenal");
 
+    private static readonly Lazy<Configuration> LazyInstance = new(() => new Configuration());
+
     public static string UploadFolderPath => Path.Combine(RootFolderPath, "files");
 
     public static string TempFolderPath => Path.Combine(RootFolderPath, "temp");
 
     public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
 
-    public static readonly Lazy<Configuration> Instance = new(() => new Configuration());
+    public static readonly Configuration Instance = LazyInstance.Value;
 
     public static AppConfig? AppConfig { get; private set; }
+
+    /// <summary>
+    /// 是否运行在本地
+    /// </summary>
+    public static bool RunAtLocal { get; private set; }
 
     public const string DefaultUserServiceUrl = "http://127.0.0.1:22345/UserService";
 
@@ -109,7 +116,7 @@ public class Configuration
     /// <summary>
     /// 确保初始化
     /// </summary>
-    public void EnsureInit()
+    public void EnsureInitialization()
     {
         if (AppConfig != null)
         {
@@ -119,6 +126,7 @@ public class Configuration
         var instance = new Configuration();
         if (instance.IsRunAtLocal())
         {
+            RunAtLocal = true;
             AppConfig = new AppConfig()
             {
                 LocalUploadFolderPath = instance.GetRunAtLocalUploadFolderPath(),

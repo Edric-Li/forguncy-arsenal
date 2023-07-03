@@ -15,7 +15,7 @@ internal static class FileUploadService
         return File.Exists(filePath);
     }
 
-    public static async Task<bool> ExistsFileInDiskFilesDbAsync(string fileName)
+    public static async Task<bool> ExistsFileInUploadFolderAsync(string fileName)
     {
         var diskFilePath = DataAccess.DataAccess.Instance.GetDiskFile(fileName);
 

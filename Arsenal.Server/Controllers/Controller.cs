@@ -82,7 +82,7 @@ public class Arsenal : ForguncyApi
         {
             var uploadId = Context.Request.Query["uploadId"];
 
-            var exist = await FileUploadService.ExistsFileInDiskFilesDbAsync(uploadId);
+            var exist = await FileUploadService.ExistsFileInUploadFolderAsync(uploadId);
 
             var parts = FileUploadService.ListParts(uploadId);
 
