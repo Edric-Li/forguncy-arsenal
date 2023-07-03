@@ -340,7 +340,7 @@ ASALocalRun/
 # BeatPulse healthcheck temp database 
 healthchecksdb
 
-Arsenal/Resources/dist.js
-Arsenal/Resources/dist.js.map
-Arsenal/Resources/react.dist.js
+Arsenal/Resources/arsenal.js
+Arsenal/Resources/arsenal.js.map
+Arsenal/Resources/arsenal.core.js
 Arsenal/Web/vite.config.js
