@@ -60,7 +60,7 @@ public sealed class CloudStorageService
 
         var files = diskFiles
             .Where(i => File.Exists(Path.Combine(Configuration.Configuration.UploadFolderPath, i.Value)))
-            .Select(i => i.Value[1..])
+            .Select(i => i.Value)
             .ToList();
 
         return ConcurrentExecutionAsync(5, files,
