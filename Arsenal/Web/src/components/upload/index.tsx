@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
@@ -11,9 +11,11 @@ import { DndContext, DragEndEvent, PointerSensor, useSensor } from '@dnd-kit/cor
 import { CSS } from '@dnd-kit/utilities';
 import { css } from '@emotion/css';
 import ImgCrop from 'antd-img-crop';
-import FilePreviewInner from '../file-preview/FilePreviewInner';
+import FilePreviewInner, { isImage } from '../file-preview/FilePreviewInner';
 import Dialog from '../dialog';
 import { getBase64 } from '../../common/get-base64';
+import ImageFullScreenPreview from '../image-full-screen-preview';
+import CacheService from '../../common/cache-service';
 
 enum ListType {
   text,
@@ -86,7 +88,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const listType: UploadListType = useMemo(() => ListType[config.ListType] as UploadListType, [config]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState<string>();
-  const [previewImage, setPreviewImage] = useState<string>();
+  const [previewImage, setPreviewImage] = useState<string>('');
   const [disabled, setDisabled] = useState<boolean>(config.Disabled);
   const [readOnly, setReadOnly] = useState<boolean>(config.ReadOnly);
 
@@ -166,6 +168,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
         props.cellType.commitValue();
+        CacheService.set(callbackInfo.url!, file);
       }
       syncFileListRefDataToState();
     });
@@ -250,17 +253,28 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     return renderUpload();
   };
 
+  const renderFilePreview = () => {
+    if (!previewOpen) {
+      return null;
+    }
+
+    if (isImage(previewImage)) {
+      return <ImageFullScreenPreview url={previewImage} onClose={handleCancel} />;
+    }
+
+    return (
+      <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
+        <div style={{ width: '100%', height: maxDialogHeight }}>
+          <FilePreviewInner url={previewImage} />
+        </div>
+      </Dialog>
+    );
+  };
+
   return (
     <ConfigProvider locale={zhCN}>
-      {previewOpen && (
-        <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
-          <div style={{ width: '100%', height: maxDialogHeight }}>
-            <FilePreviewInner url={previewImage} />
-          </div>
-        </Dialog>
-      )}
-
       {renderContent()}
+      {renderFilePreview()}
     </ConfigProvider>
   );
 });

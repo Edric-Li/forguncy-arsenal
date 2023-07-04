@@ -96,11 +96,19 @@ const getText = async (url: string): Promise<string> => {
   return cacheService.getValueAndSet(url, async () => (await fetch(url)).text());
 };
 
+// 后续可能会弃用掉
 const getSpreadFile = async (url: string): Promise<File> => {
   return await cacheService.getValueAndSet<File>(url, async () => {
     const fileExt = url?.split('.').pop() ?? 'xlsx';
     const blob = await requestHelper.getBlob(url);
     return new File([blob], 'file.' + fileExt, { type: blob.type || excelFileTypeMap[fileExt] });
+  });
+};
+
+const getFileByUrl = async (url: string): Promise<File> => {
+  return await cacheService.getValueAndSet<File>(url, async () => {
+    const blob = await requestHelper.getBlob(url);
+    return new File([blob], 'file', { type: blob.type });
   });
 };
 
@@ -113,6 +121,7 @@ const requestHelper = {
   getBlob,
   getText,
   getSpreadFile,
+  getFileByUrl,
 };
 
 export default requestHelper;

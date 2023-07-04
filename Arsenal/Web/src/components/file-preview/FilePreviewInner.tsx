@@ -27,6 +27,10 @@ const viewMap: {
   { type: /doc|docx/, Component: DocxPreview },
 ];
 
+export const isImage = (fileUrl: string) => {
+  return /jpg|jpeg|png|gif|bmp|webp/.test(fileUrl.split('.').pop() || '');
+};
+
 const FilePreviewInner = (props: { url: string | null | undefined }) => {
   const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
 
