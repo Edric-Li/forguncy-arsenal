@@ -12,7 +12,7 @@ public abstract class CommonUtils
     /// <param name="folderPath"></param>
     /// <param name="num"></param>
     /// <returns></returns>
-    public static DirectoryInfo GetFolderSpecifyParent(string folderPath, int num)
+    private static DirectoryInfo GetFolderSpecifyParent(string folderPath, int num)
     {
         var directoryInfo = Directory.GetParent(folderPath);
 

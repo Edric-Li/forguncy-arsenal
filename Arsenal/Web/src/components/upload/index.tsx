@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
@@ -13,6 +13,7 @@ import { css } from '@emotion/css';
 import ImgCrop from 'antd-img-crop';
 import FilePreviewInner from '../file-preview/FilePreviewInner';
 import Dialog from '../dialog';
+import { getBase64 } from '../../common/get-base64';
 
 enum ListType {
   text,
@@ -30,19 +31,13 @@ export interface CellTypeConfig {
   cellType: CellType;
   AllowFragAndDropOrder: boolean;
   EnableCrop: boolean;
+  Disabled: boolean;
+  ReadOnly: boolean;
 }
 
 interface IProps {
   cellType: CellType;
 }
-
-const getBase64 = (file: RcFile): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
 
 interface DraggableUploadListItemProps {
   originNode: React.ReactElement<any, string | React.JSXElementConstructor<any>>;
@@ -83,7 +78,7 @@ const DraggableUploadListItem = ({ originNode, file }: DraggableUploadListItemPr
 const maxDialogWidth = ~~(document.body.clientWidth * 0.8);
 const maxDialogHeight = ~~(document.body.clientHeight * 0.8);
 
-const PCUpload = (props: IProps) => {
+const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [config] = useState<CellTypeConfig>(props.cellType.CellElement.CellType as CellTypeConfig);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const fileListRef = useRef<UploadFile[]>([]);
@@ -92,32 +87,43 @@ const PCUpload = (props: IProps) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState<string>();
   const [previewImage, setPreviewImage] = useState<string>();
+  const [disabled, setDisabled] = useState<boolean>(config.Disabled);
+  const [readOnly, setReadOnly] = useState<boolean>(config.ReadOnly);
 
-  useEffect(() => {
-    props.cellType.setValueToElement = (jelement, value) => {
-      if (!value) {
-        return;
-      }
-      const files = value.split('|');
+  useImperativeHandle(ref, () => {
+    return {
+      setValue: (value: string) => {
+        if (!value) {
+          return;
+        }
+        const files = value.split('|');
 
-      fileListRef.current = files.map((i: string) => {
-        return {
-          uid: i,
-          name: i.substring(37),
-          status: 'done',
-          percent: 0,
-          url: FileUpload.getFileUrl(i),
-        };
-      });
+        fileListRef.current = files.map((i: string) => {
+          return {
+            uid: i,
+            name: i.substring(37),
+            status: 'done',
+            percent: 0,
+            url: FileUpload.getFileUrl(i),
+          };
+        });
 
-      syncFileListRefDataToState();
+        syncFileListRefDataToState();
+      },
+
+      getValue: () => {
+        return fileListRef.current.map((file) => file.uid).join('|');
+      },
+
+      setReadOnly(isReadOnly: boolean) {
+        setReadOnly(isReadOnly);
+      },
+
+      setDisable(isDisabled: boolean) {
+        setDisabled(isDisabled);
+      },
     };
-
-    // @ts-ignore
-    props.cellType.getValueFromElement = () => {
-      return fileListRef.current.map((file) => file.uid).join('|');
-    };
-  }, [fileList]);
+  });
 
   const sensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 10 },
@@ -214,6 +220,7 @@ const PCUpload = (props: IProps) => {
             multiple={config.AllowMultipleSelection}
             accept={config.AllowedFileTypes}
             onDownload={handleDownload}
+            disabled={disabled}
             showUploadList={{
               showDownloadIcon: true,
               downloadIcon: <DownloadOutlined />,
@@ -224,7 +231,7 @@ const PCUpload = (props: IProps) => {
             }}
             itemRender={(originNode, file) => <DraggableUploadListItem originNode={originNode} file={file} />}
           >
-            <div>{renderButton}</div>
+            {!readOnly && <div>{renderButton}</div>}
           </Upload>
         </SortableContext>
       </DndContext>
@@ -256,6 +263,6 @@ const PCUpload = (props: IProps) => {
       {renderContent()}
     </ConfigProvider>
   );
-};
+});
 
 export default PCUpload;

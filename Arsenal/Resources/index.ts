@@ -26,8 +26,8 @@ function runDev() {
 }
 
 window.__reactCellTypes = window.__reactCellTypes || {};
+runDev();
 
-// runDev();
 
 namespace Arsenal {
 
@@ -48,9 +48,11 @@ namespace Arsenal {
 
         _prototype: { [key: string]: Function } = {};
 
+        __reactComponent: IReactCellTypeRef;
+
         _reactComponentMethods: string[] = [
             "setValueToElement",
-            "getValueFromElement",
+            "getValueFromElement"
         ];
 
         constructor(...args) {
@@ -58,6 +60,8 @@ namespace Arsenal {
             const self = this;
             this._originalMethods = {};
 
+            // @ts-ignore
+            const originalPrototype = this._prototype;
             // @ts-ignore
             this._prototype = ReactCellType.prototype.__proto__;
 
@@ -73,6 +77,30 @@ namespace Arsenal {
                     }
                 }
             });
+            this._prototype = originalPrototype;
+        }
+
+        public getValueFromElement(): any {
+            return this.__reactComponent?.getValue?.();
+        }
+
+        public setValueToElement(jelement, value) {
+            this.__reactComponent?.setValue?.(value);
+        }
+
+        setReadOnly(isReadOnly: boolean) {
+            super.setReadOnly(isReadOnly);
+            this.__reactComponent?.setReadOnly?.(this.isReadOnly());
+        }
+
+        disable() {
+            super.disable();
+            this.__reactComponent?.setDisable?.(this.isDisabled());
+        }
+
+        enable() {
+            super.enable();
+            this.__reactComponent?.setDisable?.(this.isDisabled());
         }
 
         // 只是没有类型引用,但实际有使用,请勿删除

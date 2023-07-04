@@ -16,6 +16,10 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "../Resources/declarations/common.d.ts", "../Resources/declarations/forguncy.Plugin.d.ts"],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

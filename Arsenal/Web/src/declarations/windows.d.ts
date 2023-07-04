@@ -1,9 +1,3 @@
-import CellTypeBase = Forguncy.Plugin.CellTypeBase;
-
-declare class CellType extends CellTypeBase {
-  onReactComponentLoaded();
-}
-
 interface IProps {
   cellType: CellType;
 }

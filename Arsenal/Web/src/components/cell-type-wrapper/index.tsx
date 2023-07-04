@@ -8,9 +8,12 @@ interface Props {
 }
 
 const Index = (props: Props) => {
-  const ref = useRef<Forguncy.Plugin.CellTypeBase>(null);
+  const ref = useRef<IReactCellTypeRef>();
 
-  useEffect(() => props.cellType.onReactComponentLoaded(), [ref, props.cellType]);
+  useEffect(() => {
+    props.cellType.__reactComponent = ref.current as IReactCellTypeRef;
+    props.cellType.onReactComponentLoaded();
+  }, [ref, props.cellType]);
 
   let Component: any = React.Fragment;
 
@@ -20,7 +23,7 @@ const Index = (props: Props) => {
     Component = FilePreview;
   }
 
-  return <Component cellType={props.cellType} />;
+  return <Component cellType={props.cellType} ref={ref} />;
 };
 
 export default Index;
