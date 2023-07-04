@@ -24,9 +24,24 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
     [DefaultValue(false)]
     public bool EnableResumableUpload { get; set; } = true;
 
+    [DisplayName("上传前添加水印")]
+    [Description("仅对图片生效")]
+    [DefaultValue(false)]
+    public bool EnableWatermark { get; set; }
+
+    [DisplayName("水印设置")]
+    [ObjectProperty(IndentLevel = 2, ObjType = typeof(WatermarkSettings))]
+    public WatermarkSettings WatermarkSettings { get; set; } = new();
+
     [DisplayName("允许多选")]
     [DefaultValue(false)]
     public bool AllowMultipleSelection { get; set; } = false;
+
+    [DisplayName("上传前裁切图片")]
+    [Description("仅对图片生效")]
+    [DefaultValue(false)]
+    public bool EnableCrop { get; set; } = false;
+
 
     [DisplayName("禁用")]
     [DefaultValue(false)]
@@ -47,6 +62,16 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
         return null;
     }
 
+    public override bool GetDesignerPropertyVisible(string propertyName)
+    {
+        if (propertyName == nameof(WatermarkSettings))
+        {
+            return EnableWatermark;
+        }
+
+        return base.GetDesignerPropertyVisible(propertyName);
+    }
+
     public override string ToString()
     {
         return "文件上传";
@@ -63,4 +88,19 @@ public enum ListType
     PictureCard,
     [Description("圆形照片墙")] 
     PictureCircle
+}
+
+public class WatermarkSettings
+{
+    [DisplayName("填充颜色")] [ColorProperty] public string FillStyle { get; set; } = "black";
+
+    [DisplayName("字体大小")] public int FontSize { get; set; } = 33;
+
+    [DisplayName("字体")] public string FontFamily { get; set; } = "Arial";
+
+    [DisplayName("文字")] [FormulaProperty] public object Text { get; set; } = "活字格 666";
+
+    [DisplayName("X坐标")] public int X { get; set; } = 20;
+
+    [DisplayName("Y坐标")] public int Y { get; set; } = 20;
 }

@@ -26,7 +26,7 @@ const ImageFullScreenPreview = (props: IProps) => {
 
   useEffect(() => {
     (async () => {
-      const file = await requestHelper.getFileByUrl(props.url);
+      const file = await requestHelper.getFile(props.url);
       const url = await convertFileToSrc(file);
       setSrc(url);
     })();

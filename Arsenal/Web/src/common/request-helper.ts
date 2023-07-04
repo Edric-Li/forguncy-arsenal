@@ -105,7 +105,7 @@ const getSpreadFile = async (url: string): Promise<File> => {
   });
 };
 
-const getFileByUrl = async (url: string): Promise<File> => {
+const getFile = async (url: string): Promise<File> => {
   return await cacheService.getValueAndSet<File>(url, async () => {
     const blob = await requestHelper.getBlob(url);
     return new File([blob], 'file', { type: blob.type });
@@ -121,7 +121,7 @@ const requestHelper = {
   getBlob,
   getText,
   getSpreadFile,
-  getFileByUrl,
+  getFile,
 };
 
 export default requestHelper;

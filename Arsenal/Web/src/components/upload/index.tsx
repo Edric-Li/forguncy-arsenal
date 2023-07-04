@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, Modal, Upload } from 'antd';
+import { Button, ConfigProvider, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import FileUpload from '../../common/file-upload';
@@ -16,12 +16,23 @@ import Dialog from '../dialog';
 import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
 import CacheService from '../../common/cache-service';
+import addWatermarkToFile from '../../common/add-watermark-to-file';
 
 enum ListType {
   text,
   picture,
   'picture-card',
   'picture-circle',
+}
+
+interface WatermarkSettings {
+  FillStyle: string;
+  Font: string;
+  FontSize: number;
+  FontFamily: string;
+  Text: string;
+  X: number;
+  Y: number;
 }
 
 export interface CellTypeConfig {
@@ -35,6 +46,8 @@ export interface CellTypeConfig {
   EnableCrop: boolean;
   Disabled: boolean;
   ReadOnly: boolean;
+  EnableWatermark: boolean;
+  WatermarkSettings: WatermarkSettings;
 }
 
 interface IProps {
@@ -153,9 +166,11 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
   const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
+    const newFile = config.EnableWatermark ? await addWatermarkToFile(file, config.WatermarkSettings) : file;
+
     const uploadFile: UploadFile = {
       uid: file.uid,
-      name: file.name,
+      name: newFile.name,
       status: 'uploading',
       percent: 0,
     };
@@ -164,11 +179,11 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
     syncFileListRefDataToState();
 
-    await fileUpload.addTask(file, (callbackInfo) => {
+    await fileUpload.addTask(newFile, (callbackInfo) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
         props.cellType.commitValue();
-        CacheService.set(callbackInfo.url!, file);
+        CacheService.set(callbackInfo.url!, newFile);
       }
       syncFileListRefDataToState();
     });
@@ -212,32 +227,28 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const renderUpload = () => {
     return (
-      <DndContext sensors={[sensor]} onDragEnd={onDragEnd}>
-        <SortableContext items={fileList.map((i) => i.uid)} strategy={verticalListSortingStrategy}>
-          <Upload
-            fileList={fileList}
-            beforeUpload={handleBeforeUpload}
-            listType={listType}
-            onRemove={handleRemove}
-            onPreview={handlePreview}
-            multiple={config.AllowMultipleSelection}
-            accept={config.AllowedFileTypes}
-            onDownload={handleDownload}
-            disabled={disabled}
-            showUploadList={{
-              showDownloadIcon: true,
-              downloadIcon: <DownloadOutlined />,
-              showRemoveIcon: true,
-              showPreviewIcon: true,
-              previewIcon: <EyeOutlined />,
-              removeIcon: <DeleteOutlined />,
-            }}
-            itemRender={(originNode, file) => <DraggableUploadListItem originNode={originNode} file={file} />}
-          >
-            {!readOnly && <div>{renderButton}</div>}
-          </Upload>
-        </SortableContext>
-      </DndContext>
+      <Upload
+        fileList={fileList}
+        beforeUpload={handleBeforeUpload}
+        listType={listType}
+        onRemove={handleRemove}
+        onPreview={handlePreview}
+        multiple={config.AllowMultipleSelection}
+        accept={config.AllowedFileTypes}
+        onDownload={handleDownload}
+        disabled={disabled}
+        showUploadList={{
+          showDownloadIcon: true,
+          downloadIcon: <DownloadOutlined />,
+          showRemoveIcon: true,
+          showPreviewIcon: true,
+          previewIcon: <EyeOutlined />,
+          removeIcon: <DeleteOutlined />,
+        }}
+        itemRender={(originNode, file) => <DraggableUploadListItem originNode={originNode} file={file} />}
+      >
+        {!readOnly && <div>{renderButton}</div>}
+      </Upload>
     );
   };
 
@@ -273,7 +284,11 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   return (
     <ConfigProvider locale={zhCN}>
-      {renderContent()}
+      <DndContext sensors={[sensor]} onDragEnd={onDragEnd}>
+        <SortableContext items={fileList.map((i) => i.uid)} strategy={verticalListSortingStrategy}>
+          {renderContent()}
+        </SortableContext>
+      </DndContext>
       {renderFilePreview()}
     </ConfigProvider>
   );
