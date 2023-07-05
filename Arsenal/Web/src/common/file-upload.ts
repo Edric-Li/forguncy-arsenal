@@ -16,9 +16,9 @@ class FileUpload {
 
   constructor(config: CellTypeConfig, cellType: CellType) {
     this.cellType = cellType;
-    this.enableResumableUpload = config.EnableResumableUpload;
+    this.enableResumableUpload = config.enableResumableUpload;
     this.conflictStrategy = ConflictStrategy.Rename;
-    this.folder = config.Folder;
+    this.folder = config.folder;
   }
 
   private getTargetFolderPath(): string | null {

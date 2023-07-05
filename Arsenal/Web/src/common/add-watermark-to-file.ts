@@ -19,9 +19,9 @@ const addWatermarkToFile = (file: File, watermarkSettings: WatermarkSettings): P
           return file;
         }
         context.drawImage(image, 0, 0);
-        context.fillStyle = watermarkSettings.FillStyle;
-        context.font = watermarkSettings.FontSize + 'px ' + watermarkSettings.Font;
-        context.fillText(watermarkSettings.Text, 80, 80);
+        context.fillStyle = watermarkSettings.fillStyle;
+        context.font = watermarkSettings.fontSize + 'px ' + watermarkSettings.font;
+        context.fillText(watermarkSettings.text, 80, 80);
         canvas.toBlob((blob) => {
           if (!blob) {
             return resolve(file);
@@ -30,10 +30,13 @@ const addWatermarkToFile = (file: File, watermarkSettings: WatermarkSettings): P
           resolve(newFile);
         }, file.type);
       };
+      image.onerror = () => {
+        resolve(file);
+      };
       image.src = event.target.result;
     };
     reader.onerror = (event) => {
-      reject(event);
+      resolve(file);
     };
     reader.readAsDataURL(file);
   });

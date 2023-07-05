@@ -17,6 +17,7 @@ import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
 import CacheService from '../../common/cache-service';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
+import { WatermarkSettings } from '../../declarations/types';
 
 enum ListType {
   text,
@@ -25,29 +26,19 @@ enum ListType {
   'picture-circle',
 }
 
-interface WatermarkSettings {
-  FillStyle: string;
-  Font: string;
-  FontSize: number;
-  FontFamily: string;
-  Text: string;
-  X: number;
-  Y: number;
-}
-
 export interface CellTypeConfig {
-  AllowedFileTypes: string;
-  EnableResumableUpload: boolean;
-  Folder: string;
-  ListType: ListType;
-  AllowMultipleSelection?: boolean;
+  allowedFileTypes: string;
+  enableResumableUpload: boolean;
+  folder: string;
+  listType: ListType;
+  allowMultipleSelection?: boolean;
   cellType: CellType;
-  AllowFragAndDropOrder: boolean;
-  EnableCrop: boolean;
+  allowFragAndDropOrder: boolean;
+  enableCrop: boolean;
   Disabled: boolean;
   ReadOnly: boolean;
-  EnableWatermark: boolean;
-  WatermarkSettings: WatermarkSettings;
+  enableWatermark: boolean;
+  watermarkSettings: WatermarkSettings;
 }
 
 interface IUploadCellType extends CellType {
@@ -102,7 +93,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const fileListRef = useRef<UploadFile[]>([]);
   const fileUpload = useMemo(() => new FileUpload(config, props.cellType), []);
-  const listType: UploadListType = useMemo(() => ListType[config.ListType] as UploadListType, [config]);
+  const listType: UploadListType = useMemo(() => ListType[config.listType] as UploadListType, [config]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState<string>();
   const [previewImage, setPreviewImage] = useState<string>('');
@@ -177,7 +168,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
   const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
-    const newFile = config.EnableWatermark ? await addWatermarkToFile(file, config.WatermarkSettings) : file;
+    const newFile =
+      file.type.startsWith('image/') && config.enableWatermark
+        ? await addWatermarkToFile(file, config.watermarkSettings)
+        : file;
 
     const uploadFile: UploadFile = {
       uid: file.uid,
@@ -244,8 +238,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         listType={listType}
         onRemove={handleRemove}
         onPreview={handlePreview}
-        multiple={config.AllowMultipleSelection}
-        accept={config.AllowedFileTypes}
+        multiple={config.allowMultipleSelection}
+        accept={config.allowedFileTypes}
         onDownload={handleDownload}
         disabled={disabled}
         showUploadList={{
@@ -264,9 +258,20 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   const renderContent = () => {
-    if (config.EnableCrop) {
+    if (config.enableCrop) {
       return (
-        <ImgCrop rotationSlider modalTitle='裁剪图片'>
+        <ImgCrop
+          modalTitle='裁剪图片'
+          resetText={'重置'}
+          zoomSlider
+          rotationSlider
+          aspectSlider
+          showReset
+          showGrid
+          cropShape='round'
+          fillColor='red'
+          modalProps={{ centered: true }}
+        >
           {renderUpload()}
         </ImgCrop>
       );
