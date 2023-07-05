@@ -51,6 +51,12 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
     [DefaultValue(false)]
     public bool ReadOnly { get; set; } = false;
 
+    [RunTimeMethod]
+    [DisplayName("上传")]
+    public void Upload()
+    {
+    }
+
     public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
     {
         return default;

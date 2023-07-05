@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
@@ -50,8 +50,12 @@ export interface CellTypeConfig {
   WatermarkSettings: WatermarkSettings;
 }
 
+interface IUploadCellType extends CellType {
+  Upload(): void;
+}
+
 interface IProps {
-  cellType: CellType;
+  cellType: IUploadCellType;
 }
 
 interface DraggableUploadListItemProps {
@@ -104,6 +108,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [previewImage, setPreviewImage] = useState<string>('');
   const [disabled, setDisabled] = useState<boolean>(config.Disabled);
   const [readOnly, setReadOnly] = useState<boolean>(config.ReadOnly);
+  const uploadContainerRef = useRef<HTMLDivElement | null>(null);
 
   useImperativeHandle(ref, () => {
     return {
@@ -139,6 +144,12 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       },
     };
   });
+
+  useEffect(() => {
+    props.cellType.Upload = () => {
+      uploadContainerRef.current?.click();
+    };
+  }, []);
 
   const sensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 10 },
@@ -247,7 +258,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         }}
         itemRender={(originNode, file) => <DraggableUploadListItem originNode={originNode} file={file} />}
       >
-        {!readOnly && <div>{renderButton}</div>}
+        <div ref={uploadContainerRef}>{!readOnly && <div>{renderButton}</div>}</div>
       </Upload>
     );
   };
