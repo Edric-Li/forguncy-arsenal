@@ -20,8 +20,8 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
     
     [DisplayName("文件夹路径")]
     [Description("默认会按日期存放（年/月/日），如无特殊需求,不建议填写,一旦自定义,则无法使用断点续传功能")]
-    [FormulaProperty]
     [JsonProperty("folder")]
+    [FormulaProperty]
     public object Folder { get; set; } = null;
 
     [DisplayName("文件列表类型")]

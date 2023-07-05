@@ -77,7 +77,7 @@
 	  <Folder Include="Web\dist\assets" />
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="&quot;..\PackageTools\ForguncyPluginPackageTool.exe&quot; $(ProjectDir) &quot;C:\Program Files\Forguncy 9&quot; "/>
+		<Exec Command="&quot;..\PackageTools\ForguncyPluginPackageTool.exe&quot; $(ProjectDir) &quot;C:\Program Files\Forguncy 9&quot; " />
 	</Target>
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 	  <Exec Command="XCOPY &quot;$(ProjectDir)ReferenceDll\&quot; &quot;$(ProjectDir)\bin&quot; /s /i /y" />
