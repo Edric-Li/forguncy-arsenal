@@ -137,6 +137,41 @@ namespace Arsenal {
         ComponentName = 'FilePreview';
     }
 
+    export class UploadCommand extends Forguncy.Plugin.CommandBase {
+        ComponentName = 'Upload';
+
+        __reactCommandExecutor: () => void = null;
+
+        constructor() {
+            super();
+
+            const timer = setInterval(() => {
+                if (window.createReactCommand) {
+                    this.__reactCommandExecutor = window.createReactCommand(this, this.ComponentName);
+                    return clearInterval(timer);
+                }
+            }, 25);
+        }
+
+        execute() {
+            return new Promise((resolve) => {
+                if (this.__reactCommandExecutor) {
+                    this.__reactCommandExecutor();
+                    return resolve(null);
+                }
+
+                const timer = setInterval(() => {
+                    if (this.__reactCommandExecutor) {
+                        this.__reactCommandExecutor();
+                        clearInterval(timer);
+                        resolve(null);
+                    }
+                }, 25)
+            })
+        }
+    }
+
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.Arsenal, Arsenal', PCUpload);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.FilePreview, Arsenal', FilePreview);
+    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadCommand, Arsenal", UploadCommand);
 }

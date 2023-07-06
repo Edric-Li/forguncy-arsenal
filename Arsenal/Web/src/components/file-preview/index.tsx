@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import FileUpload from '../../common/file-upload';
+import FileUploadEngine from '../../common/file-upload-engine';
 import FilePreviewInner from './FilePreviewInner';
 
 const FilePreview = (props: IProps) => {
@@ -11,7 +11,7 @@ const FilePreview = (props: IProps) => {
     }
     // 如果不是http开头的，认为是活字格的内置的文件
     if (!url.startsWith('http')) {
-      url = FileUpload.getFileUrl(url.split('|').pop() ?? '');
+      url = FileUploadEngine.getFileUrl(url.split('|').pop() ?? '');
     }
     setUrl(url);
   };

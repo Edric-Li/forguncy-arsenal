@@ -1,9 +1,9 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
-import FileUpload from '../../common/file-upload';
+import FileUploadEngine from '../../common/file-upload-engine';
 import zhCN from 'antd/es/locale/zh_CN';
 import { UploadListType } from 'antd/es/upload/interface';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -17,7 +17,8 @@ import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
 import CacheService from '../../common/cache-service';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
-import { WatermarkSettings } from '../../declarations/types';
+import { ImgCropSettings, WatermarkSettings } from '../../declarations/types';
+import useFileUploadEngine from '../../hooks/useFileUploadEngine';
 
 enum ListType {
   text,
@@ -26,27 +27,12 @@ enum ListType {
   'picture-circle',
 }
 
-export interface ImgCropSettings {
-  quality: number;
-  resetText: string;
-  cropShape: 'rect' | 'round';
-  modalTitle: string;
-  modalOk: string;
-  modalCancel: string;
-  showGrid: boolean;
-  rotationSlider: boolean;
-  aspectSlider: boolean;
-  showReset: boolean;
-  centered: boolean;
-}
-
 export interface CellTypeConfig {
   allowedFileTypes: string;
   enableResumableUpload: boolean;
   folder: string;
   listType: ListType;
   allowMultipleSelection?: boolean;
-  cellType: CellType;
   allowFragAndDropOrder: boolean;
   enableCrop: boolean;
   imgCropSettings: ImgCropSettings;
@@ -56,12 +42,10 @@ export interface CellTypeConfig {
   watermarkSettings: WatermarkSettings;
 }
 
-interface IUploadCellType extends CellType {
-  Upload(): void;
-}
-
-interface IProps {
-  cellType: IUploadCellType;
+export interface IProps {
+  evaluateFormula: (value: string) => unknown;
+  commitValue: () => void;
+  options: CellTypeConfig;
 }
 
 interface DraggableUploadListItemProps {
@@ -104,17 +88,21 @@ const maxDialogWidth = ~~(document.body.clientWidth * 0.8);
 const maxDialogHeight = ~~(document.body.clientHeight * 0.8);
 
 const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
-  const [config] = useState<CellTypeConfig>(props.cellType.CellElement.CellType as CellTypeConfig);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const fileListRef = useRef<UploadFile[]>([]);
-  const fileUpload = useMemo(() => new FileUpload(config, props.cellType), []);
-  const listType: UploadListType = useMemo(() => ListType[config.listType] as UploadListType, [config]);
+  const listType: UploadListType = useMemo(() => ListType[props.options.listType] as UploadListType, [props]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState<string>();
   const [previewImage, setPreviewImage] = useState<string>('');
-  const [disabled, setDisabled] = useState<boolean>(config.Disabled);
-  const [readOnly, setReadOnly] = useState<boolean>(config.ReadOnly);
+  const [disabled, setDisabled] = useState<boolean>(props.options.Disabled);
+  const [readOnly, setReadOnly] = useState<boolean>(props.options.ReadOnly);
   const uploadContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const fileUpload = useFileUploadEngine({
+    enableResumableUpload: props.options.enableResumableUpload,
+    folder: props.options.folder,
+    evaluateFormula: props.evaluateFormula,
+  });
 
   useImperativeHandle(ref, () => {
     return {
@@ -130,7 +118,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
             name: i.substring(37),
             status: 'done',
             percent: 0,
-            url: FileUpload.getFileUrl(i),
+            url: FileUploadEngine.getFileUrl(i),
           };
         });
 
@@ -148,14 +136,12 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       setDisable(isDisabled: boolean) {
         setDisabled(isDisabled);
       },
+
+      upload() {
+        uploadContainerRef.current?.click();
+      },
     };
   });
-
-  useEffect(() => {
-    props.cellType.Upload = () => {
-      uploadContainerRef.current?.click();
-    };
-  }, []);
 
   const sensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 10 },
@@ -176,7 +162,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       fileListRef.current[overIndex] = tem;
 
       syncFileListRefDataToState();
-      props.cellType.commitValue();
+      props.commitValue();
     }
   };
 
@@ -184,8 +170,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
     const newFile =
-      file.type.startsWith('image/') && config.enableWatermark
-        ? await addWatermarkToFile(file, config.watermarkSettings)
+      file.type.startsWith('image/') && props.options.enableWatermark
+        ? await addWatermarkToFile(file, props.options.watermarkSettings)
         : file;
 
     const uploadFile: UploadFile = {
@@ -202,7 +188,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     await fileUpload.addTask(newFile, (callbackInfo) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
-        props.cellType.commitValue();
+        props.commitValue();
         CacheService.set(callbackInfo.url!, newFile);
       }
       syncFileListRefDataToState();
@@ -214,7 +200,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     const index = fileListRef.current.findIndex((item) => item.uid === file.uid);
     fileListRef.current.splice(index, 1);
     syncFileListRefDataToState();
-    props.cellType.commitValue();
+    props.commitValue();
   };
 
   const handleCancel = () => setPreviewOpen(false);
@@ -253,8 +239,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         listType={listType}
         onRemove={handleRemove}
         onPreview={handlePreview}
-        multiple={config.allowMultipleSelection}
-        accept={config.allowedFileTypes}
+        multiple={props.options.allowMultipleSelection}
+        accept={props.options.allowedFileTypes}
         onDownload={handleDownload}
         disabled={disabled}
         showUploadList={{
@@ -273,8 +259,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   const renderContent = () => {
-    if (config.enableCrop) {
-      const { centered, ...others } = config.imgCropSettings;
+    if (props.options.enableCrop) {
+      const { centered, ...others } = props.options.imgCropSettings;
       return (
         <ImgCrop {...others} modalProps={{ centered }}>
           {renderUpload()}

@@ -8,6 +8,8 @@ type IReactCellTypeRef = Partial<{
     setReadOnly(isReadOnly: boolean);
 
     setDisable(isDisabled: boolean);
+
+    upload: () => void;
 }>
 
 

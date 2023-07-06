@@ -1,13 +1,14 @@
-import PCUpload from '../upload';
 import React, { useEffect, useRef } from 'react';
+
 import FilePreview from '../file-preview';
+import PCUploadWrapper from './uploadWrapper';
 
 interface Props {
   componentName: string;
   cellType: CellType;
 }
 
-const Index = (props: Props) => {
+const CellTypeWrapper = (props: Props) => {
   const ref = useRef<IReactCellTypeRef>();
 
   useEffect(() => {
@@ -18,7 +19,7 @@ const Index = (props: Props) => {
   let Component: any = React.Fragment;
 
   if (props.componentName === 'PCUpload') {
-    Component = PCUpload;
+    Component = PCUploadWrapper;
   } else if (props.componentName === 'FilePreview') {
     Component = FilePreview;
   }
@@ -26,4 +27,4 @@ const Index = (props: Props) => {
   return <Component cellType={props.cellType} ref={ref} />;
 };
 
-export default Index;
+export default CellTypeWrapper;

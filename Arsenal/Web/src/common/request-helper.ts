@@ -93,7 +93,8 @@ const getBlob = async (url: string): Promise<Blob> => {
 };
 
 const getText = async (url: string): Promise<string> => {
-  return cacheService.getValueAndSet(url, async () => (await fetch(url)).text());
+  const file = await cacheService.getValueAndSet<File>(url, async () => await getFile(url));
+  return file.text();
 };
 
 // 后续可能会弃用掉

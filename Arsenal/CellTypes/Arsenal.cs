@@ -175,11 +175,11 @@ public class ImgCropSettings : ObjectPropertyBase
 
     [DisplayName("确定按钮文字")]
     [JsonProperty("modalOk")]
-    public string ModalOk { get; set; } = "取消";
+    public string ModalOk { get; set; } = "确定";
 
     [DisplayName("取消按钮文字")]
     [JsonProperty("modalCancel")]
-    public string ModalCancel { get; set; } = "确定";
+    public string ModalCancel { get; set; } = "取消";
 
     [DisplayName("显示裁切区域网格")]
     [JsonProperty("showGrid")]

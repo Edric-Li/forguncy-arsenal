@@ -12,12 +12,18 @@ enum ComponentName {
   ExcelPreview = 'ExcelPreview',
 }
 
+enum CommandName {
+  Upload = 'Upload',
+}
+
 interface Window {
   __reactCellTypes: {
     [key: string]: CellType;
   };
 
   createReactComponent: (cellType: CellType, componentName: ComponentName) => void;
+  createReactCommand: (commandBase: Forguncy.Plugin.CommandBase, commandName: CommandName) => void;
+
   $: JQueryStatic;
 
   GC: {

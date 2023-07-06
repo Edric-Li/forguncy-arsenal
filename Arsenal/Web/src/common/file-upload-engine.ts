@@ -3,29 +3,34 @@ import BigNumber from 'bignumber.js';
 import requestHelper, { HttpHandlerResult, IInitMultipartUploadResult } from './request-helper';
 import { ConflictStrategy } from '../declarations/types';
 import { UploadFile } from 'antd/es/upload/interface';
-import { CellTypeConfig } from '../components/upload';
 
-class FileUpload {
-  public cellType: CellType;
+export interface FileUploadOptions {
+  enableResumableUpload: boolean;
+  folder: string;
+  evaluateFormula: (formula: string) => unknown;
+}
 
+class FileUploadEngine {
   public enableResumableUpload: boolean = false;
 
   public conflictStrategy: ConflictStrategy = ConflictStrategy.Rename;
 
   public folder: string | null = null;
 
-  constructor(config: CellTypeConfig, cellType: CellType) {
-    this.cellType = cellType;
-    this.enableResumableUpload = config.enableResumableUpload;
+  public evaluateFormula: (value: string) => unknown;
+
+  constructor(options: FileUploadOptions) {
+    this.enableResumableUpload = options.enableResumableUpload;
     this.conflictStrategy = ConflictStrategy.Rename;
-    this.folder = config.folder;
+    this.folder = options.folder;
+    this.evaluateFormula = options.evaluateFormula;
   }
 
   private getTargetFolderPath(): string | null {
     if (!this.folder?.trim().length) {
       return null;
     }
-    return this.cellType.evaluateFormula(this.folder);
+    return this.evaluateFormula(this.folder) as string;
   }
 
   private async initMultipartUpload(file: File): HttpHandlerResult<IInitMultipartUploadResult> {
@@ -88,7 +93,7 @@ class FileUpload {
           percent: 100,
           status: 'success',
           uid: createVirtualFileRes.data,
-          url: FileUpload.getFileUrl(createVirtualFileRes.data),
+          url: FileUploadEngine.getFileUrl(createVirtualFileRes.data),
         });
         return;
       }
@@ -126,9 +131,9 @@ class FileUpload {
       status: 'success',
       name: completeMultipartUploadRes.data.fileName,
       uid: completeMultipartUploadRes.data.fileId,
-      url: FileUpload.getFileUrl(completeMultipartUploadRes.data.fileId),
+      url: FileUploadEngine.getFileUrl(completeMultipartUploadRes.data.fileId),
     });
   }
 }
 
-export default FileUpload;
+export default FileUploadEngine;
