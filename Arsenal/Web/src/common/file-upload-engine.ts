@@ -34,7 +34,8 @@ class FileUploadEngine {
   }
 
   private async initMultipartUpload(file: File): HttpHandlerResult<IInitMultipartUploadResult> {
-    const fileMd5 = this.enableResumableUpload ? await FileHashCalculationEngine.execute(file) : null;
+    const fileMd5 =
+      file.size !== 0 && this.enableResumableUpload ? await FileHashCalculationEngine.execute(file) : null;
 
     return requestHelper.initMultipartUpload({
       fileMd5,

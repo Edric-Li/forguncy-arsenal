@@ -24,7 +24,7 @@ const MonacoEditorView = (props: IPreviewComponentProps) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const loaderRef = useRef<Promise<Monaco> | null>(null);
 
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState<string | null>(null);
   const [language, setLanguage] = useState<string | null>(null);
 
   useMemo(() => setLanguage(getLanguageNameBySuffix(props.suffix).toLowerCase()), [props.suffix]);
@@ -42,7 +42,7 @@ const MonacoEditorView = (props: IPreviewComponentProps) => {
   }, []);
 
   useEffect(() => {
-    if (!language || !value) {
+    if (!language || value === null) {
       return;
     }
     loaderRef.current?.then((monaco) => {
