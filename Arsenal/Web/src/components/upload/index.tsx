@@ -26,6 +26,20 @@ enum ListType {
   'picture-circle',
 }
 
+export interface ImgCropSettings {
+  quality: number;
+  resetText: string;
+  cropShape: 'rect' | 'round';
+  modalTitle: string;
+  modalOk: string;
+  modalCancel: string;
+  showGrid: boolean;
+  rotationSlider: boolean;
+  aspectSlider: boolean;
+  showReset: boolean;
+  centered: boolean;
+}
+
 export interface CellTypeConfig {
   allowedFileTypes: string;
   enableResumableUpload: boolean;
@@ -35,6 +49,7 @@ export interface CellTypeConfig {
   cellType: CellType;
   allowFragAndDropOrder: boolean;
   enableCrop: boolean;
+  imgCropSettings: ImgCropSettings;
   Disabled: boolean;
   ReadOnly: boolean;
   enableWatermark: boolean;
@@ -259,19 +274,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const renderContent = () => {
     if (config.enableCrop) {
+      const { centered, ...others } = config.imgCropSettings;
       return (
-        <ImgCrop
-          modalTitle='裁剪图片'
-          resetText={'重置'}
-          zoomSlider
-          rotationSlider
-          aspectSlider
-          showReset
-          showGrid
-          cropShape='round'
-          fillColor='red'
-          modalProps={{ centered: true }}
-        >
+        <ImgCrop {...others} modalProps={{ centered }}>
           {renderUpload()}
         </ImgCrop>
       );

@@ -3,9 +3,9 @@ import { WatermarkSettings } from '../declarations/types';
 /**
  * 给图片添加水印
  * @param file
- * @param watermarkSettings
+ * @param settings
  */
-const addWatermarkToFile = (file: File, watermarkSettings: WatermarkSettings): Promise<File> => {
+const addWatermarkToFile = (file: File, settings: WatermarkSettings): Promise<File> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event: any) => {
@@ -19,9 +19,9 @@ const addWatermarkToFile = (file: File, watermarkSettings: WatermarkSettings): P
           return file;
         }
         context.drawImage(image, 0, 0);
-        context.fillStyle = watermarkSettings.fillStyle;
-        context.font = watermarkSettings.fontSize + 'px ' + watermarkSettings.font;
-        context.fillText(watermarkSettings.text, 80, 80);
+        context.fillStyle = Forguncy.ConvertToCssColor(settings.fillStyle);
+        context.font = settings.fontSize + 'px ' + settings.fontFamily;
+        context.fillText(settings.text, settings.x, settings.y);
         canvas.toBlob((blob) => {
           if (!blob) {
             return resolve(file);

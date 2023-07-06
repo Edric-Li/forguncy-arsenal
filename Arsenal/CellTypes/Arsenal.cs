@@ -13,7 +13,7 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
 {
     [DisplayName("上传限制")]
     [JsonProperty("uploadSettings")]
-    [ObjectProperty(ObjType = typeof(WatermarkSettings))]
+    [ObjectProperty(ObjType = typeof(UploadSettings))]
     public UploadSettings UploadSettings { get; set; } = new();
 
     [DisplayName("单元格权限")] public List<UIPermission> UIPermissions { get; set; } = GetDefaultPermission();
@@ -60,7 +60,7 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
 
     [DisplayName("启用断点续传/秒传")]
     [JsonProperty("enableResumableUpload")]
-    [DefaultValue(false)]
+    [DefaultValue(true)]
     public bool EnableResumableUpload { get; set; } = true;
 
     [RunTimeMethod]
@@ -124,7 +124,7 @@ public enum ListType
     PictureCircle
 }
 
-public class WatermarkSettings
+public class WatermarkSettings : ObjectPropertyBase
 {
     [DisplayName("填充颜色")]
     [JsonProperty("fillStyle")]
@@ -153,7 +153,7 @@ public class WatermarkSettings
     public int Y { get; set; } = 20;
 }
 
-public class ImgCropSettings
+public class ImgCropSettings : ObjectPropertyBase
 {
     [DisplayName("图片质量")]
     [JsonProperty("quality")]
@@ -183,26 +183,30 @@ public class ImgCropSettings
 
     [DisplayName("显示裁切区域网格")]
     [JsonProperty("showGrid")]
-    public bool ShowGrid { get; set; } = false;
+    public bool ShowGrid { get; set; }
 
     [DisplayName("图片旋转控制")]
     [JsonProperty("rotationSlider")]
+    [DefaultValue(true)]
     public bool RotationSlider { get; set; } = true;
 
     [DisplayName("裁切比率控制")]
     [JsonProperty("aspectSlider")]
+    [DefaultValue(true)]
     public bool AspectSlider { get; set; } = true;
 
     [DisplayName("显示重置按钮")]
     [JsonProperty("showReset")]
+    [DefaultValue(true)]
     public bool ShowReset { get; set; } = true;
 
     [DisplayName("居中显示")]
     [JsonProperty("centered")]
+    [DefaultValue(true)]
     public bool Centered { get; set; } = true;
 }
 
-public class UploadSettings
+public class UploadSettings : ObjectPropertyBase
 {
     [DisplayName("允许上传文件的扩展名")]
     [JsonProperty("allowedExtensions")]

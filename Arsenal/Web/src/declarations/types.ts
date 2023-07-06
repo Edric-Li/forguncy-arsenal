@@ -6,7 +6,6 @@ export enum ConflictStrategy {
 
 export interface WatermarkSettings {
   fillStyle: string;
-  font: string;
   fontSize: number;
   fontFamily: string;
   text: string;
