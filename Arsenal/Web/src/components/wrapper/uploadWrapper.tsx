@@ -1,6 +1,6 @@
-import React, { ForwardedRef, forwardRef, MutableRefObject, useEffect, useRef } from 'react';
+import React, { forwardRef, MutableRefObject, useEffect } from 'react';
 
-import PCUpload, { CellTypeConfig } from '../upload';
+import PCUpload, { IOptions } from '../upload';
 import _ from 'lodash';
 
 export interface IUploadCellType extends CellType {
@@ -21,8 +21,8 @@ const PCUploadWrapper = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   return (
     <PCUpload
       ref={ref}
-      options={props.cellType.CellElement.CellType as CellTypeConfig}
-      commitValue={props.cellType.commitValue}
+      options={props.cellType.CellElement.CellType as IOptions}
+      commitValue={props.cellType.commitValue.bind(props.cellType)}
       evaluateFormula={props.cellType.evaluateFormula}
     />
   );

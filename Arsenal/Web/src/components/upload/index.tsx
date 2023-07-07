@@ -1,6 +1,6 @@
-import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, Upload } from 'antd';
+import { Button, ConfigProvider, message, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
@@ -27,25 +27,30 @@ enum ListType {
   'picture-circle',
 }
 
-export interface CellTypeConfig {
-  allowedFileTypes: string;
+type UploadButtonStatusType = 'none' | 'disabled' | 'hidden';
+
+export interface IOptions {
   enableResumableUpload: boolean;
   folder: string;
   listType: ListType;
-  allowMultipleSelection?: boolean;
-  allowFragAndDropOrder: boolean;
   enableCrop: boolean;
   imgCropSettings: ImgCropSettings;
   Disabled: boolean;
   ReadOnly: boolean;
   enableWatermark: boolean;
   watermarkSettings: WatermarkSettings;
+  uploadSettings: {
+    maxCount: number;
+    maxSize: number;
+    allowedExtensions: string;
+    buttonStatusWhenQuantityReachesMaximum: UploadButtonStatusType;
+  };
 }
 
 export interface IProps {
   evaluateFormula: (value: string) => unknown;
   commitValue: () => void;
-  options: CellTypeConfig;
+  options: IOptions;
 }
 
 interface DraggableUploadListItemProps {
@@ -97,6 +102,29 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [disabled, setDisabled] = useState<boolean>(props.options.Disabled);
   const [readOnly, setReadOnly] = useState<boolean>(props.options.ReadOnly);
   const uploadContainerRef = useRef<HTMLDivElement | null>(null);
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const quantityLimit = useMemo(() => fileList.length >= props.options.uploadSettings.maxCount, [fileList]);
+
+  const buttonDisabled = useMemo(
+    () => quantityLimit && props.options.uploadSettings.buttonStatusWhenQuantityReachesMaximum === 'disabled',
+    [quantityLimit],
+  );
+
+  const buttonHidden = useMemo(
+    () => quantityLimit && props.options.uploadSettings.buttonStatusWhenQuantityReachesMaximum === 'hidden',
+    [quantityLimit],
+  );
+
+  useEffect(() => {
+    if (buttonDisabled) {
+      uploadContainerRef.current?.parentElement?.classList.add('ant-upload-disabled');
+      uploadContainerRef.current?.parentElement?.parentElement?.classList.add('ant-upload-disabled');
+    } else {
+      uploadContainerRef.current?.parentElement?.classList.remove('ant-upload-disabled');
+      uploadContainerRef.current?.parentElement?.parentElement?.classList.remove('ant-upload-disabled');
+    }
+  }, [buttonDisabled]);
 
   const fileUpload = useFileUploadEngine({
     enableResumableUpload: props.options.enableResumableUpload,
@@ -169,6 +197,26 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
   const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
+    if (file.size / 1024 / 1024 > props.options.uploadSettings.maxSize) {
+      messageApi.error({
+        key: 'arsenal',
+        type: 'error',
+        content: `上传的文件 ${file.name} 的大小超出了限制, 最大上传文件的大小为 ${props.options.uploadSettings.maxSize} MB。`,
+      });
+      return;
+    }
+
+    if (props.options.uploadSettings.maxCount) {
+      if (fileListRef.current.length >= props.options.uploadSettings.maxCount) {
+        messageApi.error({
+          key: 'arsenal',
+          type: 'error',
+          content: `上传的文件数量超出了限制, 最大上传数量为 ${props.options.uploadSettings.maxCount}。`,
+        });
+        return;
+      }
+    }
+
     const newFile =
       file.type.startsWith('image/') && props.options.enableWatermark
         ? await addWatermarkToFile(file, props.options.watermarkSettings)
@@ -193,7 +241,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       }
       syncFileListRefDataToState();
     });
-    return false;
+
+    return;
   };
 
   const handleRemove: UploadProps['onRemove'] = (file) => {
@@ -221,17 +270,23 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const renderButton = useMemo(() => {
     if (listType === 'picture-circle' || listType === 'picture-card') {
       return (
-        <>
+        <div>
           <PlusOutlined />
           <div style={{ marginTop: 8 }}>上传</div>
-        </>
+        </div>
       );
     }
 
-    return <Button icon={<UploadOutlined />}>上传</Button>;
-  }, [listType]);
+    return (
+      <Button icon={<UploadOutlined />} disabled={buttonDisabled}>
+        上传
+      </Button>
+    );
+  }, [listType, buttonDisabled, buttonHidden]);
 
   const renderUpload = () => {
+    const { uploadSettings } = props.options;
+    const multiple = !uploadSettings.maxCount || uploadSettings.maxCount > 0;
     return (
       <Upload
         fileList={fileList}
@@ -239,10 +294,12 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         listType={listType}
         onRemove={handleRemove}
         onPreview={handlePreview}
-        multiple={props.options.allowMultipleSelection}
-        accept={props.options.allowedFileTypes}
+        multiple={multiple}
+        accept={uploadSettings.allowedExtensions}
+        maxCount={uploadSettings.maxCount}
         onDownload={handleDownload}
         disabled={disabled}
+        openFileDialogOnClick={!disabled && !buttonDisabled && !buttonHidden}
         showUploadList={{
           showDownloadIcon: true,
           downloadIcon: <DownloadOutlined />,
@@ -253,7 +310,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         }}
         itemRender={(originNode, file) => <DraggableUploadListItem originNode={originNode} file={file} />}
       >
-        <div ref={uploadContainerRef}>{!readOnly && <div>{renderButton}</div>}</div>
+        {!buttonHidden && <div ref={uploadContainerRef}>{!readOnly && <div>{renderButton}</div>}</div>}
       </Upload>
     );
   };
@@ -291,6 +348,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   return (
     <ConfigProvider locale={zhCN}>
+      {contextHolder}
       <DndContext sensors={[sensor]} onDragEnd={onDragEnd}>
         <SortableContext items={fileList.map((i) => i.uid)} strategy={verticalListSortingStrategy}>
           {renderContent()}

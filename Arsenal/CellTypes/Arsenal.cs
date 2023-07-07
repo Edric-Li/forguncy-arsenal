@@ -213,11 +213,28 @@ public class UploadSettings : ObjectPropertyBase
     public string AllowedExtensions { get; set; } = "*";
 
     [DisplayName("最大上传文件大小")]
-    [JsonProperty("maxUploadSize")]
+    [JsonProperty("maxSize")]
+    [Description("单位MB。")]
     [IntProperty(AllowNull = true, Watermark = "不限制")]
-    public int? MaxUploadSize { get; set; }
+    public int? MaxSize { get; set; }
 
     [DisplayName("最大上传个数")]
+    [JsonProperty("maxCount")]
     [IntProperty(AllowNull = true, Watermark = "不限制")]
     public int? MaxCount { get; set; }
+
+    [DisplayName("数量达到上限时按钮的状态")]
+    [JsonProperty("buttonStatusWhenQuantityReachesMaximum")]
+    [ComboProperty(DisplayList = "无状态|禁用|隐藏", ValueList = "none|disabled|hidden")]
+    public string ButtonStatusWhenQuantityReachesMaximum { get; set; } = "none";
+
+    public override bool GetDesignerPropertyVisible(string propertyName)
+    {
+        if (propertyName == nameof(ButtonStatusWhenQuantityReachesMaximum))
+        {
+            return MaxCount is > 0;
+        }
+
+        return base.GetDesignerPropertyVisible(propertyName);
+    }
 }
