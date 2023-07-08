@@ -8,6 +8,7 @@ export interface FileUploadOptions {
   enableResumableUpload: boolean;
   folder: string;
   evaluateFormula: (formula: string) => unknown;
+  conflictStrategy: ConflictStrategy;
 }
 
 class FileUploadEngine {
@@ -21,7 +22,7 @@ class FileUploadEngine {
 
   constructor(options: FileUploadOptions) {
     this.enableResumableUpload = options.enableResumableUpload;
-    this.conflictStrategy = ConflictStrategy.Rename;
+    this.conflictStrategy = options.conflictStrategy;
     this.folder = options.folder;
     this.evaluateFormula = options.evaluateFormula;
   }
@@ -34,14 +35,24 @@ class FileUploadEngine {
   }
 
   private async initMultipartUpload(file: File): HttpHandlerResult<IInitMultipartUploadResult> {
+    let targetFolderPath = this.getTargetFolderPath();
+
+    if (file.webkitRelativePath && targetFolderPath) {
+      const parts = file.webkitRelativePath.split('/');
+      parts.pop();
+      targetFolderPath += '/' + parts.join('/');
+    }
+
     const fileMd5 =
-      file.size !== 0 && this.enableResumableUpload ? await FileHashCalculationEngine.execute(file) : null;
+      file.size !== 0 && this.enableResumableUpload && !targetFolderPath
+        ? await FileHashCalculationEngine.execute(file)
+        : null;
 
     return requestHelper.initMultipartUpload({
       fileMd5,
       fileName: file.name,
       conflictStrategy: this.conflictStrategy,
-      targetFolderPath: this.getTargetFolderPath(),
+      targetFolderPath,
     });
   }
 

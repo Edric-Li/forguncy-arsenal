@@ -17,7 +17,7 @@ import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
 import CacheService from '../../common/cache-service';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
-import { ImgCropSettings, WatermarkSettings } from '../../declarations/types';
+import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../declarations/types';
 import useFileUploadEngine from '../../hooks/useFileUploadEngine';
 
 enum ListType {
@@ -32,6 +32,7 @@ type UploadButtonStatusType = 'none' | 'disabled' | 'hidden';
 export interface IOptions {
   enableResumableUpload: boolean;
   folder: string;
+  conflictStrategy: ConflictStrategy;
   listType: ListType;
   enableCrop: boolean;
   imgCropSettings: ImgCropSettings;
@@ -103,6 +104,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [readOnly, setReadOnly] = useState<boolean>(props.options.ReadOnly);
   const uploadContainerRef = useRef<HTMLDivElement | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const [directory, setDirectory] = useState(false);
 
   const quantityLimit = useMemo(() => fileList.length >= props.options.uploadSettings.maxCount, [fileList]);
 
@@ -129,6 +131,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const fileUpload = useFileUploadEngine({
     enableResumableUpload: props.options.enableResumableUpload,
     folder: props.options.folder,
+    conflictStrategy: props.options.conflictStrategy,
     evaluateFormula: props.evaluateFormula,
   });
 
@@ -165,11 +168,23 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         setDisabled(isDisabled);
       },
 
-      upload() {
-        uploadContainerRef.current?.click();
+      upload(directory: boolean) {
+        if (!directory) {
+          uploadContainerRef.current?.click();
+        } else {
+          setDirectory(directory);
+        }
       },
     };
   });
+
+  useEffect(() => {
+    if (!directory) {
+      return;
+    }
+    uploadContainerRef.current?.click();
+    setDirectory(false);
+  }, [directory]);
 
   const sensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 10 },
@@ -232,9 +247,14 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     fileListRef.current = [...fileListRef.current, uploadFile];
 
     syncFileListRefDataToState();
-
     await fileUpload.addTask(newFile, (callbackInfo) => {
-      Object.assign(uploadFile, callbackInfo);
+      const index = fileListRef.current.findIndex((i) => i.uid === uploadFile.uid);
+
+      fileListRef.current[index] = {
+        ...fileListRef.current[index],
+        ...callbackInfo,
+      };
+
       if (uploadFile.status === 'success') {
         props.commitValue();
         CacheService.set(callbackInfo.url!, newFile);
@@ -289,6 +309,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     const multiple = !uploadSettings.maxCount || uploadSettings.maxCount > 0;
     return (
       <Upload
+        directory={directory}
         fileList={fileList}
         beforeUpload={handleBeforeUpload}
         listType={listType}

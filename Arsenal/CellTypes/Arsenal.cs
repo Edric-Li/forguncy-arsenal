@@ -24,6 +24,10 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
     [FormulaProperty]
     public object Folder { get; set; } = null;
 
+    [DisplayName("冲突策略")]
+    [JsonProperty("conflictStrategy")]
+    public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
+
     [DisplayName("文件列表类型")]
     [JsonProperty("listType")]
     public ListType ListType { get; set; } = ListType.Text;
@@ -65,7 +69,7 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
 
     [RunTimeMethod]
     [DisplayName("上传")]
-    public void Upload()
+    public void Upload([BoolProperty] [ItemDisplayName("文件夹")] bool directory = false)
     {
     }
 
@@ -90,6 +94,16 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
         if (propertyName == nameof(ImgCropSettings))
         {
             return EnableCrop;
+        }
+
+        if (propertyName == nameof(EnableResumableUpload))
+        {
+            return string.IsNullOrWhiteSpace(Folder?.ToString());
+        }
+
+        if (propertyName == nameof(ConflictStrategy))
+        {
+            return !string.IsNullOrWhiteSpace(Folder?.ToString());
         }
 
         return base.GetDesignerPropertyVisible(propertyName);
@@ -122,6 +136,13 @@ public enum ListType
     PictureCard,
     [Description("圆形照片墙")] 
     PictureCircle
+}
+
+public enum ConflictStrategy
+{
+    [Description("覆盖现有文件")] Overwrite,
+    [Description("重命名新文件")] Rename,
+    [Description("告知用户")] Reject,
 }
 
 public class WatermarkSettings : ObjectPropertyBase

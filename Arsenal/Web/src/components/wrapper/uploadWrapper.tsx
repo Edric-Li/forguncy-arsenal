@@ -4,7 +4,7 @@ import PCUpload, { IOptions } from '../upload';
 import _ from 'lodash';
 
 export interface IUploadCellType extends CellType {
-  Upload(): void;
+  Upload(directory: boolean): void;
 }
 
 export interface IProps {
@@ -13,8 +13,8 @@ export interface IProps {
 
 const PCUploadWrapper = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   useEffect(() => {
-    props.cellType.Upload = () => {
-      ((ref as MutableRefObject<IReactCellTypeRef>).current.upload || _.noop)();
+    props.cellType.Upload = (directory: boolean) => {
+      ((ref as MutableRefObject<IReactCellTypeRef>).current.upload || _.noop)(directory);
     };
   }, []);
 
@@ -23,7 +23,7 @@ const PCUploadWrapper = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       ref={ref}
       options={props.cellType.CellElement.CellType as IOptions}
       commitValue={props.cellType.commitValue.bind(props.cellType)}
-      evaluateFormula={props.cellType.evaluateFormula}
+      evaluateFormula={props.cellType.evaluateFormula.bind(props.cellType)}
     />
   );
 });

@@ -9,7 +9,7 @@ type IReactCellTypeRef = Partial<{
 
     setDisable(isDisabled: boolean);
 
-    upload: () => void;
+    upload: (directory: boolean) => void;
 }>
 
 

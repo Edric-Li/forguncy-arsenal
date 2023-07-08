@@ -49,10 +49,12 @@ public class Arsenal : ForguncyApi
 
             var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, uploadId);
 
+            var targetFolderPath = body.TargetFolderPath?.TrimStart('/').TrimEnd('/');
+            
             MetadataManagement.Set(uploadId, new FileMetaData()
             {
                 FileName = body.FileName,
-                TargetFolder = body.TargetFolderPath,
+                TargetFolder = targetFolderPath,
                 ConflictStrategy = body.ConflictStrategy ?? ConflictStrategy.Rename
             });
 

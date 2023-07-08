@@ -125,7 +125,7 @@ internal static class FileUploadService
                 return GetFilePath();
 
             default:
-                throw new Exception("The file already exists.");
+                throw new Exception($"文件夹{metadata.TargetFolder}下存在同名文件{metadata.FileName}。");
         }
 
         return targetFilePath;
