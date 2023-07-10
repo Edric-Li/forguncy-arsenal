@@ -10,9 +10,10 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight(0)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/file.svg")]
 public class UploadCommand : Command
 {
-    private object _folder;
+    private object _folder = string.Empty;
     
     [DisplayName("文件夹路径")]
     [Description("默认会按日期存放（年/月/日），如无特殊需求,不建议填写,一旦自定义,则无法使用断点续传功能")]
@@ -23,7 +24,7 @@ public class UploadCommand : Command
         get => _folder;
         set
         {
-            _folder = value;
+            _folder = value ?? string.Empty;
             TempValueStoreInstance.Folder = value;
         }
     }

@@ -13,23 +13,35 @@ namespace Arsenal;
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/icon.png")]
 public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly, ISupportUIPermission
 {
-    [DisplayName("上传限制")]
+    private object _folder = string.Empty;
+
+    [DisplayName("上传设置")]
     [JsonProperty("uploadSettings")]
     [ObjectProperty(ObjType = typeof(UploadSettings))]
     public UploadSettings UploadSettings { get; set; } = new();
 
-    [DisplayName("单元格权限")] public List<UIPermission> UIPermissions { get; set; } = GetDefaultPermission();
-
-    [DisplayName("权限设置")]
+    [DisplayName("元素权限设置")]
     [JsonProperty("permissionSettings")]
     [ObjectProperty(ObjType = typeof(PermissionSettings))]
     public PermissionSettings PermissionSettings { get; set; } = new();
+
+    [DisplayName("单元格权限设置")]
+    [JsonProperty("uiPermissions")]
+    public List<UIPermission> UIPermissions { get; set; } = GetDefaultPermission();
 
     [DisplayName("文件夹路径")]
     [Description("默认会按日期存放（年/月/日）。")]
     [JsonProperty("folder")]
     [FormulaProperty]
-    public object Folder { get; set; } = null;
+    public object Folder
+    {
+        get => _folder;
+        set
+        {
+            _folder = value ?? string.Empty;
+            TempValueStoreInstance.Folder = value;
+        }
+    }
 
     [DisplayName("冲突策略")]
     [Description("用于处理已存在相同名称文件的情况。")]
@@ -40,27 +52,6 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     [JsonProperty("listType")]
     public ListType ListType { get; set; } = ListType.Text;
 
-    [CategoryHeader("上传前")]
-    [DisplayName("添加水印")]
-    [JsonProperty("enableWatermark")]
-    [DefaultValue(false)]
-    public bool EnableWatermark { get; set; }
-
-    [DisplayName("水印设置")]
-    [JsonProperty("watermarkSettings")]
-    [ObjectProperty(IndentLevel = 2, ObjType = typeof(WatermarkSettings))]
-    public WatermarkSettings WatermarkSettings { get; set; } = new();
-
-    [DisplayName("裁切图片")]
-    [JsonProperty("enableCrop")]
-    [DefaultValue(false)]
-    public bool EnableCrop { get; set; } = false;
-
-    [DisplayName("裁剪设置")]
-    [JsonProperty("imgCropSettings")]
-    [ObjectProperty(IndentLevel = 2, ObjType = typeof(ImgCropSettings))]
-    public ImgCropSettings ImgCropSettings { get; set; } = new();
-
     [CategoryHeader("其他")]
     [DisplayName("禁用")]
     [DefaultValue(false)]
@@ -69,11 +60,6 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     [DisplayName("只读")]
     [DefaultValue(false)]
     public bool ReadOnly { get; set; } = false;
-
-    [DisplayName("断点续传/秒传")]
-    [JsonProperty("enableResumableUpload")]
-    [DefaultValue(true)]
-    public bool EnableResumableUpload { get; set; } = true;
 
     private static List<UIPermission> GetDefaultPermission()
     {
@@ -114,26 +100,6 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
 
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
-        if (propertyName == nameof(WatermarkSettings))
-        {
-            return EnableWatermark;
-        }
-
-        if (propertyName == nameof(EnableCrop))
-        {
-            return !UploadSettings.Multiple;
-        }
-
-        if (propertyName == nameof(ImgCropSettings))
-        {
-            return EnableCrop && GetDesignerPropertyVisible(nameof(EnableCrop));
-        }
-      
-        if (propertyName == nameof(EnableResumableUpload))
-        {
-            return string.IsNullOrWhiteSpace(Folder?.ToString());
-        }
-
         if (propertyName == nameof(ConflictStrategy))
         {
             return !string.IsNullOrWhiteSpace(Folder?.ToString());
@@ -178,9 +144,16 @@ public enum ElementState
 {
     [Description("可见")] Visible,
     [Description("不可见")] Hidden,
-    [Description("启用")] Disabled,
-    [Description("禁用")] Enabled,
+    [Description("启用")] Enabled,
+    [Description("禁用")] Disabled,
 }
+
+public enum ElementStateWhenNotAuthorized
+{
+    [Description("不可见")] Hidden,
+    [Description("不可用")] Disabled,
+}
+
 
 public class WatermarkSettings : ObjectPropertyBase
 {
@@ -282,6 +255,11 @@ public class PermissionSettings : ObjectPropertyBase
     [DisplayName("删除")]
     [JsonProperty("delete")]
     public List<string> Delete { get; set; }
+
+    [DisplayName("无权限时元素状态")]
+    [JsonProperty("elementStateWhenNotAuthorized")]
+    public ElementStateWhenNotAuthorized ElementStateWhenNotAuthorized { get; set; } =
+        ElementStateWhenNotAuthorized.Hidden;
 }
 
 public class UploadSettings : ObjectPropertyBase
@@ -290,9 +268,8 @@ public class UploadSettings : ObjectPropertyBase
     [JsonProperty("allowedExtensions")]
     public string AllowedExtensions { get; set; } = "*";
 
-    [DisplayName("最大上传文件大小")]
+    [DisplayName("最大上传文件大小(单位:MB)")]
     [JsonProperty("maxSize")]
-    [Description("单位MB。")]
     [IntProperty(AllowNull = true, Watermark = "不限制")]
     public int? MaxSize { get; set; }
 
@@ -306,12 +283,41 @@ public class UploadSettings : ObjectPropertyBase
     [ComboProperty(DisplayList = "无状态|禁用|隐藏", ValueList = "none|disabled|hidden")]
     public string ButtonStatusWhenQuantityReachesMaximum { get; set; } = "none";
 
-    [DisplayName("允许多选")]
+    [DisplayName("支持断点续传和秒传")]
+    [JsonProperty("enableResumableUpload")]
+    public bool EnableResumableUpload { get; set; } = true;
+
+    [DisplayName("支持上传前添加水印")]
+    [JsonProperty("enableWatermark")]
+    [DefaultValue(false)]
+    public bool EnableWatermark { get; set; }
+
+    [DisplayName("水印设置")]
+    [JsonProperty("watermarkSettings")]
+    [ObjectProperty(ObjType = typeof(WatermarkSettings))]
+    public WatermarkSettings WatermarkSettings { get; set; } = new();
+
+    [DisplayName("支持在文件对话框中多选文件")]
     [JsonProperty("multiple")]
     public bool Multiple { get; set; } = true;
 
+    [DisplayName("支持上传前裁切图片")]
+    [JsonProperty("enableCrop")]
+    [DefaultValue(false)]
+    public bool EnableCrop { get; set; } = false;
+
+    [DisplayName("裁剪设置")]
+    [JsonProperty("imgCropSettings")]
+    [ObjectProperty(ObjType = typeof(ImgCropSettings))]
+    public ImgCropSettings ImgCropSettings { get; set; } = new();
+
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
+        if (propertyName == nameof(EnableResumableUpload))
+        {
+            return string.IsNullOrWhiteSpace(TempValueStoreInstance.Folder?.ToString());
+        }
+        
         if (propertyName == nameof(ButtonStatusWhenQuantityReachesMaximum))
         {
             return MaxCount is > 0;
@@ -320,6 +326,21 @@ public class UploadSettings : ObjectPropertyBase
         if (propertyName == nameof(Multiple))
         {
             return MaxCount is null or > 1;
+        }
+
+        if (propertyName == nameof(WatermarkSettings))
+        {
+            return EnableWatermark;
+        }
+
+        if (propertyName == nameof(EnableCrop))
+        {
+            return !Multiple;
+        }
+
+        if (propertyName == nameof(ImgCropSettings))
+        {
+            return EnableCrop && GetDesignerPropertyVisible(nameof(EnableCrop));
         }
 
         return base.GetDesignerPropertyVisible(propertyName);
