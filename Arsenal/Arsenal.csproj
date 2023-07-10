@@ -19,6 +19,7 @@
 	  <None Remove="Resources\dist.js.map" />
 	  <None Remove="Resources\arsenal.js" />
 	  <None Remove="Resources\arsenal.js.map" />
+	  <None Remove="Resources\arsenal.core.js" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Resources\images\Icon.png" />

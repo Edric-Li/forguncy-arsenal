@@ -13,6 +13,6 @@ const commandWrapper = (props: Props): Function | null => {
     fn = uploadCommand;
   }
 
-  return (fn || _.noop)(props.commandBase);
+  return (fn || _.noop).bind(null, props.commandBase);
 };
 export default commandWrapper;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Arsenal.Common;
 using GrapeCity.Forguncy.CellTypes;
 using GrapeCity.Forguncy.Plugin;
@@ -7,9 +8,10 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
+[Category("Arsenal")]
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/icon.png")]
-public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly, ISupportUIPermission
+public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly, ISupportUIPermission
 {
     [DisplayName("上传限制")]
     [JsonProperty("uploadSettings")]
@@ -17,14 +19,20 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
     public UploadSettings UploadSettings { get; set; } = new();
 
     [DisplayName("单元格权限")] public List<UIPermission> UIPermissions { get; set; } = GetDefaultPermission();
-    
+
+    [DisplayName("权限设置")]
+    [JsonProperty("permissionSettings")]
+    [ObjectProperty(ObjType = typeof(PermissionSettings))]
+    public PermissionSettings PermissionSettings { get; set; } = new();
+
     [DisplayName("文件夹路径")]
-    [Description("默认会按日期存放（年/月/日），如无特殊需求,不建议填写,一旦自定义,则无法使用断点续传功能")]
+    [Description("默认会按日期存放（年/月/日）。")]
     [JsonProperty("folder")]
     [FormulaProperty]
     public object Folder { get; set; } = null;
 
     [DisplayName("冲突策略")]
+    [Description("用于处理已存在相同名称文件的情况。")]
     [JsonProperty("conflictStrategy")]
     public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
 
@@ -62,14 +70,34 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
     [DefaultValue(false)]
     public bool ReadOnly { get; set; } = false;
 
-    [DisplayName("启用断点续传/秒传")]
+    [DisplayName("断点续传/秒传")]
     [JsonProperty("enableResumableUpload")]
     [DefaultValue(true)]
     public bool EnableResumableUpload { get; set; } = true;
 
+    private static List<UIPermission> GetDefaultPermission()
+    {
+        var defaultAllowRoles = new List<string> { "FGC_Anonymous" };
+        return new List<UIPermission>
+        {
+            new() { Scope = UIPermissionScope.Enable, AllowRoles = defaultAllowRoles },
+            new() { Scope = UIPermissionScope.Editable, AllowRoles = defaultAllowRoles },
+            new() { Scope = UIPermissionScope.Visible, AllowRoles = defaultAllowRoles },
+        };
+    }
+
     [RunTimeMethod]
     [DisplayName("上传")]
     public void Upload([BoolProperty] [ItemDisplayName("文件夹")] bool directory = false)
+    {
+    }
+
+    [RunTimeMethod]
+    [DisplayName("设置元素状态")]
+    public void SetElementState(
+        [ItemDisplayName("元素")] [Required] Element element,
+        [ItemDisplayName("状态")] [Required] ElementState state
+    )
     {
     }
 
@@ -91,11 +119,16 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
             return EnableWatermark;
         }
 
-        if (propertyName == nameof(ImgCropSettings))
+        if (propertyName == nameof(EnableCrop))
         {
-            return EnableCrop;
+            return !UploadSettings.Multiple;
         }
 
+        if (propertyName == nameof(ImgCropSettings))
+        {
+            return EnableCrop && GetDesignerPropertyVisible(nameof(EnableCrop));
+        }
+      
         if (propertyName == nameof(EnableResumableUpload))
         {
             return string.IsNullOrWhiteSpace(Folder?.ToString());
@@ -112,17 +145,6 @@ public class Arsenal : CellType, INeedUploadFileByUser, ISupportDisable, ISuppor
     public override string ToString()
     {
         return "文件上传";
-    }
-
-    private static List<UIPermission> GetDefaultPermission()
-    {
-        var defaultAllowRoles = new List<string> { "FGC_Anonymous" };
-        return new List<UIPermission>
-        {
-            new() { Scope = UIPermissionScope.Enable, AllowRoles = defaultAllowRoles },
-            new() { Scope = UIPermissionScope.Editable, AllowRoles = defaultAllowRoles },
-            new() { Scope = UIPermissionScope.Visible, AllowRoles = defaultAllowRoles },
-        };
     }
 }
 
@@ -143,6 +165,21 @@ public enum ConflictStrategy
     [Description("覆盖现有文件")] Overwrite,
     [Description("重命名新文件")] Rename,
     [Description("告知用户")] Reject,
+}
+
+public enum Element
+{
+    [Description("上传按钮")] Upload,
+    [Description("删除按钮")] Delete,
+    [Description("下载按钮")] Download
+}
+
+public enum ElementState
+{
+    [Description("可见")] Visible,
+    [Description("不可见")] Hidden,
+    [Description("启用")] Disabled,
+    [Description("禁用")] Enabled,
 }
 
 public class WatermarkSettings : ObjectPropertyBase
@@ -227,6 +264,26 @@ public class ImgCropSettings : ObjectPropertyBase
     public bool Centered { get; set; } = true;
 }
 
+[Designer("Arsenal.Designer.PermissionSettingDesigner, Arsenal")]
+public class PermissionSettings : ObjectPropertyBase
+{
+    [DisplayName("上传")]
+    [JsonProperty("upload")]
+    public List<string> Upload { get; set; }
+
+    [DisplayName("下载")]
+    [JsonProperty("download")]
+    public List<string> Download { get; set; }
+
+    [DisplayName("预览")]
+    [JsonProperty("preview")]
+    public List<string> Preview { get; set; }
+
+    [DisplayName("删除")]
+    [JsonProperty("delete")]
+    public List<string> Delete { get; set; }
+}
+
 public class UploadSettings : ObjectPropertyBase
 {
     [DisplayName("允许上传文件的扩展名")]
@@ -249,11 +306,20 @@ public class UploadSettings : ObjectPropertyBase
     [ComboProperty(DisplayList = "无状态|禁用|隐藏", ValueList = "none|disabled|hidden")]
     public string ButtonStatusWhenQuantityReachesMaximum { get; set; } = "none";
 
+    [DisplayName("允许多选")]
+    [JsonProperty("multiple")]
+    public bool Multiple { get; set; } = true;
+
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
         if (propertyName == nameof(ButtonStatusWhenQuantityReachesMaximum))
         {
             return MaxCount is > 0;
+        }
+
+        if (propertyName == nameof(Multiple))
+        {
+            return MaxCount is null or > 1;
         }
 
         return base.GetDesignerPropertyVisible(propertyName);

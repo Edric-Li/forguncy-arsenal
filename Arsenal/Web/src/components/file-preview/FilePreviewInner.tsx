@@ -31,7 +31,7 @@ export const isImage = (fileUrl: string) => {
   return /jpg|jpeg|png|gif|bmp|webp/.test(fileUrl.split('.').pop() || '');
 };
 
-const FilePreviewInner = (props: { url: string | null | undefined }) => {
+const FilePreviewInner = (props: { url: string | null | undefined; options: IPreviewOptions }) => {
   const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
 
   let Component: React.ComponentType<IPreviewComponentProps> | null =
@@ -51,7 +51,7 @@ const FilePreviewInner = (props: { url: string | null | undefined }) => {
     return <div style={notSupportedStyle}>暂不支持该文件类型</div>;
   }
 
-  return <Component url={props.url} suffix={fileExtension} />;
+  return <Component url={props.url} suffix={fileExtension} {...props.options} />;
 };
 
 export default FilePreviewInner;

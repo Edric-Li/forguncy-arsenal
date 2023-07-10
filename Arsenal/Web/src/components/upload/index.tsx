@@ -1,10 +1,9 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, message, Upload } from 'antd';
+import { Button, message, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
-import zhCN from 'antd/es/locale/zh_CN';
 import { UploadListType } from 'antd/es/upload/interface';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, DragEndEvent, PointerSensor, useSensor } from '@dnd-kit/core';
@@ -41,6 +40,7 @@ export interface IOptions {
   enableWatermark: boolean;
   watermarkSettings: WatermarkSettings;
   uploadSettings: {
+    multiple: boolean;
     maxCount: number;
     maxSize: number;
     allowedExtensions: string;
@@ -250,12 +250,14 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     await fileUpload.addTask(newFile, (callbackInfo) => {
       const index = fileListRef.current.findIndex((i) => i.uid === uploadFile.uid);
 
-      fileListRef.current[index] = {
+      const mergedInfo = {
         ...fileListRef.current[index],
         ...callbackInfo,
       };
 
-      if (uploadFile.status === 'success') {
+      fileListRef.current[index] = mergedInfo;
+
+      if (mergedInfo.status === 'success') {
         props.commitValue();
         CacheService.set(callbackInfo.url!, newFile);
       }
@@ -306,7 +308,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const renderUpload = () => {
     const { uploadSettings } = props.options;
-    const multiple = !uploadSettings.maxCount || uploadSettings.maxCount > 0;
+    const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 0);
     return (
       <Upload
         directory={directory}
@@ -368,7 +370,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   return (
-    <ConfigProvider locale={zhCN}>
+    <>
       {contextHolder}
       <DndContext sensors={[sensor]} onDragEnd={onDragEnd}>
         <SortableContext items={fileList.map((i) => i.uid)} strategy={verticalListSortingStrategy}>
@@ -376,7 +378,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         </SortableContext>
       </DndContext>
       {renderFilePreview()}
-    </ConfigProvider>
+    </>
   );
 });
 

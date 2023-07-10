@@ -2,9 +2,13 @@ interface IProps {
   cellType: CellType;
 }
 
-interface IPreviewComponentProps {
+interface IPreviewComponentProps extends IPreviewOptions {
   url: string;
   suffix: string;
+}
+
+interface IPreviewOptions {
+  hideTabsWhenOnlyOneFile: boolean;
 }
 
 enum ComponentName {

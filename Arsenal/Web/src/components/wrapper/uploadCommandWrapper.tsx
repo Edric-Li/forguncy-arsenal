@@ -4,7 +4,7 @@ import { UploadFile } from 'antd/es/upload/interface';
 import CacheService from '../../common/cache-service';
 import { Upload } from 'antd';
 import useFileUploadEngine from '../../hooks/useFileUploadEngine';
-import { ImgCropSettings, WatermarkSettings } from '../../declarations/types';
+import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../declarations/types';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
 import ImgCrop from 'antd-img-crop';
 
@@ -12,11 +12,12 @@ interface ICommandParam {
   enableCrop: boolean;
   enableResumableUpload: boolean;
   folder: string;
-  allowMultipleSelections: boolean;
+  maxCount: number;
   allowedExtensions: boolean;
   enableWatermark: boolean;
   imgCropSettings: ImgCropSettings;
   watermarkSettings: WatermarkSettings;
+  uploadSuccessCommand: Forguncy.Plugin.ICustomCommandObject;
 }
 
 const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
@@ -26,10 +27,13 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
     return ctx.CommandParam as ICommandParam;
   }, []);
 
+  const multiple = useMemo(() => param.maxCount === null || param.maxCount > 0, [param]);
+
   const fileUpload = useFileUploadEngine({
     evaluateFormula: ctx.evaluateFormula,
     enableResumableUpload: param.enableResumableUpload,
     folder: param.folder,
+    conflictStrategy: ConflictStrategy.Reject,
   });
 
   useEffect(() => {
@@ -53,6 +57,15 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
         CacheService.set(callbackInfo.url!, newFile);
+
+        ctx.executeCustomCommandObject(
+          param.uploadSuccessCommand,
+          {
+            [param.uploadSuccessCommand.ParamProperties['fileId']]: uploadFile.url,
+            [param.uploadSuccessCommand.ParamProperties['fileName']]: uploadFile.name,
+          },
+          new Date().getTime().toString(),
+        );
       }
     });
     return false;
@@ -60,7 +73,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
 
   const renderUploadContent = () => {
     return (
-      <Upload beforeUpload={handleBeforeUpload}>
+      <Upload beforeUpload={handleBeforeUpload} multiple={multiple}>
         <div ref={uploadContainerRef}></div>
       </Upload>
     );

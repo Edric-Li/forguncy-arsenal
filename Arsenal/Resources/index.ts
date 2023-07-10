@@ -171,7 +171,7 @@ namespace Arsenal {
         }
     }
 
-    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.Arsenal, Arsenal', PCUpload);
-    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.FilePreview, Arsenal', FilePreview);
+    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.UploadCellType, Arsenal', PCUpload);
+    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.PreviewCellType, Arsenal', FilePreview);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadCommand, Arsenal", UploadCommand);
 }

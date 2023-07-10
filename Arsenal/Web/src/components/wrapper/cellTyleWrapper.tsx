@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/es/locale/zh_CN';
 
 import FilePreview from '../file-preview';
 import PCUploadWrapper from './uploadWrapper';
@@ -24,7 +26,11 @@ const CellTypeWrapper = (props: Props) => {
     Component = FilePreview;
   }
 
-  return <Component cellType={props.cellType} ref={ref} />;
+  return (
+    <ConfigProvider locale={zhCN}>
+      <Component cellType={props.cellType} ref={ref} />
+    </ConfigProvider>
+  );
 };
 
 export default CellTypeWrapper;
