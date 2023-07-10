@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Arsenal.Common;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
@@ -9,11 +10,21 @@ namespace Arsenal;
 [OrderWeight(1)]
 public class UploadFolderCommand : Command
 {
+    private object _folder;
+
     [DisplayName("文件夹路径")]
     [Description("默认会按日期存放（年/月/日），如无特殊需求,不建议填写,一旦自定义,则无法使用断点续传功能")]
     [JsonProperty("folder")]
     [FormulaProperty]
-    public object Folder { get; set; } = null;
+    public object Folder
+    {
+        get => _folder;
+        set
+        {
+            _folder = value;
+            TempValueStoreInstance.Folder = value;
+        }
+    } 
 
     [DisplayName("冲突策略")]
     [Description("用于处理已存在相同名称文件的情况。")]
@@ -63,6 +74,11 @@ public class UploadFolderCommandAdvancedSettings : ObjectPropertyBase
         if (propertyName == nameof(WatermarkSettings))
         {
             return EnableWatermark;
+        }
+
+        if (propertyName == nameof(EnableResumableUpload))
+        {
+            return string.IsNullOrWhiteSpace(TempValueStoreInstance.Folder?.ToString());
         }
 
         return base.GetDesignerPropertyVisible(propertyName);

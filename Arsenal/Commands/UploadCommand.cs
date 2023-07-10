@@ -1,4 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Arsenal.Common;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
@@ -9,19 +12,21 @@ namespace Arsenal;
 [OrderWeight(0)]
 public class UploadCommand : Command
 {
-    public UploadCommand()
-    {
-        AdvancedSettings = new UploadCommandAdvancedSettings
-        {
-            Owner = this
-        };
-    }
+    private object _folder;
     
     [DisplayName("文件夹路径")]
     [Description("默认会按日期存放（年/月/日），如无特殊需求,不建议填写,一旦自定义,则无法使用断点续传功能")]
     [JsonProperty("folder")]
     [FormulaProperty]
-    public object Folder { get; set; }
+    public object Folder
+    {
+        get => _folder;
+        set
+        {
+            _folder = value;
+            TempValueStoreInstance.Folder = value;
+        }
+    }
 
     [DisplayName("允许上传文件的扩展名")]
     [JsonProperty("allowedExtensions")]
@@ -45,8 +50,8 @@ public class UploadCommand : Command
     [DisplayName("高级设置")]
     [ObjectProperty(ObjType = typeof(UploadCommandAdvancedSettings))]
     [JsonProperty("advancedSettings")]
-    public UploadCommandAdvancedSettings AdvancedSettings { get; set; }
-
+    public UploadCommandAdvancedSettings AdvancedSettings { get; set; } = new();
+    
     public override bool GetDesignerPropertyVisible(string propertyName, CommandScope commandScope)
     {
         if (propertyName == nameof(AdvancedSettings.EnableCrop))
@@ -62,18 +67,14 @@ public class UploadCommand : Command
         return "上传文件";
     }
 
-    public override Command Clone()
+    public IEnumerable<ForguncyErrorInfo> CheckCommandErrors(IBuilderCommandContext context)
     {
-        var command = base.Clone() as UploadCommand;
-        command.AdvancedSettings.Owner = command;
-        return command;
+        throw new NotImplementedException();
     }
 }
 
 public class UploadCommandAdvancedSettings : ObjectPropertyBase
 {
-    [Browsable(false)] [JsonIgnore] public UploadCommand Owner { get; set; }
-
     [DisplayName("上传完成命令触发时机")]
     [JsonProperty("uploadSuccessCommandTriggerTiming")]
     [ComboProperty(ValueList = "single|all", DisplayList = "单个文件上传成功后执行|全部文件上传后执行")]
@@ -116,25 +117,11 @@ public class UploadCommandAdvancedSettings : ObjectPropertyBase
             return EnableCrop && GetDesignerPropertyVisible(nameof(EnableCrop));
         }
 
-        if (propertyName == nameof(EnableResumableUpload))
+        if (propertyName == nameof(EnableResumableUpload) || propertyName == nameof(EnableCrop))
         {
-            return string.IsNullOrWhiteSpace(Owner?.Folder?.ToString());
+            return string.IsNullOrWhiteSpace(TempValueStoreInstance.Folder?.ToString());
         }
 
         return base.GetDesignerPropertyVisible(propertyName);
-    }
-
-    public override object Clone()
-    {
-        return new UploadCommandAdvancedSettings
-        {
-            Owner = Owner,
-            UploadSuccessCommandTriggerTiming = UploadSuccessCommandTriggerTiming,
-            EnableWatermark = EnableWatermark,
-            WatermarkSettings = WatermarkSettings,
-            EnableCrop = EnableCrop,
-            ImgCropSettings = ImgCropSettings,
-            EnableResumableUpload = EnableResumableUpload,
-        };
     }
 }
