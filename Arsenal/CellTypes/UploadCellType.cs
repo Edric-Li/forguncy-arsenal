@@ -11,42 +11,17 @@ namespace Arsenal;
 [Category("Arsenal")]
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/icon.png")]
-public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly, ISupportUIPermission
+public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly
 {
-    private object _folder = string.Empty;
+    [DisplayName("权限设置")]
+    [JsonProperty("permissionSettings")]
+    [ObjectProperty(ObjType = typeof(PermissionSettings))]
+    public PermissionSettings PermissionSettings { get; set; } = new();
 
     [DisplayName("上传设置")]
     [JsonProperty("uploadSettings")]
     [ObjectProperty(ObjType = typeof(UploadSettings))]
     public UploadSettings UploadSettings { get; set; } = new();
-
-    [DisplayName("元素权限设置")]
-    [JsonProperty("permissionSettings")]
-    [ObjectProperty(ObjType = typeof(PermissionSettings))]
-    public PermissionSettings PermissionSettings { get; set; } = new();
-
-    [DisplayName("单元格权限设置")]
-    [JsonProperty("uiPermissions")]
-    public List<UIPermission> UIPermissions { get; set; } = GetDefaultPermission();
-
-    [DisplayName("文件夹路径")]
-    [Description("默认会按日期存放（年/月/日）。")]
-    [JsonProperty("folder")]
-    [FormulaProperty]
-    public object Folder
-    {
-        get => _folder;
-        set
-        {
-            _folder = value ?? string.Empty;
-            TempValueStoreInstance.Folder = value;
-        }
-    }
-
-    [DisplayName("冲突策略")]
-    [Description("用于处理已存在相同名称文件的情况。")]
-    [JsonProperty("conflictStrategy")]
-    public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
 
     [DisplayName("文件列表类型")]
     [JsonProperty("listType")]
@@ -61,16 +36,6 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     [DefaultValue(false)]
     public bool ReadOnly { get; set; } = false;
 
-    private static List<UIPermission> GetDefaultPermission()
-    {
-        var defaultAllowRoles = new List<string> { "FGC_Anonymous" };
-        return new List<UIPermission>
-        {
-            new() { Scope = UIPermissionScope.Enable, AllowRoles = defaultAllowRoles },
-            new() { Scope = UIPermissionScope.Editable, AllowRoles = defaultAllowRoles },
-            new() { Scope = UIPermissionScope.Visible, AllowRoles = defaultAllowRoles },
-        };
-    }
 
     [RunTimeMethod]
     [DisplayName("上传")]
@@ -79,10 +44,10 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     }
 
     [RunTimeMethod]
-    [DisplayName("设置元素状态")]
-    public void SetElementState(
+    [DisplayName("设置元素显示状态")]
+    public void SetElementDisplayState(
         [ItemDisplayName("元素")] [Required] Element element,
-        [ItemDisplayName("状态")] [Required] ElementState state
+        [ItemDisplayName("显示状态")] [Required] ElementState state
     )
     {
     }
@@ -96,16 +61,6 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     {
         CommonUtils.CopyWebSiteFilesToDesigner(context);
         return null;
-    }
-
-    public override bool GetDesignerPropertyVisible(string propertyName)
-    {
-        if (propertyName == nameof(ConflictStrategy))
-        {
-            return !string.IsNullOrWhiteSpace(Folder?.ToString());
-        }
-
-        return base.GetDesignerPropertyVisible(propertyName);
     }
 
     public override string ToString()
@@ -137,6 +92,7 @@ public enum Element
 {
     [Description("上传按钮")] Upload,
     [Description("删除按钮")] Delete,
+    [Description("预览按钮")] Preview,
     [Description("下载按钮")] Download
 }
 
@@ -144,16 +100,7 @@ public enum ElementState
 {
     [Description("可见")] Visible,
     [Description("不可见")] Hidden,
-    [Description("启用")] Enabled,
-    [Description("禁用")] Disabled,
 }
-
-public enum ElementStateWhenNotAuthorized
-{
-    [Description("不可见")] Hidden,
-    [Description("不可用")] Disabled,
-}
-
 
 public class WatermarkSettings : ObjectPropertyBase
 {
@@ -242,28 +189,44 @@ public class PermissionSettings : ObjectPropertyBase
 {
     [DisplayName("上传")]
     [JsonProperty("upload")]
-    public List<string> Upload { get; set; }
+    public List<string> Upload { get; set; } = new() { "FGC_Anonymous" };
 
     [DisplayName("下载")]
     [JsonProperty("download")]
-    public List<string> Download { get; set; }
+    public List<string> Download { get; set; } = new() { "FGC_Anonymous" };
 
     [DisplayName("预览")]
     [JsonProperty("preview")]
-    public List<string> Preview { get; set; }
+    public List<string> Preview { get; set; } = new() { "FGC_Anonymous" };
 
     [DisplayName("删除")]
     [JsonProperty("delete")]
-    public List<string> Delete { get; set; }
-
-    [DisplayName("无权限时元素状态")]
-    [JsonProperty("elementStateWhenNotAuthorized")]
-    public ElementStateWhenNotAuthorized ElementStateWhenNotAuthorized { get; set; } =
-        ElementStateWhenNotAuthorized.Hidden;
+    public List<string> Delete { get; set; } = new() { "FGC_Anonymous" };
 }
 
 public class UploadSettings : ObjectPropertyBase
 {
+    private object _folder = string.Empty;
+
+    [DisplayName("文件夹路径")]
+    [Description("默认会按日期存放（年/月/日）。")]
+    [JsonProperty("folder")]
+    [FormulaProperty]
+    public object Folder
+    {
+        get => _folder;
+        set
+        {
+            _folder = value ?? string.Empty;
+            TempValueStoreInstance.Folder = value;
+        }
+    }
+
+    [DisplayName("冲突策略")]
+    [Description("用于处理已存在相同名称文件的情况。")]
+    [JsonProperty("conflictStrategy")]
+    public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
+    
     [DisplayName("允许上传文件的扩展名")]
     [JsonProperty("allowedExtensions")]
     public string AllowedExtensions { get; set; } = "*";
@@ -277,11 +240,6 @@ public class UploadSettings : ObjectPropertyBase
     [JsonProperty("maxCount")]
     [IntProperty(AllowNull = true, Watermark = "不限制")]
     public int? MaxCount { get; set; }
-
-    [DisplayName("数量达到上限时按钮的状态")]
-    [JsonProperty("buttonStatusWhenQuantityReachesMaximum")]
-    [ComboProperty(DisplayList = "无状态|禁用|隐藏", ValueList = "none|disabled|hidden")]
-    public string ButtonStatusWhenQuantityReachesMaximum { get; set; } = "none";
 
     [DisplayName("支持断点续传和秒传")]
     [JsonProperty("enableResumableUpload")]
@@ -313,16 +271,16 @@ public class UploadSettings : ObjectPropertyBase
 
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
+        if (propertyName == nameof(ConflictStrategy))
+        {
+            return !string.IsNullOrWhiteSpace(Folder?.ToString());
+        }
+        
         if (propertyName == nameof(EnableResumableUpload))
         {
             return string.IsNullOrWhiteSpace(TempValueStoreInstance.Folder?.ToString());
         }
         
-        if (propertyName == nameof(ButtonStatusWhenQuantityReachesMaximum))
-        {
-            return MaxCount is > 0;
-        }
-
         if (propertyName == nameof(Multiple))
         {
             return MaxCount is null or > 1;

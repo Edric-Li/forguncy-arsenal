@@ -4,11 +4,7 @@ import { Button, message, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
-import { UploadListType } from 'antd/es/upload/interface';
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { DndContext, DragEndEvent, PointerSensor, useSensor } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
-import { css } from '@emotion/css';
+import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import ImgCrop from 'antd-img-crop';
 import FilePreviewInner, { isImage } from '../file-preview/FilePreviewInner';
 import Dialog from '../dialog';
@@ -18,6 +14,8 @@ import CacheService from '../../common/cache-service';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
 import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../declarations/types';
 import useFileUploadEngine from '../../hooks/useFileUploadEngine';
+import usePermission from '../../hooks/usePermission';
+import cx from 'classnames';
 
 enum ListType {
   text,
@@ -26,25 +24,40 @@ enum ListType {
   'picture-circle',
 }
 
-type UploadButtonStatusType = 'none' | 'disabled' | 'hidden';
+enum Element {
+  Upload,
+  Delete,
+  Preview,
+  Download,
+}
+
+enum ElementState {
+  Visible,
+  Hidden,
+}
 
 export interface IOptions {
-  enableResumableUpload: boolean;
-  folder: string;
-  conflictStrategy: ConflictStrategy;
   listType: ListType;
-  enableCrop: boolean;
-  imgCropSettings: ImgCropSettings;
-  Disabled: boolean;
+  IsDisabled: boolean;
   ReadOnly: boolean;
-  enableWatermark: boolean;
-  watermarkSettings: WatermarkSettings;
+  permissionSettings: {
+    upload: string[];
+    download: string[];
+    preview: string[];
+    delete: string[];
+  };
   uploadSettings: {
+    enableWatermark: boolean;
+    watermarkSettings: WatermarkSettings;
+    enableCrop: boolean;
+    imgCropSettings: ImgCropSettings;
+    enableResumableUpload: boolean;
+    folder: string;
+    conflictStrategy: ConflictStrategy;
     multiple: boolean;
     maxCount: number;
     maxSize: number;
     allowedExtensions: string;
-    buttonStatusWhenQuantityReachesMaximum: UploadButtonStatusType;
   };
 }
 
@@ -53,42 +66,6 @@ export interface IProps {
   commitValue: () => void;
   options: IOptions;
 }
-
-interface DraggableUploadListItemProps {
-  originNode: React.ReactElement<any, string | React.JSXElementConstructor<any>>;
-  file: UploadFile<any>;
-}
-
-const DraggableUploadListItem = ({ originNode, file }: DraggableUploadListItemProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: file.uid,
-    resizeObserverConfig: undefined,
-  });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    cursor: 'move',
-    width: '100%',
-    height: '100%',
-  };
-
-  // prevent preview event when drag end
-  const className = isDragging
-    ? css`
-        a {
-          pointer-events: none;
-        }
-      `
-    : '';
-
-  return (
-    <div ref={setNodeRef} style={style} className={className} {...attributes} {...listeners}>
-      {/* hide error tooltip when dragging */}
-      {file.status === 'error' && isDragging ? originNode.props.children : originNode}
-    </div>
-  );
-};
 
 const maxDialogWidth = ~~(document.body.clientWidth * 0.8);
 const maxDialogHeight = ~~(document.body.clientHeight * 0.8);
@@ -100,38 +77,49 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState<string>();
   const [previewImage, setPreviewImage] = useState<string>('');
-  const [disabled, setDisabled] = useState<boolean>(props.options.Disabled);
-  const [readOnly, setReadOnly] = useState<boolean>(props.options.ReadOnly);
+  const [disabled, setDisabled] = useState<boolean>(props.options.IsDisabled);
   const uploadContainerRef = useRef<HTMLDivElement | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
   const [directory, setDirectory] = useState(false);
+  const [showUploadList, setShowUploadList] = useState<ShowUploadListInterface>();
+  const [showUploadButton, setShowUploadButton] = useState(false);
 
-  const quantityLimit = useMemo(() => fileList.length >= props.options.uploadSettings.maxCount, [fileList]);
-
-  const buttonDisabled = useMemo(
-    () => quantityLimit && props.options.uploadSettings.buttonStatusWhenQuantityReachesMaximum === 'disabled',
-    [quantityLimit],
-  );
-
-  const buttonHidden = useMemo(
-    () => quantityLimit && props.options.uploadSettings.buttonStatusWhenQuantityReachesMaximum === 'hidden',
-    [quantityLimit],
+  const permission = usePermission();
+  const hasUploadPermission = useMemo(() => permission.hasPermission(props.options.permissionSettings.upload), []);
+  const hasDeletePermission = useMemo(() => permission.hasPermission(props.options.permissionSettings.delete), []);
+  const hasPreviewPermission = useMemo(() => permission.hasPermission(props.options.permissionSettings.preview), []);
+  const hasDownloadPermission = useMemo(() => permission.hasPermission(props.options.permissionSettings.download), []);
+  const isUnClickableList = useMemo(
+    () => disabled || (!hasDownloadPermission && !hasPreviewPermission && !hasDeletePermission),
+    [hasDownloadPermission, hasPreviewPermission, hasDeletePermission, disabled],
   );
 
   useEffect(() => {
-    if (buttonDisabled) {
-      uploadContainerRef.current?.parentElement?.classList.add('ant-upload-disabled');
-      uploadContainerRef.current?.parentElement?.parentElement?.classList.add('ant-upload-disabled');
-    } else {
-      uploadContainerRef.current?.parentElement?.classList.remove('ant-upload-disabled');
-      uploadContainerRef.current?.parentElement?.parentElement?.classList.remove('ant-upload-disabled');
+    const newUploadList = {
+      showDownloadIcon: hasDownloadPermission,
+      showPreviewIcon: hasPreviewPermission,
+      showRemoveIcon: !props.options.ReadOnly && hasDeletePermission,
+      downloadIcon: <DownloadOutlined />,
+      previewIcon: <EyeOutlined />,
+      removeIcon: <DeleteOutlined />,
+    };
+
+    setShowUploadButton(hasUploadPermission && !props.options.ReadOnly);
+    setShowUploadList(newUploadList);
+  }, []);
+
+  useEffect(() => {
+    if (!directory) {
+      return;
     }
-  }, [buttonDisabled]);
+    uploadContainerRef.current?.click();
+    setDirectory(false);
+  }, [directory]);
 
   const fileUpload = useFileUploadEngine({
-    enableResumableUpload: props.options.enableResumableUpload,
-    folder: props.options.folder,
-    conflictStrategy: props.options.conflictStrategy,
+    enableResumableUpload: props.options.uploadSettings.enableResumableUpload,
+    folder: props.options.uploadSettings.folder,
+    conflictStrategy: props.options.uploadSettings.conflictStrategy,
     evaluateFormula: props.evaluateFormula,
   });
 
@@ -141,7 +129,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         if (!value) {
           return;
         }
-        const files = value.split('|');
+        const files = value.split('|').filter((i) => i);
 
         fileListRef.current = files.map((i: string) => {
           return {
@@ -161,7 +149,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       },
 
       setReadOnly(isReadOnly: boolean) {
-        setReadOnly(isReadOnly);
+        setShowUploadButton(!isReadOnly && hasUploadPermission);
       },
 
       setDisable(isDisabled: boolean) {
@@ -175,39 +163,28 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           setDirectory(directory);
         }
       },
+
+      runtimeMethod: {
+        setElementDisplayState(element: Element, elementState: ElementState) {
+          if (element === Element.Upload && hasUploadPermission) {
+            return setShowUploadButton(elementState === ElementState.Visible);
+          }
+
+          if (element === Element.Delete && hasDeletePermission) {
+            return setShowUploadButton(elementState === ElementState.Visible);
+          }
+
+          if (element === Element.Preview && hasPreviewPermission) {
+            return setShowUploadButton(elementState === ElementState.Visible);
+          }
+
+          if (element === Element.Download && hasDownloadPermission) {
+            return setShowUploadButton(elementState === ElementState.Visible);
+          }
+        },
+      },
     };
   });
-
-  useEffect(() => {
-    if (!directory) {
-      return;
-    }
-    uploadContainerRef.current?.click();
-    setDirectory(false);
-  }, [directory]);
-
-  const sensor = useSensor(PointerSensor, {
-    activationConstraint: { distance: 10 },
-  });
-
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
-    if (active.id !== over?.id) {
-      const activeIndex = fileListRef.current.findIndex((i) => i.uid === active.id);
-      const overIndex = fileListRef.current.findIndex((i) => i.uid === over?.id);
-
-      // 如果超7,该次拖拽直接取消
-      if (activeIndex === -1 || overIndex === -1) {
-        return;
-      }
-
-      const tem = fileListRef.current[activeIndex];
-      fileListRef.current[activeIndex] = fileListRef.current[overIndex];
-      fileListRef.current[overIndex] = tem;
-
-      syncFileListRefDataToState();
-      props.commitValue();
-    }
-  };
 
   const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
@@ -233,8 +210,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     const newFile =
-      file.type.startsWith('image/') && props.options.enableWatermark
-        ? await addWatermarkToFile(file, props.options.watermarkSettings)
+      file.type.startsWith('image/') && props.options.uploadSettings.enableWatermark
+        ? await addWatermarkToFile(file, props.options.uploadSettings.watermarkSettings)
         : file;
 
     const uploadFile: UploadFile = {
@@ -268,6 +245,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   const handleRemove: UploadProps['onRemove'] = (file) => {
+    if (!hasDeletePermission || props.options.ReadOnly) {
+      return false;
+    }
     const index = fileListRef.current.findIndex((item) => item.uid === file.uid);
     fileListRef.current.splice(index, 1);
     syncFileListRefDataToState();
@@ -277,6 +257,12 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const handleCancel = () => setPreviewOpen(false);
 
   const handlePreview = async (file: UploadFile) => {
+    if (!hasPreviewPermission) {
+      if (hasDownloadPermission) {
+        fileUpload.download(file.uid);
+      }
+      return;
+    }
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj as RcFile);
     }
@@ -285,8 +271,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     setPreviewTitle(file.name || file.url!.substring(file.url!.lastIndexOf('/') + 1));
   };
 
-  const handleDownload: UploadProps['onDownload'] = (file) => {
-    fileUpload.download(file.uid);
+  const handleDownload: UploadProps['onDownload'] = (file: UploadFile) => {
+    if (showUploadList?.showDownloadIcon) {
+      fileUpload.download(file.uid);
+    }
   };
 
   const renderButton = useMemo(() => {
@@ -300,11 +288,11 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     return (
-      <Button icon={<UploadOutlined />} disabled={buttonDisabled}>
+      <Button icon={<UploadOutlined />} disabled={disabled}>
         上传
       </Button>
     );
-  }, [listType, buttonDisabled, buttonHidden]);
+  }, [listType]);
 
   const renderUpload = () => {
     const { uploadSettings } = props.options;
@@ -313,34 +301,26 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       <Upload
         directory={directory}
         fileList={fileList}
-        beforeUpload={handleBeforeUpload}
         listType={listType}
         onRemove={handleRemove}
+        onDownload={handleDownload}
+        beforeUpload={handleBeforeUpload}
         onPreview={handlePreview}
         multiple={multiple}
         accept={uploadSettings.allowedExtensions}
         maxCount={uploadSettings.maxCount}
-        onDownload={handleDownload}
         disabled={disabled}
-        openFileDialogOnClick={!disabled && !buttonDisabled && !buttonHidden}
-        showUploadList={{
-          showDownloadIcon: true,
-          downloadIcon: <DownloadOutlined />,
-          showRemoveIcon: true,
-          showPreviewIcon: true,
-          previewIcon: <EyeOutlined />,
-          removeIcon: <DeleteOutlined />,
-        }}
-        itemRender={(originNode, file) => <DraggableUploadListItem originNode={originNode} file={file} />}
+        openFileDialogOnClick={!disabled && showUploadButton}
+        showUploadList={showUploadList}
       >
-        {!buttonHidden && <div ref={uploadContainerRef}>{!readOnly && <div>{renderButton}</div>}</div>}
+        {<div ref={uploadContainerRef}>{showUploadButton && <div>{renderButton}</div>}</div>}
       </Upload>
     );
   };
 
   const renderContent = () => {
-    if (props.options.enableCrop) {
-      const { centered, ...others } = props.options.imgCropSettings;
+    if (props.options.uploadSettings.enableCrop) {
+      const { centered, ...others } = props.options.uploadSettings.imgCropSettings;
       return (
         <ImgCrop {...others} modalProps={{ centered }}>
           {renderUpload()}
@@ -363,22 +343,18 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     return (
       <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
         <div style={{ width: '100%', height: maxDialogHeight }}>
-          <FilePreviewInner url={previewImage} />
+          <FilePreviewInner url={previewImage} options={{ hideTabsWhenOnlyOneFile: true }} />
         </div>
       </Dialog>
     );
   };
 
   return (
-    <>
+    <div className={cx('arsenal-upload-root', isUnClickableList && 'arsenal-upload-un-clickable-list')}>
       {contextHolder}
-      <DndContext sensors={[sensor]} onDragEnd={onDragEnd}>
-        <SortableContext items={fileList.map((i) => i.uid)} strategy={verticalListSortingStrategy}>
-          {renderContent()}
-        </SortableContext>
-      </DndContext>
+      {renderContent()}
       {renderFilePreview()}
-    </>
+    </div>
   );
 });
 

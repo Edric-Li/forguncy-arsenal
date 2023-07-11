@@ -131,6 +131,10 @@ namespace Arsenal {
 
     export class PCUpload extends ReactCellType {
         ComponentName = 'PCUpload';
+
+        SetElementDisplayState(...args) {
+            this.__reactComponent.runtimeMethod["setElementDisplayState"](...args);
+        }
     }
 
     export class FilePreview extends ReactCellType {

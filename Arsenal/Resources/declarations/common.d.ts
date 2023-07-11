@@ -10,6 +10,8 @@ type IReactCellTypeRef = Partial<{
     setDisable(isDisabled: boolean);
 
     upload: (directory: boolean) => void;
+
+    runtimeMethod: { [key: string]: (...args: any) => void }
 }>
 
 

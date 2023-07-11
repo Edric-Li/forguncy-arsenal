@@ -25,7 +25,13 @@
 
     class ForguncyData {
         static pageInfo: PageInfo;
+
         static initListviewPaginationInfo(runTimePageName: string, listviewName: string, pageSize: number);
+
+        static userInfo: {
+            InheritedPermissionRoles: string
+            Role: string
+        }
     }
 
     class PageInfo {

@@ -6,7 +6,12 @@ namespace Arsenal.Designer;
 
 internal class ArsenalRolePermissionEditorSetting : RolePermissionEditorSetting
 {
+    public ArsenalRolePermissionEditorSetting() : base(true)
+    {
+    }
+    
     public override VerticalAlignment LabelVerticalAlignment => VerticalAlignment.Center;
+    
 }
 
 public class PermissionSettingDesigner : ObjectDesigner
@@ -20,8 +25,7 @@ public class PermissionSettingDesigner : ObjectDesigner
             or nameof(UploadCellType.PermissionSettings.Preview)
             or nameof(UploadCellType.PermissionSettings.Download))
         {
-            return new ArsenalRolePermissionEditorSetting()
-                { Margin = defaultMargin, };
+            return new ArsenalRolePermissionEditorSetting { Margin = defaultMargin, };
         }
 
         return base.GetEditorSetting(property, contextBase);
