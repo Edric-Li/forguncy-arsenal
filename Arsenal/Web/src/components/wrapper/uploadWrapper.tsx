@@ -1,23 +1,11 @@
-import React, { forwardRef, MutableRefObject, useEffect } from 'react';
-
+import React, { forwardRef } from 'react';
 import PCUpload, { IOptions } from '../upload';
-import _ from 'lodash';
-
-export interface IUploadCellType extends CellType {
-  Upload(directory: boolean): void;
-}
 
 export interface IProps {
-  cellType: IUploadCellType;
+  cellType: CellType;
 }
 
 const PCUploadWrapper = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
-  useEffect(() => {
-    props.cellType.Upload = (directory: boolean) => {
-      ((ref as MutableRefObject<IReactCellTypeRef>).current.upload || _.noop)(directory);
-    };
-  }, []);
-
   return (
     <PCUpload
       ref={ref}

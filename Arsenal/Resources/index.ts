@@ -135,6 +135,10 @@ namespace Arsenal {
         SetElementDisplayState(...args) {
             this.__reactComponent.runtimeMethod["setElementDisplayState"](...args);
         }
+
+        Upload(...args) {
+            this.__reactComponent.runtimeMethod["upload"](...args);
+        }
     }
 
     export class FilePreview extends ReactCellType {

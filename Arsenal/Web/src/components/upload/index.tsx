@@ -156,15 +156,15 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         setDisabled(isDisabled);
       },
 
-      upload(directory: boolean) {
-        if (!directory) {
-          uploadContainerRef.current?.click();
-        } else {
-          setDirectory(directory);
-        }
-      },
-
       runtimeMethod: {
+        upload(directory: boolean) {
+          if (!directory) {
+            uploadContainerRef.current?.click();
+          } else {
+            setDirectory(directory);
+          }
+        },
+
         setElementDisplayState(element: Element, elementState: ElementState) {
           if (element === Element.Upload && hasUploadPermission) {
             return setShowUploadButton(elementState === ElementState.Visible);
