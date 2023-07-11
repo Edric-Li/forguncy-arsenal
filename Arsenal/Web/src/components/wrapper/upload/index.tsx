@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import PCUpload, { IOptions } from '../upload';
+import PCUpload, { IOptions } from '../../upload';
 
 export interface IProps {
   cellType: CellType;

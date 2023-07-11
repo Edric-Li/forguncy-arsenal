@@ -67,11 +67,6 @@ public class UploadCommand : Command
     {
         return "上传文件";
     }
-
-    public IEnumerable<ForguncyErrorInfo> CheckCommandErrors(IBuilderCommandContext context)
-    {
-        throw new NotImplementedException();
-    }
 }
 
 public class UploadCommandAdvancedSettings : ObjectPropertyBase

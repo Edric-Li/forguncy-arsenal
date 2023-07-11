@@ -1,5 +1,5 @@
-import uploadCommand from '../../commands/upload';
 import _ from 'lodash';
+import uploadCommand from '../../../commands/upload';
 
 interface Props {
   commandName: string;

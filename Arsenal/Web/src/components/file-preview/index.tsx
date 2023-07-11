@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import FileUploadEngine from '../../common/file-upload-engine';
-import FilePreviewInner from './FilePreviewInner';
+import FilePreviewInner from './file-preview-inner';
 import { Tabs, TabsProps } from 'antd';
 import isInternalFile from '../../common/is-internal-file';
 

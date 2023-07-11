@@ -6,7 +6,7 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import ImgCrop from 'antd-img-crop';
-import FilePreviewInner, { isImage } from '../file-preview/FilePreviewInner';
+import FilePreviewInner, { isImage } from '../file-preview/file-preview-inner';
 import Dialog from '../dialog';
 import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';

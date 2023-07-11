@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { UploadProps } from 'antd/es/upload';
 import { UploadFile } from 'antd/es/upload/interface';
-import CacheService from '../../common/cache-service';
 import { Upload } from 'antd';
-import useFileUploadEngine from '../../hooks/useFileUploadEngine';
-import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../declarations/types';
-import addWatermarkToFile from '../../common/add-watermark-to-file';
 import ImgCrop from 'antd-img-crop';
+import useFileUploadEngine from '../../../hooks/useFileUploadEngine';
+import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../../declarations/types';
+import addWatermarkToFile from '../../../common/add-watermark-to-file';
+import CacheService from '../../../common/cache-service';
 
 interface ICommandParam {
   enableCrop: boolean;
