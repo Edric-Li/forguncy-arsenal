@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Arsenal.Common;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
@@ -10,7 +8,6 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight(0)]
-[Icon("pack://application:,,,/Arsenal;component/Resources/images/file.svg")]
 public class UploadCommand : Command
 {
     private object _folder = string.Empty;
@@ -28,6 +25,11 @@ public class UploadCommand : Command
             TempValueStoreInstance.Folder = value;
         }
     }
+
+    [DisplayName("冲突策略")]
+    [Description("用于处理已存在相同名称文件的情况。")]
+    [JsonProperty("conflictStrategy")]
+    public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
 
     [DisplayName("允许上传文件的扩展名")]
     [JsonProperty("allowedExtensions")]
@@ -60,6 +62,11 @@ public class UploadCommand : Command
             return MaxCount == 1;
         }
 
+        if (propertyName == nameof(ConflictStrategy))
+        {
+            return !string.IsNullOrWhiteSpace(Folder?.ToString());
+        }
+        
         return base.GetDesignerPropertyVisible(propertyName, commandScope);
     }
 

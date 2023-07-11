@@ -10,6 +10,7 @@ import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../../d
 
 interface ICommandParam {
   folder: string;
+  conflictStrategy: ConflictStrategy;
   allowedExtensions: string;
   maxSize: number;
   maxCount: number;
@@ -35,11 +36,11 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
   const param = useMemo(() => ctx.CommandParam as ICommandParam, []);
   const multiple = useMemo(() => param.maxCount === null || param.maxCount > 0, [param]);
 
-  const fileUpload = useFileUploadEngine({
+  const fileUploadEngine = useFileUploadEngine({
     evaluateFormula: ctx.evaluateFormula,
     enableResumableUpload: param.advancedSettings.enableResumableUpload,
     folder: param.folder,
-    conflictStrategy: ConflictStrategy.Reject,
+    conflictStrategy: param.conflictStrategy,
   });
 
   useEffect(() => {
@@ -81,7 +82,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
       percent: 0,
     };
 
-    await fileUpload.addTask(newFile, (callbackInfo) => {
+    await fileUploadEngine.addTask(newFile, (callbackInfo) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
         CacheService.set(callbackInfo.url!, newFile);

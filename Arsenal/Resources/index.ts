@@ -190,5 +190,5 @@ namespace Arsenal {
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.UploadCellType, Arsenal', PCUpload);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.PreviewCellType, Arsenal', FilePreview);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadCommand, Arsenal", UploadCommand);
-    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadFolderCommand, Arsenal", UploadCommand);
+    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadFolderCommand, Arsenal", UploadFolderCommand);
 }
