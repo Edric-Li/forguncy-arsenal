@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import ReactCellTypeWrapper from './components/wrapper/cellTyleWrapper';
-import commandWrapper from './components/wrapper/commandWrapper';
+import ReactCellTypeWrapper from './components/wrapper/celltype';
+import commandWrapper from './components/wrapper/command';
 import './index.css';
 
 function createReactComponent(cellType: CellType, componentName: ComponentName) {

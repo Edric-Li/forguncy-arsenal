@@ -34,9 +34,9 @@ public class UploadCommand : Command
     public string AllowedExtensions { get; set; } = "*";
 
     [DisplayName("最大上传文件大小")]
-    [JsonProperty("maxUploadSize")]
+    [JsonProperty("maxSize")]
     [IntProperty(AllowNull = true, Watermark = "不限制")]
-    public int? MaxUploadSize { get; set; }
+    public int? MaxSize { get; set; }
 
     [DisplayName("最大上传文件个数")]
     [IntProperty(AllowNull = true, Watermark = "不限制")]

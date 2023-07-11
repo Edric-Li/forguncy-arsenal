@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
-import PCUploadWrapper from '../uploadWrapper';
 import FilePreview from '../../file-preview';
+import PCUploadWrapper from '../upload-celltype';
 
 interface Props {
   componentName: string;
