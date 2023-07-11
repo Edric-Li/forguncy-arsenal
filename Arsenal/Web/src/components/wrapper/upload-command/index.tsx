@@ -54,7 +54,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
         type: 'error',
         content: `上传的文件 ${file.name} 的大小超出了限制, 最大上传文件的大小为 ${param.maxSize} MB。`,
       });
-      return;
+      return false;
     }
 
     if (param.maxCount) {
@@ -64,7 +64,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
           type: 'error',
           content: `上传的文件数量超出了限制, 最大上传数量为 ${param.maxCount}。`,
         });
-        return;
+        return false;
       }
     }
 

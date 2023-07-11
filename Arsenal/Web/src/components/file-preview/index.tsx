@@ -28,7 +28,11 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   useEffect(() => {
     props.cellType.setValueToElement = (jelement, value) => {
-      const parts = value.split('|');
+      if (typeof value !== 'string') {
+        return;
+      }
+
+      const parts = value?.split('|');
       const tabItems = parts.map((item: string) => {
         let name;
         let url = item;

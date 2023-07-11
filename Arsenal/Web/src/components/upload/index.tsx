@@ -1,13 +1,12 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, message, Upload } from 'antd';
+import { Button, message, Modal, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
-import FileUploadEngine from '../../common/file-upload-engine';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
+import FileUploadEngine from '../../common/file-upload-engine';
 import ImgCrop from 'antd-img-crop';
 import FilePreviewInner, { isImage } from '../file-preview/file-preview-inner';
-import Dialog from '../dialog';
 import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
 import CacheService from '../../common/cache-service';
@@ -67,8 +66,8 @@ export interface IProps {
   options: IOptions;
 }
 
-const maxDialogWidth = ~~(document.body.clientWidth * 0.8);
-const maxDialogHeight = ~~(document.body.clientHeight * 0.8);
+const maxDialogWidth = ~~document.body.clientWidth;
+const maxDialogHeight = ~~document.body.clientHeight - 105;
 
 const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -171,15 +170,24 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           }
 
           if (element === Element.Delete && hasDeletePermission) {
-            return setShowUploadButton(elementState === ElementState.Visible);
+            return setShowUploadList({
+              ...showUploadList,
+              showRemoveIcon: elementState === ElementState.Visible,
+            });
           }
 
           if (element === Element.Preview && hasPreviewPermission) {
-            return setShowUploadButton(elementState === ElementState.Visible);
+            return setShowUploadList({
+              ...showUploadList,
+              showPreviewIcon: elementState === ElementState.Visible,
+            });
           }
 
           if (element === Element.Download && hasDownloadPermission) {
-            return setShowUploadButton(elementState === ElementState.Visible);
+            return setShowUploadList({
+              ...showUploadList,
+              showDownloadIcon: elementState === ElementState.Visible,
+            });
           }
         },
       },
@@ -195,7 +203,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         type: 'error',
         content: `上传的文件 ${file.name} 的大小超出了限制, 最大上传文件的大小为 ${props.options.uploadSettings.maxSize} MB。`,
       });
-      return;
+      return false;
     }
 
     if (props.options.uploadSettings.maxCount) {
@@ -205,7 +213,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           type: 'error',
           content: `上传的文件数量超出了限制, 最大上传数量为 ${props.options.uploadSettings.maxCount}。`,
         });
-        return;
+        return false;
       }
     }
 
@@ -341,11 +349,11 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     return (
-      <Dialog open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
+      <Modal open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
         <div style={{ width: '100%', height: maxDialogHeight }}>
           <FilePreviewInner url={previewImage} options={{ hideTabsWhenOnlyOneFile: true }} />
         </div>
-      </Dialog>
+      </Modal>
     );
   };
 
