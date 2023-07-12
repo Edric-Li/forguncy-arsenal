@@ -15,6 +15,7 @@ import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../decl
 import useFileUploadEngine from '../../hooks/useFileUploadEngine';
 import usePermission from '../../hooks/usePermission';
 import cx from 'classnames';
+import isImageUrl from '../../common/is-image-url';
 
 enum ListType {
   text,
@@ -313,6 +314,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 0);
     return (
       <Upload
+        isImageUrl={isImageUrl}
         directory={directory}
         fileList={fileList}
         listType={listType}
