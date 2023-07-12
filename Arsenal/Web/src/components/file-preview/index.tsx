@@ -39,7 +39,7 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         const key = item?.toString();
         if (isInternalFile(item)) {
           name = item.substring(37);
-          url = FileUploadEngine.getFileUrl(item);
+          url = FileUploadEngine.getAccessUrl(item);
         } else {
           item.split('/').at(-1);
         }

@@ -10,7 +10,7 @@ const downloadFileCommand = async (ctx: Forguncy.Plugin.CommandBase) => {
   const fileNames = ctx.evaluateFormula(param.fileName)?.toString()?.split('|');
 
   for (const name of fileNames) {
-    if (!name) {
+    if (name) {
       FileUploadEngine.download(name);
       await sleep(100);
     }

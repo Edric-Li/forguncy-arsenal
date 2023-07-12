@@ -62,7 +62,7 @@ class FileUploadEngine {
     return file.slice(start, end);
   }
 
-  public static getFileUrl(fileName: string): string {
+  public static getAccessUrl(fileName: string): string {
     return Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/' + fileName;
   }
 
@@ -105,7 +105,7 @@ class FileUploadEngine {
           percent: 100,
           status: 'success',
           uid: createVirtualFileRes.data,
-          url: FileUploadEngine.getFileUrl(createVirtualFileRes.data),
+          url: FileUploadEngine.getAccessUrl(createVirtualFileRes.data),
         });
         return;
       }
@@ -143,7 +143,7 @@ class FileUploadEngine {
       status: 'success',
       name: completeMultipartUploadRes.data.fileName,
       uid: completeMultipartUploadRes.data.fileId,
-      url: FileUploadEngine.getFileUrl(completeMultipartUploadRes.data.fileId),
+      url: FileUploadEngine.getAccessUrl(completeMultipartUploadRes.data.fileId),
     });
   }
 }

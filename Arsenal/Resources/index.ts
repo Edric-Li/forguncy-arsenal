@@ -191,9 +191,19 @@ namespace Arsenal {
         ComponentName = 'DownloadFile';
     }
 
+    export class GetFileAccessUrlCommand extends ReactCommand {
+        ComponentName = 'GetFileAccessUrl';
+    }
+
+    export class GetDownloadUrlCommand extends ReactCommand {
+        ComponentName = 'GetDownloadUrl';
+    }
+
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.UploadCellType, Arsenal', PCUpload);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.PreviewCellType, Arsenal', FilePreview);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadCommand, Arsenal", UploadCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadFolderCommand, Arsenal", UploadFolderCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.DownloadFileCommand, Arsenal", DownloadFileCommand);
+    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetFileAccessUrlCommand, Arsenal", GetFileAccessUrlCommand);
+    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetDownloadUrlCommand, Arsenal", GetDownloadUrlCommand);
 }

@@ -140,7 +140,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
             name: i.substring(37),
             status: 'done',
             percent: 0,
-            url: FileUploadEngine.getFileUrl(i),
+            url: FileUploadEngine.getAccessUrl(i),
           };
         });
 
