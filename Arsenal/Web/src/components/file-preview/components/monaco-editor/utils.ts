@@ -74,6 +74,7 @@ const languageMap: { [key: string]: string } = {
   '.tcl': 'tcl',
   '.twig': 'twig',
   '.ts': 'typescript',
+  '.tsx': 'typescript',
   '.vb': 'vb',
   '.wgsl': 'wgsl',
   '.xml': 'xml',

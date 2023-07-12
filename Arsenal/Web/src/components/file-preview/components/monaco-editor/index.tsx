@@ -39,7 +39,7 @@ const MonacoEditorView = (props: IPreviewComponentProps) => {
       // @ts-ignore
       editorRef.current?.dispose();
     };
-  }, []);
+  }, [props.url]);
 
   useEffect(() => {
     if (!language || value === null) {

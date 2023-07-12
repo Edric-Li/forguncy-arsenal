@@ -21,7 +21,7 @@ const SVGPreview = (props: IPreviewComponentProps) => {
     (async () => {
       setHtml(await requestHelper.getText(props.url));
     })();
-  }, []);
+  }, [props.url]);
 
   return <div style={style} dangerouslySetInnerHTML={{ __html: html }} />;
 };

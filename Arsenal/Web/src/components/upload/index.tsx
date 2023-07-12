@@ -61,6 +61,7 @@ export interface IOptions {
 }
 
 export interface IProps {
+  container: JQuery;
   evaluateFormula: (value: string) => unknown;
   commitValue: () => void;
   options: IOptions;
@@ -70,6 +71,8 @@ const maxDialogWidth = ~~document.body.clientWidth;
 const maxDialogHeight = ~~document.body.clientHeight - 105;
 
 const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
+  const uploadContainerRef = useRef<HTMLDivElement | null>(null);
+
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const fileListRef = useRef<UploadFile[]>([]);
   const listType: UploadListType = useMemo(() => ListType[props.options.listType] as UploadListType, [props]);
@@ -77,7 +80,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [previewTitle, setPreviewTitle] = useState<string>();
   const [previewImage, setPreviewImage] = useState<string>('');
   const [disabled, setDisabled] = useState<boolean>(props.options.IsDisabled);
-  const uploadContainerRef = useRef<HTMLDivElement | null>(null);
+
   const [messageApi, contextHolder] = message.useMessage();
   const [directory, setDirectory] = useState(false);
   const [showUploadList, setShowUploadList] = useState<ShowUploadListInterface>();
