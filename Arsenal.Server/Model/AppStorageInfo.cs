@@ -2,7 +2,7 @@
 
 public class AppStorageInfo
 {
-    public string? StorageType { get; set; }
+    public string StorageType { get; set; }
 
     public string UploadFolderPath { get; set; }
 

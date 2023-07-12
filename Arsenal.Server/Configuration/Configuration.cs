@@ -18,7 +18,7 @@ public class Configuration
 
     public static readonly Configuration Instance = LazyInstance.Value;
 
-    public static AppConfig? AppConfig { get; private set; }
+    public static AppConfig AppConfig { get; private set; }
 
     /// <summary>
     /// 是否运行在本地

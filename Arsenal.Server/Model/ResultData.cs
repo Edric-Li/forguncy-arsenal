@@ -1,4 +1,4 @@
-﻿namespace Arsenal.Server.Common;
+﻿namespace Arsenal.Server.Model;
 
 public class ResultData
 {

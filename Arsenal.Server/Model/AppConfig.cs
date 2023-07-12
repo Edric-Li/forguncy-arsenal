@@ -9,7 +9,7 @@ public class AppConfig
     public string CloudStorageUploadFolderPath { get; set; }
 
     // 存储类型
-    public string? StorageType { get; set; }
+    public string StorageType { get; set; }
 
     // 是否使用云存储
     public bool UseCloudStorage { get; set; }

@@ -2,7 +2,7 @@
 
 public static class HttpClientHelper
 {
-    private static HttpClient? _client;
+    private static HttpClient _client;
 
     public static HttpClient Client => _client ??= new HttpClient(new HttpClientHandler()
     {

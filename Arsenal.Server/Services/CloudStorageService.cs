@@ -1,5 +1,6 @@
 using System.Text;
 using Arsenal.Server.Common;
+using Arsenal.Server.Model;
 using Newtonsoft.Json;
 
 namespace Arsenal.Server.Services;
@@ -103,7 +104,7 @@ public sealed class CloudStorageService
 
     private static async Task<HttpResponseMessage> SendRequestAsync(
         string apiName,
-        object? content = null)
+        object content = null)
     {
         var url = $"{Configuration.Configuration.AppConfig.UserServiceUrl}/CloudStorageProviderCommand/{apiName}";
 
@@ -119,7 +120,7 @@ public sealed class CloudStorageService
 
     private static async Task<ResultData> SendJsonRequestAsync(
         string apiName,
-        object? content = null)
+        object content = null)
     {
         var response = await SendRequestAsync(apiName, content);
 

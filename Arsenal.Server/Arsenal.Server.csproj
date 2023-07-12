@@ -5,7 +5,7 @@
 	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	<OutputPath>bin\</OutputPath>
 	<ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	<Nullable>disable</Nullable>
   </PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0">

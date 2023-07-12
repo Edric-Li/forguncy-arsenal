@@ -286,7 +286,7 @@ public static class FileUploadService
     /// </summary>
     /// <param name="fileId"></param>
     /// <returns></returns>
-    public static string? GetFileDirectory(string fileId)
+    public static string GetFileDirectory(string fileId)
     {
         var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
 
@@ -308,7 +308,7 @@ public static class FileUploadService
     /// </summary>
     /// <param name="fileId"></param>
     /// <returns></returns>
-    public static string? GetFileFullPathByFileId(string fileId)
+    public static string GetFileFullPathByFileId(string fileId)
     {
         var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
 
@@ -358,7 +358,7 @@ public static class FileUploadService
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    public static Stream? GetFileStreamByFilePath(string filePath)
+    public static Stream GetFileStreamByFilePath(string filePath)
     {
         return File.Exists(filePath) ? new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read) : null;
     }
@@ -372,37 +372,38 @@ public static class FileUploadService
     {
         try
         {
-            await using (var zipFile = new FileStream(zipFilePath, FileMode.Create))
+            await using var zipFile = new FileStream(zipFilePath, FileMode.Create);
+            using var archive = new ZipArchive(zipFile, ZipArchiveMode.Create);
+            foreach (var fileId in filesToCompress)
             {
-                using (var archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
+                if (string.IsNullOrWhiteSpace(fileId))
                 {
-                    foreach (var fileId in filesToCompress)
+                    continue;
+                }
+
+                var fullPath = GetFileFullPathByFileId(fileId);
+                if (fullPath == null)
+                {
+                    continue;
+                }
+
+                var relativePath = fullPath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
+
+                var filePath = fullPath;
+
+                if (!File.Exists(fileId))
+                {
+                    if (Configuration.Configuration.AppConfig!.UseCloudStorage)
                     {
-                        if (string.IsNullOrWhiteSpace(fileId))
-                        {
-                            continue;
-                        }
+                        await CloudStorageService.DownloadFileToLocalAsync(fullPath,
+                            Configuration.Configuration.TempFolderPath);
 
-                        var fullPath = GetFileFullPathByFileId(fileId);
-                        var relativePath = fullPath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
-
-                        var filePath = fullPath;
-
-                        if (!File.Exists(fileId))
-                        {
-                            if (Configuration.Configuration.AppConfig.UseCloudStorage)
-                            {
-                                await CloudStorageService.DownloadFileToLocalAsync(fullPath,
-                                    Configuration.Configuration.TempFolderPath);
-
-                                filePath = Path.Combine(Configuration.Configuration.TempFolderPath,
-                                    Path.GetFileName(filePath));
-                            }
-                        }
-
-                        archive.CreateEntryFromFile(filePath, relativePath);
+                        filePath = Path.Combine(Configuration.Configuration.TempFolderPath,
+                            Path.GetFileName(filePath));
                     }
                 }
+
+                archive.CreateEntryFromFile(filePath, relativePath);
             }
         }
         catch (Exception ex)

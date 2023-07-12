@@ -5,6 +5,7 @@
 		<LangVersion>10</LangVersion>
 		<OutputPath>bin\</OutputPath>
 		<UseWPF>true</UseWPF>
+		<Nullable>disable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="ReferenceDll\**" />

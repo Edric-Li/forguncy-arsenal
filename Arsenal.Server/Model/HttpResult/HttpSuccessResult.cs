@@ -2,7 +2,7 @@
 
 public class HttpSuccessResult : HttpResult
 {
-    public HttpSuccessResult(object? data = null, string? message = null)
+    public HttpSuccessResult(object data = null, string message = null)
     {
         Result = true;
         Data = data;

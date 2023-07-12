@@ -6,7 +6,7 @@ namespace Arsenal.Server.Configuration;
 
 public abstract class GlobalConfiguration
 {
-    private static XmlElement? _xmlElement;
+    private static XmlElement _xmlElement;
 
     private static string GetForguncyServerFolder()
     {
@@ -42,7 +42,7 @@ public abstract class GlobalConfiguration
         return GetGlobalValueByXPath("UsePublicUrl");
     }
 
-    private static string? GetAppNameByXmlNode(XmlNode node)
+    private static string GetAppNameByXmlNode(XmlNode node)
     {
         return node.Attributes?.GetNamedItem("AppName")?.Value;
     }

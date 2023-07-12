@@ -2,7 +2,7 @@
 
 public class HttpFailureResult : HttpResult
 {
-    public HttpFailureResult(string? message = null, object? data = default)
+    public HttpFailureResult(string message = null, object data = default)
     {
         Result = false;
         Message = message;

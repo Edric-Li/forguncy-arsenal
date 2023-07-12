@@ -155,7 +155,7 @@ public class DataAccess
         _diskFilesDb.Put(key, value);
     }
 
-    public string? GetDiskFile(string key)
+    public string GetDiskFile(string key)
     {
         return _diskFilesDb.Get(key);
     }
@@ -170,7 +170,7 @@ public class DataAccess
         _softLinksFilesDb.Put(key, value);
     }
 
-    public string? GetVirtualFile(string key)
+    public string GetVirtualFile(string key)
     {
         return _softLinksFilesDb.Get(key);
     }
@@ -199,7 +199,7 @@ public class DataAccess
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public DownloadLinkEntity? GetDownloadFile(string key)
+    public DownloadLinkEntity GetDownloadFile(string key)
     {
         var str = _downloadLinksFilesDb.Get(key);
 
