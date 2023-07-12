@@ -7,15 +7,14 @@ using Newtonsoft.Json;
 namespace Arsenal;
 
 [Category("Arsenal")]
+[OrderWeight((int)ServerCommandOrderWeight.CompressFilesIntoZipCommand)]
 public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSideAsync
 {
     [DisplayName("文件名称")]
-    [JsonProperty("fileName")]
     [FormulaProperty]
     public object FileName { get; set; }
 
     [DisplayName("压缩文件路径")]
-    [JsonProperty("fileName")]
     [FormulaProperty]
     public object ZipFilePath { get; set; }
 

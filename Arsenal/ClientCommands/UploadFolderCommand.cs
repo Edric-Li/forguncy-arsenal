@@ -7,7 +7,8 @@ using Newtonsoft.Json;
 namespace Arsenal;
 
 [Category("Arsenal")]
-[OrderWeight(1)]
+[OrderWeight((int)ClientCommandOrderWeight.UploadFolderCommand)]
+
 public class UploadFolderCommand : Command
 {
     private object _folder = string.Empty;

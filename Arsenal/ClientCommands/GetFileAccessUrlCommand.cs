@@ -6,8 +6,8 @@ using Newtonsoft.Json;
 namespace Arsenal;
 
 [Category("Arsenal")]
-[OrderWeight(4)]
-public class GetDownloadUrlCommand : Command
+[OrderWeight((int)ClientCommandOrderWeight.GetFileAccessUrlCommand)]
+public class GetFileAccessUrlCommand : Command
 {
     [DisplayName("文件名称")]
     [JsonProperty("fileName")]
@@ -21,6 +21,6 @@ public class GetDownloadUrlCommand : Command
 
     public override string ToString()
     {
-        return "获取文件下载链接";
+        return "获取文件访问链接";
     }
 }

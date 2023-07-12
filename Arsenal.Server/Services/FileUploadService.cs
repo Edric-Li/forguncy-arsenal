@@ -281,6 +281,28 @@ public static class FileUploadService
     }
 
     /// <summary>
+    /// 获取文件的文件夹
+    /// </summary>
+    /// <param name="fileId"></param>
+    /// <returns></returns>
+    public static string? GetFileDirectory(string fileId)
+    {
+        var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
+
+        if (virtualFile != null)
+        {
+            var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
+
+            if (diskFile != null)
+            {
+                return Path.GetDirectoryName(diskFile);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// 根据文件ID获取文件的全路径
     /// </summary>
     /// <param name="fileId"></param>

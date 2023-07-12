@@ -4,7 +4,7 @@ namespace Arsenal.Server.Configuration;
 
 public class Configuration
 {
-    private static string RootFolderPath => Path.Combine(AppConfig?.LocalUploadFolderPath ?? string.Empty, "arsenal");
+    public static string RootFolderPath => Path.Combine(AppConfig?.LocalUploadFolderPath ?? string.Empty, "arsenal");
 
     private static readonly Lazy<Configuration> LazyInstance = new(() => new Configuration());
 
