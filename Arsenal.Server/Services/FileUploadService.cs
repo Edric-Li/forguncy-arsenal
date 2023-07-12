@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Compression;
 using Arsenal.Server.Common;
 using Arsenal.Server.Model.Params;
 using Microsoft.AspNetCore.Http;
@@ -362,5 +363,52 @@ public static class FileUploadService
         return File.Exists(filePath) ? new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read) : null;
     }
 
+    /// <summary>
+    /// 将文件压缩成Zip
+    /// </summary>
+    /// <param name="zipFilePath"></param>
+    /// <param name="filesToCompress"></param>
+    public static async Task CompressFilesToZip(string zipFilePath, IEnumerable<string> filesToCompress)
+    {
+        try
+        {
+            await using (var zipFile = new FileStream(zipFilePath, FileMode.Create))
+            {
+                using (var archive = new ZipArchive(zipFile, ZipArchiveMode.Create))
+                {
+                    foreach (var fileId in filesToCompress)
+                    {
+                        if (string.IsNullOrWhiteSpace(fileId))
+                        {
+                            continue;
+                        }
+
+                        var fullPath = GetFileFullPathByFileId(fileId);
+                        var relativePath = fullPath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
+
+                        var filePath = fullPath;
+
+                        if (!File.Exists(fileId))
+                        {
+                            if (Configuration.Configuration.AppConfig.UseCloudStorage)
+                            {
+                                await CloudStorageService.DownloadFileToLocalAsync(fullPath,
+                                    Configuration.Configuration.TempFolderPath);
+
+                                filePath = Path.Combine(Configuration.Configuration.TempFolderPath,
+                                    Path.GetFileName(filePath));
+                            }
+                        }
+
+                        archive.CreateEntryFromFile(filePath, relativePath);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error compressing file: " + ex.Message);
+        }
+    }
     #endregion
 }

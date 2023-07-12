@@ -209,4 +209,30 @@ public sealed class CloudStorageService
             }
         }
     }
+
+    /// <summary>
+    /// 将云上的文件下载到本地
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <param name="localFolderPath"></param>
+    /// <exception cref="Exception"></exception>
+    public static async Task DownloadFileToLocalAsync(string filePath, string localFolderPath)
+    {
+        var folder =
+            Path.GetDirectoryName(filePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", ""));
+        var folderPath = Path.Combine(Configuration.Configuration.AppConfig.CloudStorageUploadFolderPath, folder);
+        var cloudFilePath = Path.Combine(folderPath, Path.GetFileName(filePath));
+
+        var content = new Dictionary<string, object>()
+            { { "Path", cloudFilePath }, { "LocalFolderPath", localFolderPath } };
+
+        var response = await SendRequestAsync("DownloadFile", content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            using var sr = new StreamReader(await response.Content.ReadAsStreamAsync());
+
+            throw new Exception($"{response.StatusCode} {await sr.ReadToEndAsync()}");
+        }
+    }
 }

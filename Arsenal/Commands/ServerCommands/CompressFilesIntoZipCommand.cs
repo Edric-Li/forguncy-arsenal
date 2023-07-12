@@ -1,8 +1,12 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Arsenal.Server.Services;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
-using Newtonsoft.Json;
 
 namespace Arsenal;
 
@@ -12,15 +16,39 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
 {
     [DisplayName("文件名称")]
     [FormulaProperty]
-    public object FileName { get; set; }
+    [Required]
+    public object FileNames { get; set; }
 
     [DisplayName("压缩文件路径")]
     [FormulaProperty]
+    [Required]
     public object ZipFilePath { get; set; }
 
-    public Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
+    [DisplayName("冲突策略")] public CompressFilesIntoZipCommandConflictStrategy ConflictStrategy { get; set; }
+
+    public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
-        throw new System.NotImplementedException();
+        var fileNames = (await dataContext.EvaluateFormulaAsync(FileNames))?.ToString();
+        var zipFilePath = (await dataContext.EvaluateFormulaAsync(ZipFilePath))?.ToString();
+
+        if (string.IsNullOrWhiteSpace(fileNames))
+        {
+            throw new ArgumentException("文件名称不能为空。");
+        }
+
+        if (string.IsNullOrWhiteSpace(zipFilePath))
+        {
+            throw new ArgumentException("压缩文件夹路径不能为空。");
+        }
+
+        if (File.Exists(zipFilePath) && ConflictStrategy == CompressFilesIntoZipCommandConflictStrategy.Reject)
+        {
+            throw new Exception($"文件夹{Path.GetDirectoryName(zipFilePath)}下存在同名文件{Path.GetFileName(zipFilePath)}。");
+        }
+
+        var files = fileNames.Split("|").ToArray();
+        await FileUploadService.CompressFilesToZip(zipFilePath, files);
+        return new ExecuteResult();
     }
 
     public override CommandScope GetCommandScope()
@@ -32,4 +60,10 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
     {
         return "压缩文件为zip包";
     }
+}
+
+public enum CompressFilesIntoZipCommandConflictStrategy
+{
+    [Description("覆盖现有文件")] Overwrite,
+    [Description("告知用户")] Reject,
 }
