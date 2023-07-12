@@ -147,7 +147,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       },
 
       getValue: () => {
-        return fileListRef.current.map((file) => file.uid).join('|');
+        return fileListRef.current
+          .filter((i) => i.status === 'done' || i.status === 'success')
+          .map((file) => file.uid)
+          .join('|');
       },
 
       setReadOnly(isReadOnly: boolean) {
