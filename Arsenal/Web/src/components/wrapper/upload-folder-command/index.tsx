@@ -29,7 +29,7 @@ const UploadFolderCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase })
   const param = useMemo(() => ctx.CommandParam as ICommandParam, []);
 
   const fileUploadEngine = useFileUploadEngine({
-    evaluateFormula: ctx.evaluateFormula,
+    evaluateFormula: ctx.evaluateFormula.bind(ctx),
     enableResumableUpload: param.advancedSettings.enableResumableUpload,
     folder: param.folder,
     conflictStrategy: param.conflictStrategy,

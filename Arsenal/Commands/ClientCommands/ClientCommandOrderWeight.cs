@@ -7,4 +7,5 @@ public enum ClientCommandOrderWeight
     DownloadFileCommand,
     GetFileAccessUrlCommand,
     GetDownloadUrlCommand,
+    ZipFileAndDownload,
 }

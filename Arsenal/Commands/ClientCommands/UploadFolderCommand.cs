@@ -8,7 +8,6 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ClientCommandOrderWeight.UploadFolderCommand)]
-
 public class UploadFolderCommand : Command
 {
     private object _folder = string.Empty;

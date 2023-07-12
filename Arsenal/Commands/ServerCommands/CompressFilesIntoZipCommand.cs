@@ -47,7 +47,7 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
         }
 
         var files = fileNames.Split("|").ToArray();
-        await FileUploadService.CompressFilesToZip(zipFilePath, files);
+        await FileUploadService.CompressFilesToZipAsync(zipFilePath, files);
         return new ExecuteResult();
     }
 

@@ -150,6 +150,29 @@ public class Arsenal : ForguncyApi
         });
     }
 
+    [Post]
+    public async Task CompressFilesIntoZip()
+    {
+        await SecurityExecutionFuncAsync(async () =>
+        {
+            var body = await ParseBodyAsync<CompressFilesIntoZipParam>();
+
+            var zipPath = Path.Combine(Configuration.Configuration.TempFolderPath, Guid.NewGuid().ToString(),
+                body.ZipName);
+
+            await FileUploadService.CompressFilesToZipAsync(zipPath, body.FileIds);
+
+            var data = FileUploadService.CreateFileDownloadLink(new CreateFileDownloadLinkParam()
+            {
+                FilePath = zipPath,
+                CreateCopy = false,
+                ExpirationDate = 3
+            });
+
+            BuildHttpResult(new HttpSuccessResult(data));
+        });
+    }
+
     [Get]
     public void DiskFiles()
     {
@@ -171,7 +194,7 @@ public class Arsenal : ForguncyApi
             BuildHttpResult(new HttpSuccessResult(data));
         });
     }
-
+    
     [Get]
     public void DownloadLinksFiles()
     {

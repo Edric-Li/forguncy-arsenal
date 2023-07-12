@@ -199,6 +199,10 @@ namespace Arsenal {
         ComponentName = 'GetDownloadUrl';
     }
 
+    export class ZipFileAndDownloadCommand extends ReactCommand {
+        ComponentName = 'ZipFileAndDownload';
+    }
+
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.UploadCellType, Arsenal', PCUpload);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.PreviewCellType, Arsenal', FilePreview);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadCommand, Arsenal", UploadCommand);
@@ -206,4 +210,5 @@ namespace Arsenal {
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.DownloadFileCommand, Arsenal", DownloadFileCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetFileAccessUrlCommand, Arsenal", GetFileAccessUrlCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetDownloadUrlCommand, Arsenal", GetDownloadUrlCommand);
+    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.ZipFileAndDownloadCommand, Arsenal", ZipFileAndDownloadCommand);
 }

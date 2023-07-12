@@ -68,7 +68,7 @@ class FileUploadEngine {
 
   public static getDownloadUrl(fileName: string): string {
     return (
-        Forguncy.Helper.SpecialPath.getBaseUrl() + 'FileDownloadUpload/Download?file=' + encodeURIComponent(fileName)
+      Forguncy.Helper.SpecialPath.getBaseUrl() + 'FileDownloadUpload/Download?file=' + encodeURIComponent(fileName)
     );
   }
 

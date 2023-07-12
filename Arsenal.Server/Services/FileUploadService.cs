@@ -368,10 +368,17 @@ public static class FileUploadService
     /// </summary>
     /// <param name="zipFilePath"></param>
     /// <param name="filesToCompress"></param>
-    public static async Task CompressFilesToZip(string zipFilePath, IEnumerable<string> filesToCompress)
+    public static async Task CompressFilesToZipAsync(string zipFilePath, IEnumerable<string> filesToCompress)
     {
         try
         {
+            var directoryName = Path.GetDirectoryName(zipFilePath);
+
+            if (!Directory.Exists(directoryName))
+            {
+                Directory.CreateDirectory(directoryName!);
+            }
+
             await using var zipFile = new FileStream(zipFilePath, FileMode.Create);
             using var archive = new ZipArchive(zipFile, ZipArchiveMode.Create);
             foreach (var fileId in filesToCompress)
@@ -411,5 +418,6 @@ public static class FileUploadService
             Console.WriteLine("Error compressing file: " + ex.Message);
         }
     }
+
     #endregion
 }

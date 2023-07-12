@@ -4,6 +4,7 @@ import uploadFolderCommand from '../../../commands/upload-folder';
 import downloadFileCommand from '../../../commands/download-file';
 import getFileAccessUrlCommand from '../../../commands/get-file-access-url';
 import getDownloadUrlCommand from '../../../commands/get-download-url';
+import zipFileAndDownload from '../../../commands/zip-file-and-download';
 
 interface Props {
   commandName: string;
@@ -31,6 +32,10 @@ const commandWrapper = (props: Props): Function | null => {
 
   if (props.commandName === 'GetDownloadUrl') {
     fn = getDownloadUrlCommand;
+  }
+
+  if (props.commandName === 'ZipFileAndDownload') {
+    fn = zipFileAndDownload;
   }
 
   return (fn || _.noop).bind(null, props.commandBase);

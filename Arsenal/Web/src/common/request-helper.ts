@@ -47,6 +47,11 @@ export interface ICompleteMultipartUploadResult {
   fileName: string;
 }
 
+export interface ICompressFilesIntoZip {
+  zipName: string;
+  fileIds: string[];
+}
+
 const excelFileTypeMap: { [key: string]: string } = {
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   xls: 'application/vnd.ms-excel',
@@ -113,6 +118,10 @@ const getFile = async (url: string): Promise<File> => {
   });
 };
 
+const compressFilesIntoZip = (param: ICompressFilesIntoZip): HttpHandlerResult<string> => {
+  return axios.post('/compressFilesIntoZip', param);
+};
+
 const requestHelper = {
   checkFileInfo,
   initMultipartUpload,
@@ -123,6 +132,7 @@ const requestHelper = {
   getText,
   getSpreadFile,
   getFile,
+  compressFilesIntoZip,
 };
 
 export default requestHelper;

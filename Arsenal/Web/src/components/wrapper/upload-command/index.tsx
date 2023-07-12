@@ -37,7 +37,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
   const multiple = useMemo(() => param.maxCount === null || param.maxCount > 0, [param]);
 
   const fileUploadEngine = useFileUploadEngine({
-    evaluateFormula: ctx.evaluateFormula,
+    evaluateFormula: ctx.evaluateFormula.bind(ctx),
     enableResumableUpload: param.advancedSettings.enableResumableUpload,
     folder: param.folder,
     conflictStrategy: param.conflictStrategy,
