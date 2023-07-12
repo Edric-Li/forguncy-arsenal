@@ -194,6 +194,11 @@ public class Arsenal : ForguncyApi
         });
     }
 
+    public static Dictionary<string, string> Test()
+    {
+        return FileUploadService.GetDownloadLinksFiles();
+    }
+
     private async Task<T> ParseBodyAsync<T>() where T : new()
     {
         var reader = new StreamReader(Context.Request.Body);

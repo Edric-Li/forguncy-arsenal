@@ -6,7 +6,7 @@ using File = System.IO.File;
 
 namespace Arsenal.Server.Services;
 
-internal static class FileUploadService
+public static class FileUploadService
 {
     #region Private Method
 

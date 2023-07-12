@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
-using Arsenal.Common;
-using Arsenal.Server.Common;
+using Arsenal.Server.Model.Params;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
@@ -61,29 +59,14 @@ public class CreateDownloadLinkToFile : Command, ICommandExecutableInServerSideA
 
         var executeResult = new ExecuteResult();
 
-        var contentDictionary = new Dictionary<string, object>()
+        var result = Server.Services.FileUploadService.CreateFileDownloadLink(new CreateFileDownloadLinkParam()
         {
-            { "filePath", filePath },
-            { "expirationDate", expirationDate },
-            { "createCopy", CreateCopy },
-        };
+            FilePath = filePath,
+            ExpirationDate = expirationDate,
+            CreateCopy = CreateCopy
+        });
 
-        var content = new JsonContent(contentDictionary);
-
-        var apiUrl = RequestHelper.GetApiUrl(dataContext.AppBaseUrl, "CreateFileDownloadLink");
-
-        var result = await RequestHelper.PostAsync(apiUrl, content);
-
-        if (!result.Result)
-        {
-            executeResult.ErrCode = 500;
-            executeResult.Message = result.Message;
-        }
-        else
-        {
-            dataContext.Parameters[Result] =
-                dataContext.AppBaseUrl + "FileDownloadUpload/Download?file=" + result.Data;
-        }
+        dataContext.Parameters[Result] = dataContext.AppBaseUrl + "FileDownloadUpload/Download?file=" + result;
 
         return executeResult;
     }
