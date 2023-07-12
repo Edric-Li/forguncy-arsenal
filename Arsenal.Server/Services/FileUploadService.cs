@@ -92,11 +92,11 @@ internal static class FileUploadService
 
         // 获取文件名，如果元数据中没有文件名的话，那么就使用uploadId作为文件名
         var fileName = metadata?.FileName ?? uploadId;
-        
+
         // 根据文件名和目标文件夹获取绝对路径
         string GetAbsolutePath(string filename) =>
             Path.Combine(Configuration.Configuration.UploadFolderPath, targetFolderPath, filename);
-        
+
         var targetFilePath = GetAbsolutePath(fileName);
 
         if (!ExistsFile(targetFilePath))
@@ -180,7 +180,9 @@ internal static class FileUploadService
     {
         var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, fileName);
 
-        return !Directory.Exists(folderPath) ? new List<int>() : Directory.GetFiles(folderPath).Select(fullPath => Convert.ToInt32(Path.GetFileName(fullPath))).ToList();
+        return !Directory.Exists(folderPath)
+            ? new List<int>()
+            : Directory.GetFiles(folderPath).Select(fullPath => Convert.ToInt32(Path.GetFileName(fullPath))).ToList();
     }
 
     public static async Task UploadPartAsync(string uploadId, int partNumber, IFormFile file)
@@ -212,6 +214,31 @@ internal static class FileUploadService
         return targetFilePath;
     }
 
+    public static string CreateFileDownloadLink(CreateFileDownloadLinkParam param)
+    {
+        var filePath = param.FilePath;
+
+        var fileName = Path.GetFileName(param.FilePath);
+        var fileId = Guid.NewGuid() + "_" + fileName;
+
+        if (param.CreateCopy)
+        {
+            var destFileName = Path.Combine(Configuration.Configuration.DownloadFolderPath, fileId);
+
+            if (!Directory.Exists(Path.GetDirectoryName(destFileName)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(destFileName) ?? string.Empty);
+            }
+
+            File.Copy(param.FilePath, destFileName);
+            filePath = destFileName.Replace(Configuration.Configuration.DownloadFolderPath + "\\", string.Empty);
+        }
+
+        DataAccess.DataAccess.Instance.PutDownloadFile(fileId, filePath, param.ExpirationDate);
+
+        return fileId;
+    }
+
     public static string CreateSoftLink(string uploadId, string fileName)
     {
         var fileId = Guid.NewGuid() + "_" + fileName;
@@ -231,6 +258,11 @@ internal static class FileUploadService
         return DataAccess.DataAccess.Instance.GetSoftLinksFiles();
     }
 
+    public static Dictionary<string, string> GetDownloadLinksFiles()
+    {
+        return DataAccess.DataAccess.Instance.GetDownloadLinksFiles();
+    }
+
     public static string GenerateUniqueFileName()
     {
         while (true)
@@ -248,22 +280,63 @@ internal static class FileUploadService
         }
     }
 
-    public static string? GetDiskFilePathByFileId(string fileId)
+    /// <summary>
+    /// 根据文件ID获取文件的全路径
+    /// </summary>
+    /// <param name="fileId"></param>
+    /// <returns></returns>
+    public static string? GetFileFullPathByFileId(string fileId)
     {
         var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
 
-        if (virtualFile == null)
+        if (virtualFile != null)
         {
-            return null;
+            var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
+            if (diskFile != null)
+            {
+                return Path.Combine(Configuration.Configuration.UploadFolderPath, diskFile);
+            }
         }
 
-        return DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
+        var downloadLinkEntity = DataAccess.DataAccess.Instance.GetDownloadFile(fileId);
+
+        if (downloadLinkEntity != null)
+        {
+            var notCopyFile = false;
+            var filePath = Path.Combine(Configuration.Configuration.DownloadFolderPath, fileId);
+
+            if (!File.Exists(filePath))
+            {
+                notCopyFile = true;
+                filePath = downloadLinkEntity.FilePath;
+            }
+
+            // 已过期
+            if (downloadLinkEntity.ExpiresAt < DateTime.Now.Ticks)
+            {
+                if (File.Exists(filePath) && !notCopyFile)
+                {
+                    File.Delete(filePath);
+                }
+
+                DataAccess.DataAccess.Instance.DeleteDownloadFile(fileId);
+
+                return null;
+            }
+
+            return filePath;
+        }
+
+        return null;
     }
 
-    public static Stream? GetDiskFileStreamBySoftLink(string diskFilePath)
+    /// <summary>
+    /// 根据文件路径获取文件流
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    public static Stream? GetFileStreamByFilePath(string filePath)
     {
-        var filePath = Path.Combine(Configuration.Configuration.UploadFolderPath, diskFilePath);
-
         return File.Exists(filePath) ? new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read) : null;
     }
 

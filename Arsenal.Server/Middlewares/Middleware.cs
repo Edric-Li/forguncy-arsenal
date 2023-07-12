@@ -19,12 +19,12 @@ internal class Middleware
 
         if (context.Request.Path.Value.StartsWith("/Upload/"))
         {
-            var filepath = context.Request.Path.Value?.Replace("/Upload/", "");
-            var diskFilePath = FileUploadService.GetDiskFilePathByFileId(filepath);
+            var fileId = context.Request.Path.Value?.Replace("/Upload/", "");
+            var diskFilePath = FileUploadService.GetFileFullPathByFileId(fileId);
 
             if (diskFilePath != null)
             {
-                var stream = FileUploadService.GetDiskFileStreamBySoftLink(diskFilePath);
+                var stream = FileUploadService.GetFileStreamByFilePath(diskFilePath);
 
                 if (stream != null)
                 {
@@ -43,11 +43,11 @@ internal class Middleware
         else if (context.Request.Path.Value.StartsWith("/FileDownloadUpload/Download"))
         {
             var fileId = context.Request.Query["file"];
-            var diskFilePath = FileUploadService.GetDiskFilePathByFileId(fileId);
+            var diskFilePath = FileUploadService.GetFileFullPathByFileId(fileId);
 
             if (diskFilePath != null)
             {
-                var stream = FileUploadService.GetDiskFileStreamBySoftLink(diskFilePath);
+                var stream = FileUploadService.GetFileStreamByFilePath(diskFilePath);
 
                 if (stream != null)
                 {

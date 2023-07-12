@@ -1,5 +1,7 @@
-﻿using Arsenal.Server.Services;
+﻿using Arsenal.Server.Model;
+using Arsenal.Server.Services;
 using LevelDB;
+using Newtonsoft.Json;
 
 namespace Arsenal.Server.DataAccess;
 
@@ -17,6 +19,11 @@ public class DataAccess
     /// 软链接数据库
     /// </summary>
     private readonly DB _softLinksFilesDb;
+
+    /// <summary>
+    /// 下载链接数据库
+    /// </summary>
+    private readonly DB _downloadLinksFilesDb;
 
     /// <summary>
     /// 懒加载实例
@@ -69,6 +76,7 @@ public class DataAccess
 
         _diskFilesDb = new DB(options, GetDbPath("diskfiles.db"));
         _softLinksFilesDb = new DB(options, GetDbPath("softLinks.db"));
+        _downloadLinksFilesDb = new DB(options, GetDbPath("downloadLinksFilesDb.db"));
     }
 
     private string GetDbPath(string dbName)
@@ -167,6 +175,46 @@ public class DataAccess
         return _softLinksFilesDb.Get(key);
     }
 
+    /// <summary>
+    /// 添加下载文件
+    /// </summary>
+    /// <param name="key">唯一ID</param>
+    /// <param name="filePath">文件路径</param>
+    /// <param name="expirationDate">有效期</param>
+    public void PutDownloadFile(string key, string filePath, int expirationDate)
+    {
+        var dateTime = expirationDate == 0 ? DateTime.MaxValue : DateTime.Now.AddMinutes(expirationDate);
+
+        var entity = new DownloadLinkEntity()
+        {
+            FilePath = filePath,
+            ExpiresAt = dateTime.Ticks,
+        };
+
+        _downloadLinksFilesDb.Put(key, JsonConvert.SerializeObject(entity));
+    }
+
+    /// <summary>
+    /// 获取下载文件
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public DownloadLinkEntity? GetDownloadFile(string key)
+    {
+        var str = _downloadLinksFilesDb.Get(key);
+
+        return str == null ? null : JsonConvert.DeserializeObject<DownloadLinkEntity>(str);
+    }
+
+    /// <summary>
+    /// 删除下载文件
+    /// </summary>
+    /// <param name="key"></param>
+    public void DeleteDownloadFile(string key)
+    {
+        _downloadLinksFilesDb.Delete(key);
+    }
+    
     public Dictionary<string, string> GetDiskFiles()
     {
         return GetKeyValuesByDb(_diskFilesDb);
@@ -175,5 +223,10 @@ public class DataAccess
     public Dictionary<string, string> GetSoftLinksFiles()
     {
         return GetKeyValuesByDb(_softLinksFilesDb);
+    }
+
+    public Dictionary<string, string> GetDownloadLinksFiles()
+    {
+        return GetKeyValuesByDb(_downloadLinksFilesDb);
     }
 }

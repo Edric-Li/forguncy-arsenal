@@ -68,13 +68,13 @@ class FileUploadEngine {
 
   public static getDownloadUrl(fileName: string): string {
     return (
-      Forguncy.Helper.SpecialPath.getBaseUrl() + 'FileDownloadUpload/Download?file=' + encodeURIComponent(fileName)
+        Forguncy.Helper.SpecialPath.getBaseUrl() + 'FileDownloadUpload/Download?file=' + encodeURIComponent(fileName)
     );
   }
 
-  public static download(uid: string) {
+  public static download(uidOrUrl: string) {
     const a = document.createElement('a');
-    a.href = this.getDownloadUrl(uid);
+    a.href = uidOrUrl?.includes(':/') ? uidOrUrl : this.getDownloadUrl(uidOrUrl);
     a.click();
     a.remove();
   }

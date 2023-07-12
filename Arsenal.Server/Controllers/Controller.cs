@@ -172,6 +172,28 @@ public class Arsenal : ForguncyApi
         });
     }
 
+    [Get]
+    public void DownloadLinksFiles()
+    {
+        SecurityExecutionAction(() =>
+        {
+            var data = FileUploadService.GetDownloadLinksFiles();
+
+            BuildHttpResult(new HttpSuccessResult(data));
+        });
+    }
+
+    [Post]
+    public async Task CreateFileDownloadLink()
+    {
+        await SecurityExecutionFuncAsync(async () =>
+        {
+            var body = await ParseBodyAsync<CreateFileDownloadLinkParam>();
+
+            BuildHttpResult(new HttpSuccessResult(FileUploadService.CreateFileDownloadLink(body)));
+        });
+    }
+
     private async Task<T> ParseBodyAsync<T>() where T : new()
     {
         var reader = new StreamReader(Context.Request.Body);

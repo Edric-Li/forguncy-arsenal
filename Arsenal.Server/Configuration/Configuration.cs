@@ -10,6 +10,8 @@ public class Configuration
 
     public static string UploadFolderPath => Path.Combine(RootFolderPath, "files");
 
+    public static string DownloadFolderPath => Path.Combine(RootFolderPath, "download_files");
+
     public static string TempFolderPath => Path.Combine(RootFolderPath, "temp");
 
     public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
