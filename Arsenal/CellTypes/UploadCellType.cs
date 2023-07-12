@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
+[OrderWeight(1)]
 [Category("Arsenal")]
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/icon.png")]

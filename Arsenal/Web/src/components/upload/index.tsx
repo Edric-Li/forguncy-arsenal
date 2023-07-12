@@ -274,7 +274,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const handlePreview = async (file: UploadFile) => {
     if (!hasPreviewPermission) {
       if (hasDownloadPermission) {
-        fileUpload.download(file.uid);
+        FileUploadEngine.download(file.uid);
       }
       return;
     }
@@ -288,7 +288,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const handleDownload: UploadProps['onDownload'] = (file: UploadFile) => {
     if (showUploadList?.showDownloadIcon) {
-      fileUpload.download(file.uid);
+      FileUploadEngine.download(file.uid);
     }
   };
 
