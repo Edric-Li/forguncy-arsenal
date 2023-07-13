@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO.Compression;
 using Arsenal.Server.Common;
 using Arsenal.Server.Model.Params;
@@ -10,6 +11,8 @@ namespace Arsenal.Server.Services;
 public static class FileUploadService
 {
     #region Private Method
+
+    private static readonly ConcurrentDictionary<string, Task<string>> CompositeTaskMap = new();
 
     private static bool ExistsFile(string filePath)
     {
@@ -189,30 +192,75 @@ public static class FileUploadService
     public static async Task UploadPartAsync(string uploadId, int partNumber, IFormFile file)
     {
         var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, uploadId);
+        var filePath = Path.Combine(folderPath, partNumber.ToString());
+        var fileTempPath = Path.Combine(folderPath, partNumber.ToString()) + "_tmp";
 
-        await CopyStreamAsync(file.OpenReadStream(), Path.Combine(folderPath, partNumber.ToString()));
+        // 如果文件存在, 无需覆盖
+        if (File.Exists(filePath))
+        {
+            return;
+        }
+
+        try
+        {
+            await CopyStreamAsync(file.OpenReadStream(), fileTempPath);
+            File.Move(fileTempPath, filePath);
+        }
+        catch (Exception)
+        {
+            File.Delete(fileTempPath);
+            throw;
+        }
     }
 
     public static async Task<string> CompleteMultipartUploadAsync(string uploadId)
     {
-        var mergedFilePath = await MergeFileAsync(uploadId);
-
-        var targetFilePath = GetDestFilePathByUploadId(uploadId);
-
-        MoveTemporaryFileToFinalDirectory(mergedFilePath, targetFilePath);
-
-        DataAccess.DataAccess.Instance.PutDiskFile(uploadId,
-            targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
-
-        CleanUpFileJunkFiles(mergedFilePath, uploadId);
-
-        if (Configuration.Configuration.AppConfig.UseCloudStorage)
+        if (CompositeTaskMap.TryGetValue(uploadId, out var result))
         {
-            _ = CloudStorageService.CreateTaskAsync(
-                targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
+            var filePath = await result;
+
+            if (File.Exists(filePath))
+            {
+                return filePath;
+            }
+
+            CompositeTaskMap.TryRemove(uploadId, out _);
         }
 
-        return targetFilePath;
+        return await CompositeTaskMap.GetOrAdd(uploadId, async x =>
+        {
+            var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(uploadId);
+
+            if (diskFile != null)
+            {
+                var fileFullPath = Path.Combine(Configuration.Configuration.UploadFolderPath, diskFile);
+
+                if (File.Exists(fileFullPath))
+                {
+                    return fileFullPath;
+                }
+            }
+
+            var mergedFilePath = await MergeFileAsync(uploadId);
+
+            var targetFilePath = GetDestFilePathByUploadId(uploadId);
+
+            MoveTemporaryFileToFinalDirectory(mergedFilePath, targetFilePath);
+
+            DataAccess.DataAccess.Instance.PutDiskFile(uploadId,
+                targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
+
+            CleanUpFileJunkFiles(mergedFilePath, uploadId);
+
+            if (Configuration.Configuration.AppConfig.UseCloudStorage)
+            {
+                _ = CloudStorageService.CreateTaskAsync(
+                    targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
+            }
+
+            return targetFilePath;
+        });
+
     }
 
     public static string CreateFileDownloadLink(CreateFileDownloadLinkParam param)
