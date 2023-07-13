@@ -41,7 +41,7 @@ public static class FileUploadService
             }
         }
 
-        return diskFilePath != null && existsFile;
+        return existsFile;
     }
 
     private static async Task CopyStreamAsync(Stream stream, string destPath)
