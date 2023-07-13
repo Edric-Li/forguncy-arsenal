@@ -368,7 +368,9 @@ public static class FileUploadService
     /// </summary>
     /// <param name="zipFilePath"></param>
     /// <param name="filesToCompress"></param>
-    public static async Task CompressFilesToZipAsync(string zipFilePath, IEnumerable<string> filesToCompress)
+    /// <param name="needKeepFolderStructure"></param>
+    public static async Task CompressFilesToZipAsync(string zipFilePath, IEnumerable<string> filesToCompress,
+        bool needKeepFolderStructure)
     {
         try
         {

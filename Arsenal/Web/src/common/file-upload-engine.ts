@@ -35,12 +35,14 @@ class FileUploadEngine {
   }
 
   private async initMultipartUpload(file: File): HttpHandlerResult<IInitMultipartUploadResult> {
-    let targetFolderPath = this.getTargetFolderPath();
+    const targetFolderPath = this.getTargetFolderPath();
+    let conflictStrategy = this.conflictStrategy;
 
     if (file.webkitRelativePath && targetFolderPath) {
       const parts = file.webkitRelativePath.split('/');
       parts.pop();
-      targetFolderPath += '/' + parts.join('/');
+    } else {
+      conflictStrategy = ConflictStrategy.Overwrite;
     }
 
     const fileMd5 =
@@ -51,7 +53,7 @@ class FileUploadEngine {
     return requestHelper.initMultipartUpload({
       fileMd5,
       fileName: file.name,
-      conflictStrategy: this.conflictStrategy,
+      conflictStrategy,
       targetFolderPath,
     });
   }

@@ -50,6 +50,7 @@ export interface ICompleteMultipartUploadResult {
 export interface ICompressFilesIntoZip {
   zipName: string;
   fileIds: string[];
+  needKeepFolderStructure: boolean;
 }
 
 const excelFileTypeMap: { [key: string]: string } = {

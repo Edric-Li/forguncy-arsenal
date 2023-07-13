@@ -22,6 +22,11 @@ public class ZipFileAndDownloadCommand : Command
     [JsonProperty("downloadFileName")]
     public object DownloadFileName { get; set; } = "arsenal.zip";
 
+    [DisplayName("保持文件夹结构")]
+    [JsonProperty("keepFolderStructure")]
+    [DefaultValue(true)]
+    public bool NeedKeepFolderStructure { get; set; } = true;
+
     public override string ToString()
     {
         return "将文件打包成压缩包并下载";

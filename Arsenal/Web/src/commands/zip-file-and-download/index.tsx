@@ -17,6 +17,8 @@ const zipFileAndDownload = async (ctx: Forguncy.Plugin.CommandBase) => {
   const res = await requestHelper.compressFilesIntoZip({
     fileIds: fileStr.split('|'),
     zipName,
+    //todo
+    needKeepFolderStructure: false,
   });
 
   if (res.data) {

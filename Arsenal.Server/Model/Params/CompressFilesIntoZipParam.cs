@@ -15,4 +15,10 @@ public class CompressFilesIntoZipParam
     /// </summary>
     [JsonProperty("zipName")]
     public string ZipName { get; set; }
+
+    /// <summary>
+    /// 保持文件夹结构
+    /// </summary>
+    [JsonProperty("needKeepFolderStructure")]
+    public bool NeedKeepFolderStructure { get; set; }
 }

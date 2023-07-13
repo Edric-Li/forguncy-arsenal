@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Arsenal.Server.Services;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
+using Newtonsoft.Json;
 
 namespace Arsenal;
 
@@ -23,6 +24,11 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
     [FormulaProperty]
     [Required]
     public object ZipFilePath { get; set; }
+
+    [DisplayName("保持文件夹结构")]
+    [JsonProperty("keepFolderStructure")]
+    [DefaultValue(true)]
+    public bool NeedKeepFolderStructure { get; set; } = true;
 
     [DisplayName("冲突策略")] public CompressFilesIntoZipCommandConflictStrategy ConflictStrategy { get; set; }
 
@@ -47,7 +53,7 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
         }
 
         var files = fileNames.Split("|").ToArray();
-        await FileUploadService.CompressFilesToZipAsync(zipFilePath, files);
+        await FileUploadService.CompressFilesToZipAsync(zipFilePath, files, NeedKeepFolderStructure);
         return new ExecuteResult();
     }
 
