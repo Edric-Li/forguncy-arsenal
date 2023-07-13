@@ -4,8 +4,16 @@ public abstract class BootstrapServices
 {
     public static void EnsureInitialization()
     {
-        Configuration.Configuration.Instance.EnsureInitialization();
-        DataAccess.DataAccess.Instance.EnsureInitialization();
-        CloudStorageService.EnsureInitialization();
+        try
+        {
+            Configuration.Configuration.Instance.EnsureInitialization();
+            DataAccess.DataAccess.Instance.EnsureInitialization();
+            CloudStorageService.EnsureInitialization();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }

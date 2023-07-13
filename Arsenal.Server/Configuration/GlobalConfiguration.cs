@@ -42,6 +42,12 @@ public abstract class GlobalConfiguration
         return GetGlobalValueByXPath("UsePublicUrl");
     }
 
+    private static string GetGlobalAppRootPath()
+    {
+        var value = GetGlobalValueByXPath("AppRootPath");
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
     private static string GetAppNameByXmlNode(XmlNode node)
     {
         return node.Attributes?.GetNamedItem("AppName")?.Value;
@@ -116,9 +122,9 @@ public abstract class GlobalConfiguration
         return appStorageInfo;
     }
 
-    private static string GetUserServiceUrl(string appName)
+    private static string GetUserServiceUrl(string appRootPath)
     {
-        var serverInfosFilePath = Path.Combine(GetForguncyServerFolder(), appName, "Files", "Forguncy_ServerInfos");
+        var serverInfosFilePath = Path.Combine(appRootPath, "Files", "Forguncy_ServerInfos");
         var jsonContent = File.ReadAllText(serverInfosFilePath);
         var jsonObject = JObject.Parse(jsonContent);
 
@@ -148,7 +154,10 @@ public abstract class GlobalConfiguration
 
         var appStorageInfo = GetAppAppStorageInfoByAppName(appName);
 
-        var defaultLocalUploadFolderPath = Path.Combine(GetForguncyServerFolder(), appName, "Upload");
+        appConfig.RootPath = appConfig.RootPath =
+            Path.Combine(GetGlobalAppRootPath() ?? GetForguncyServerFolder(), appName);
+
+        var defaultLocalUploadFolderPath = Path.Combine(appConfig.RootPath, "Upload");
 
         // 如果应用的存储类型为空，则使用全局的存储类型
         if (appStorageInfo.StorageType == string.Empty)
@@ -185,7 +194,7 @@ public abstract class GlobalConfiguration
         }
 
         appConfig.StorageType = appStorageInfo.StorageType;
-        appConfig.UserServiceUrl = GetUserServiceUrl(appName);
+        appConfig.UserServiceUrl = GetUserServiceUrl(appConfig.RootPath);
 
         return appConfig;
     }

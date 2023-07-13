@@ -2,21 +2,38 @@
 
 public class AppConfig
 {
-    // 在服务器上存储的目录
+    /// <summary>
+    /// 应用路径
+    /// </summary>
+    public string RootPath { get; set; }
+
+    /// <summary>
+    /// 在服务器上存储的目录
+    /// </summary>
     public string LocalUploadFolderPath { get; set; }
 
-    // 在云上存储的目录
+    /// <summary>
+    /// 在云上存储的目录
+    /// </summary>
     public string CloudStorageUploadFolderPath { get; set; }
 
-    // 存储类型
+    /// <summary>
+    /// 存储类型
+    /// </summary>
     public string StorageType { get; set; }
 
-    // 是否使用云存储
+    /// <summary>
+    /// 是否使用云存储
+    /// </summary>
     public bool UseCloudStorage { get; set; }
 
-    // 是否使用公网URL
+    /// <summary>
+    /// 是否使用公网URL
+    /// </summary>
     public bool UsePublicUrl { get; set; }
 
-    // UserService的URL
+    /// <summary>
+    /// UserService的URL
+    /// </summary>
     public string UserServiceUrl { get; set; }
 }
