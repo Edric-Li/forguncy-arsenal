@@ -25,8 +25,8 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
     [Required]
     public object ZipFilePath { get; set; }
 
-    [DisplayName("保持文件夹结构")]
-    [JsonProperty("keepFolderStructure")]
+    [DisplayName("在压缩文件中保持文件夹结构")]
+    [JsonProperty("needKeepFolderStructure")]
     [DefaultValue(true)]
     public bool NeedKeepFolderStructure { get; set; } = true;
 

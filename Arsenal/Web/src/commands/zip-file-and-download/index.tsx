@@ -4,6 +4,7 @@ import FileUploadEngine from '../../common/file-upload-engine';
 interface ICommandParam {
   fileNames: string;
   downloadFileName: string;
+  needKeepFolderStructure: boolean;
 }
 
 const zipFileAndDownload = async (ctx: Forguncy.Plugin.CommandBase) => {
@@ -17,8 +18,7 @@ const zipFileAndDownload = async (ctx: Forguncy.Plugin.CommandBase) => {
   const res = await requestHelper.compressFilesIntoZip({
     fileIds: fileStr.split('|'),
     zipName,
-    //todo
-    needKeepFolderStructure: false,
+    needKeepFolderStructure: param.needKeepFolderStructure,
   });
 
   if (res.data) {

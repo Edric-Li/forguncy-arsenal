@@ -383,6 +383,7 @@ public static class FileUploadService
 
             await using var zipFile = new FileStream(zipFilePath, FileMode.Create);
             using var archive = new ZipArchive(zipFile, ZipArchiveMode.Create);
+            var addedEntryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var fileId in filesToCompress)
             {
                 if (string.IsNullOrWhiteSpace(fileId))
@@ -396,7 +397,27 @@ public static class FileUploadService
                     continue;
                 }
 
-                var relativePath = fullPath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
+                var entryName = fullPath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
+
+                if (!needKeepFolderStructure)
+                {
+                    entryName = Path.GetFileName(fullPath);
+
+                    // 如果选择不保持文件夹结构，出现重名文件后，使用fileId做为文件名称
+                    if (addedEntryNames.Contains(entryName))
+                    {
+                        entryName = fileId;
+                    }
+                }
+                else
+                {
+                    if (addedEntryNames.Contains(entryName))
+                    {
+                        continue;
+                    }
+                }
+
+                addedEntryNames.Add(entryName);
 
                 var filePath = fullPath;
 
@@ -412,7 +433,7 @@ public static class FileUploadService
                     }
                 }
 
-                archive.CreateEntryFromFile(filePath, relativePath);
+                archive.CreateEntryFromFile(filePath, entryName);
             }
         }
         catch (Exception ex)
