@@ -28,6 +28,18 @@
 			<HintPath>C:\Program Files\Forguncy 9\Website\bin\GrapeCity.Forguncy.ServerApi.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="Microsoft.EntityFrameworkCore">
+		  <HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
+		  <HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.EntityFrameworkCore.Relational">
+		  <HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.EntityFrameworkCore.Sqlite">
+		  <HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Sqlite.dll</HintPath>
+		</Reference>
 		<Reference Include="Newtonsoft.Json" Exclude="runtime">
 			<HintPath>C:\Program Files\Forguncy 9\Website\bin\Newtonsoft.Json.dll</HintPath>
 			<Private>False</Private>
@@ -42,5 +54,8 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3">
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
+		<Reference Include="System.Data.SQLite">
+		  <HintPath>..\Arsenal\ReferenceDll\System.Data.SQLite.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 </Project>

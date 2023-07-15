@@ -16,24 +16,26 @@ export type HttpHandlerResult<T = object> = Promise<HttpResultData<T>>;
 axios.defaults.baseURL = Forguncy.Helper.SpecialPath.getBaseUrl() + 'customapi/arsenal';
 
 axios.interceptors.response.use(
-  (response) => {
-    if (!response.data.result) {
-      message.error(response.data.message);
-    }
-    return {
-      originalResponse: response,
-      ...response.data,
-    };
-  },
-  async (error) => {
-    return { result: false, message: error.message };
-  },
+    (response) => {
+      if (!response.data.result) {
+        message.error(response.data.message);
+      }
+      return {
+        originalResponse: response,
+        ...response.data,
+      };
+    },
+    async (error) => {
+      return {result: false, message: error.message};
+    },
 );
 
 interface IInitMultipartUploadParam {
-  fileMd5: string | null;
-  targetFolderPath: string | null;
-  fileName: string;
+  name: string
+  hash: string | null;
+  folderPath: string | null;
+  contentType: string;
+  size: number;
   conflictStrategy: ConflictStrategy;
 }
 
@@ -84,8 +86,8 @@ const initMultipartUpload = (param: IInitMultipartUploadParam): HttpHandlerResul
   return axios.post('/initMultipartUpload', param);
 };
 
-const createSoftLink = (uploadId: string, fileName: string): HttpHandlerResult<string> => {
-  return axios.post('/createSoftLink', { uploadId, fileName });
+const addFileRecord = (uploadId: string): HttpHandlerResult<string> => {
+  return axios.post('/addFileRecord', {uploadId});
 };
 
 const completeMultipartUpload = (uploadId: string): HttpHandlerResult<ICompleteMultipartUploadResult> => {
@@ -126,7 +128,7 @@ const compressFilesIntoZip = (param: ICompressFilesIntoZip): HttpHandlerResult<s
 const requestHelper = {
   checkFileInfo,
   initMultipartUpload,
-  createSoftLink,
+  addFileRecord,
   uploadPart,
   completeMultipartUpload,
   getBlob,

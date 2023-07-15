@@ -18,6 +18,11 @@ public class Configuration
 
     public static readonly Configuration Instance = LazyInstance.Value;
 
+    /// <summary>
+    /// 数据库链接串
+    /// </summary>
+    public static string DatabaseConnectionString { get; set; } = string.Empty;
+
     public static AppConfig AppConfig { get; private set; }
 
     /// <summary>

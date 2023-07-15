@@ -6,16 +6,17 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
 import ImgCrop from 'antd-img-crop';
-import FilePreviewInner, { isImage } from '../file-preview/file-preview-inner';
-import { getBase64 } from '../../common/get-base64';
+import FilePreviewInner, {isImage} from '../file-preview/file-preview-inner';
+import {getBase64} from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
 import CacheService from '../../common/cache-service';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
-import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../declarations/types';
+import {ConflictStrategy, ImgCropSettings, WatermarkSettings} from '../../declarations/types';
 import useFileUploadEngine from '../../hooks/useFileUploadEngine';
 import usePermission from '../../hooks/usePermission';
 import cx from 'classnames';
 import isImageUrl from '../../common/is-image-url';
+import isInternalFile from '../../common/is-internal-file';
 
 enum ListType {
   text,
@@ -137,7 +138,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         fileListRef.current = files.map((i: string) => {
           return {
             uid: i,
-            name: i.substring(37),
+            name: isInternalFile(i) ? i.substring(37) : i,
             status: 'done',
             percent: 0,
             url: FileUploadEngine.getAccessUrl(i),
@@ -310,15 +311,15 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   }, [listType]);
 
   const renderUpload = () => {
-    const { uploadSettings } = props.options;
+    const {uploadSettings} = props.options;
     const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 0);
     return (
-      <Upload
-        isImageUrl={isImageUrl}
-        directory={directory}
-        fileList={fileList}
-        listType={listType}
-        onRemove={handleRemove}
+        <Upload
+            isImageUrl={isImageUrl}
+            directory={directory}
+            fileList={fileList}
+            listType={listType}
+            onRemove={handleRemove}
         onDownload={handleDownload}
         beforeUpload={handleBeforeUpload}
         onPreview={handlePreview}

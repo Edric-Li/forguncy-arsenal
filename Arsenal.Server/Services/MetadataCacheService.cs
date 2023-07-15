@@ -1,9 +1,12 @@
 ﻿using System.Collections.Concurrent;
 using Arsenal.Server.Model;
 
-namespace Arsenal.Server.Common;
+namespace Arsenal.Server.Services;
 
-public static class MetadataManagement
+/// <summary>
+/// 元数据管理
+/// </summary>
+public static class MetadataCacheService
 {
     private static readonly ConcurrentDictionary<string,FileMetaData> FileMetaDataDic = new();
 

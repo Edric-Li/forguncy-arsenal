@@ -2,8 +2,12 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using Arsenal.Server.Common;
+using Arsenal.Server.DataBase;
+using Arsenal.Server.DataBase.Models;
+using Arsenal.Server.Model;
 using Arsenal.Server.Model.Params;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using File = System.IO.File;
 
 namespace Arsenal.Server.Services;
@@ -19,26 +23,40 @@ public static class FileUploadService
         return File.Exists(filePath);
     }
 
-    public static async Task<bool> ExistsFileInUploadFolderAsync(string fileName)
+    public static async Task<bool> CheckFileInfoAsync(string uploadId)
     {
-        var diskFilePath = DataAccess.DataAccess.Instance.GetDiskFile(fileName);
+        var metaData = MetadataCacheService.Get(uploadId);
 
-        if (diskFilePath == null)
+        if (metaData == null)
         {
-            return false;
+            throw new Exception("无效的上传ID");
         }
 
-        var existsFile = ExistsFile(Path.Combine(Configuration.Configuration.UploadFolderPath, diskFilePath));
+        var relativePath = Path.Combine(metaData.FolderPath, metaData.Name);
+
+        if (!string.IsNullOrWhiteSpace(metaData.Hash))
+        {
+            var dbContext = new DatabaseContext();
+
+            var item = await dbContext.FileHashes.FirstOrDefaultAsync(item => item.Hash == metaData.Hash);
+
+            if (item == null)
+            {
+                return false;
+            }
+
+            relativePath = item.Path;
+        }
+
+        var filePath = Path.Combine(Configuration.Configuration.UploadFolderPath, relativePath);
+
+        var existsFile = File.Exists(filePath);
 
         if (!existsFile && Configuration.Configuration.AppConfig.UseCloudStorage)
         {
             existsFile =
-                await CloudStorageService.FileExistsAsync(CloudStorageService.GetCloudStorageFilePath(diskFilePath));
-
-            if (!existsFile)
-            {
-                DataAccess.DataAccess.Instance.DeleteDiskFile(fileName);
-            }
+                await CloudStorageService.FileExistsAsync(
+                    CloudStorageService.GetCloudStorageFilePath(relativePath));
         }
 
         return existsFile;
@@ -67,7 +85,9 @@ public static class FileUploadService
     {
         var parts = ListParts(uploadId);
 
-        var tmpFile = Path.Combine(Configuration.Configuration.TempFolderPath, uploadId, ".merge");
+        var folderName = MetadataCacheService.Get(uploadId).Hash ?? uploadId;
+
+        var tmpFile = Path.Combine(Configuration.Configuration.TempFolderPath, folderName, ".merge");
 
         if (ExistsFile(tmpFile))
         {
@@ -76,39 +96,114 @@ public static class FileUploadService
 
         if (parts.Count == 1)
         {
-            return GetPartFilePath(uploadId, 0);
+            return GetPartFilePath(folderName, 0);
         }
 
         var fs = new FileStream(tmpFile, FileMode.OpenOrCreate);
-        await MergeFileByParts(parts, fs, uploadId);
+        await MergeFileByParts(parts, fs, folderName);
         fs.Close();
 
         return tmpFile;
     }
 
-    public static string GetDestFilePathByUploadId(string uploadId)
+    /// <summary>
+    /// 根据metadata中的key获取合适的文件名
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public static async Task<string> GenerateAppropriateFileNameByUploadId(string key)
     {
-        // 获取元数据
-        var metadata = MetadataManagement.Get(uploadId);
+        var metadata = MetadataCacheService.Get(key);
 
-        // 获取目标文件夹,如果元数据中没有目标文件夹的话，那么就使用当前日期作为目标文件夹
-        var targetFolderPath = metadata?.TargetFolder ?? GetCurrentDateFolder();
+        if (metadata == null)
+        {
+            throw new Exception("无效的上传ID");
+        }
 
-        // 获取文件名，如果元数据中没有文件名的话，那么就使用uploadId作为文件名
-        var fileName = metadata?.FileName ?? uploadId;
+        if (string.IsNullOrWhiteSpace(metadata.Hash))
+        {
+            return GenerateAppropriateFileNameByMetaData(metadata);
+        }
 
+        return await GenerateAppropriateFileNameForFileWithHash(metadata);
+    }
+
+    /// <summary>
+    /// 生成有hash的文件的合适的文件名
+    /// </summary>
+    /// <param name="metadata"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    private static async Task<string> GenerateAppropriateFileNameForFileWithHash(FileMetaData metadata)
+    {
+        var dbContext = new DatabaseContext();
+
+        var fileEntity = await dbContext.Files.FirstOrDefaultAsync(
+            i => i.FolderPath == metadata.FolderPath && i.Name == metadata.Name);
+
+        // 如果不存在, 直接返回原始名称即可
+        if (fileEntity == null)
+        {
+            return metadata.Name;
+        }
+
+        switch (metadata.ConflictStrategy)
+        {
+            case ConflictStrategy.Overwrite:
+                dbContext.Remove(fileEntity);
+                await dbContext.SaveChangesAsync();
+                break;
+
+            case ConflictStrategy.Rename:
+                var num = 1;
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(metadata.Name);
+                var extension = Path.GetExtension(metadata.Name);
+
+                string GetNextFileName() => $"{fileNameWithoutExtension}({num}){extension}";
+
+                while (true)
+                {
+                    var nextFileName = GetNextFileName();
+
+                    var fileEntity2 = await dbContext.Files.FirstOrDefaultAsync(
+                        i => i.FolderPath == metadata.FolderPath && i.Name == nextFileName);
+
+                    if (fileEntity2 == null)
+                    {
+                        return nextFileName;
+                    }
+
+                    num++;
+                }
+            case ConflictStrategy.Reject:
+            default:
+                throw new Exception($"文件夹{metadata.FolderPath}下存在同名文件{metadata.Name}。");
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 根据metadata生成合适的文件名
+    /// </summary>
+    /// <param name="metadata"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    private static string GenerateAppropriateFileNameByMetaData(FileMetaData metadata)
+    {
         // 根据文件名和目标文件夹获取绝对路径
         string GetAbsolutePath(string filename) =>
-            Path.Combine(Configuration.Configuration.UploadFolderPath, targetFolderPath, filename);
+            Path.Combine(Configuration.Configuration.UploadFolderPath, metadata.FolderPath, filename);
 
-        var targetFilePath = GetAbsolutePath(fileName);
+        var targetFilePath = GetAbsolutePath(metadata.Name);
 
         if (!ExistsFile(targetFilePath))
         {
             return targetFilePath;
         }
 
-        switch (metadata?.ConflictStrategy)
+        switch (metadata.ConflictStrategy)
         {
             case ConflictStrategy.Overwrite:
                 File.Delete(targetFilePath);
@@ -116,23 +211,25 @@ public static class FileUploadService
 
             case ConflictStrategy.Rename:
                 var num = 1;
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-                var extension = Path.GetExtension(fileName);
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(metadata.Name);
+                var extension = Path.GetExtension(metadata.Name);
 
-                string GetFilePath() => GetAbsolutePath($"{fileNameWithoutExtension}({num}){extension}");
+                string GetNextFilePath() => GetAbsolutePath($"{fileNameWithoutExtension}({num}){extension}");
 
-                while (ExistsFile(GetFilePath()))
+                var nextFilePath = GetNextFilePath();
+
+                while (ExistsFile(nextFilePath))
                 {
                     num++;
                 }
 
-                return GetFilePath();
+                return Path.GetFileName(nextFilePath);
 
             default:
-                throw new Exception($"文件夹{metadata.TargetFolder}下存在同名文件{metadata.FileName}。");
+                throw new Exception($"文件夹{metadata.FolderPath}下存在同名文件{metadata.Name}。");
         }
 
-        return targetFilePath;
+        return Path.GetFileName(targetFilePath);
     }
 
     private static async Task MergeFileByParts(IEnumerable<int> parts, Stream fs, string fileName)
@@ -153,12 +250,14 @@ public static class FileUploadService
         return Path.Combine(Configuration.Configuration.TempFolderPath, fileName, part.ToString());
     }
 
-    private static void CleanUpFileJunkFiles(string tmpFile, string fileName)
+    private static void CleanUpFileJunkFiles(string tmpFile, string uploadId)
     {
         try
         {
             File.Delete(tmpFile);
-            Directory.Delete(Path.Combine(Configuration.Configuration.TempFolderPath, fileName), true);
+            var metaData = MetadataCacheService.Get(uploadId);
+            Directory.Delete(Path.Combine(Configuration.Configuration.TempFolderPath, metaData?.Hash ?? uploadId),
+                true);
         }
         catch (Exception e)
         {
@@ -180,9 +279,10 @@ public static class FileUploadService
 
     # region Public Method
 
-    public static List<int> ListParts(string fileName)
+    public static List<int> ListParts(string uploadId)
     {
-        var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, fileName);
+        var metaData = MetadataCacheService.Get(uploadId);
+        var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, metaData.Hash ?? uploadId);
 
         return !Directory.Exists(folderPath)
             ? new List<int>()
@@ -191,7 +291,10 @@ public static class FileUploadService
 
     public static async Task UploadPartAsync(string uploadId, int partNumber, IFormFile file)
     {
-        var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, uploadId);
+        var metaData = MetadataCacheService.Get(uploadId);
+
+        var folderName = metaData.Hash ?? uploadId;
+        var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, folderName);
         var filePath = Path.Combine(folderPath, partNumber.ToString());
         var fileTempPath = Path.Combine(folderPath, partNumber.ToString()) + "_tmp";
 
@@ -213,56 +316,96 @@ public static class FileUploadService
         }
     }
 
-    public static async Task<string> CompleteMultipartUploadAsync(string uploadId)
+    public static async Task<DataBase.Models.File> CompleteMultipartUploadAsync(string uploadId)
     {
-        if (CompositeTaskMap.TryGetValue(uploadId, out var result))
+        var mergedFilePath = await MergeFileAsync(uploadId);
+
+        var metaData = MetadataCacheService.Get(uploadId);
+
+        var fileName = await GenerateAppropriateFileNameByUploadId(uploadId);
+
+        if (!string.IsNullOrWhiteSpace(metaData.Hash))
         {
-            var filePath = await result;
-
-            if (File.Exists(filePath))
-            {
-                return filePath;
-            }
-
-            CompositeTaskMap.TryRemove(uploadId, out _);
+            fileName = metaData.Hash + Path.GetExtension(fileName);
         }
 
-        return await CompositeTaskMap.GetOrAdd(uploadId, async x =>
+        var relativePath = Path.Combine(metaData.FolderPath, fileName);
+
+        var targetFilePath =
+            Path.Combine(Configuration.Configuration.UploadFolderPath, relativePath);
+
+        MoveTemporaryFileToFinalDirectory(mergedFilePath, targetFilePath);
+
+        CleanUpFileJunkFiles(mergedFilePath, uploadId);
+
+        if (Configuration.Configuration.AppConfig.UseCloudStorage)
         {
-            var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(uploadId);
-
-            if (diskFile != null)
-            {
-                var fileFullPath = Path.Combine(Configuration.Configuration.UploadFolderPath, diskFile);
-
-                if (File.Exists(fileFullPath))
-                {
-                    return fileFullPath;
-                }
-            }
-
-            var mergedFilePath = await MergeFileAsync(uploadId);
-
-            var targetFilePath = GetDestFilePathByUploadId(uploadId);
-
-            MoveTemporaryFileToFinalDirectory(mergedFilePath, targetFilePath);
-
-            DataAccess.DataAccess.Instance.PutDiskFile(uploadId,
+            _ = CloudStorageService.CreateTaskAsync(
                 targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
+        }
 
-            CleanUpFileJunkFiles(mergedFilePath, uploadId);
+        var dbContext = new DatabaseContext();
 
-            if (Configuration.Configuration.AppConfig.UseCloudStorage)
+        if (!string.IsNullOrWhiteSpace(metaData.Hash))
+        {
+            dbContext.FileHashes.Add(new FileHash
             {
-                _ = CloudStorageService.CreateTaskAsync(
-                    targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
-            }
+                Hash = metaData.Hash,
+                Path = relativePath
+            });
+        }
 
-            return targetFilePath;
-        });
+        var fileEntity = new DataBase.Models.File()
+        {
+            Key = uploadId + "_" + metaData.Name,
+            Name = metaData.Name,
+            Hash = metaData.Hash,
+            Size = metaData.Size,
+            FolderPath = metaData.FolderPath,
+            ContentType = metaData.ContentType,
+            Ext = metaData.Ext,
+            Uploader = metaData.Uploader,
+        };
 
+        await dbContext.Files.AddAsync(fileEntity);
+
+        await dbContext.SaveChangesAsync();
+
+        return await AddFileRecordAsync(uploadId);
     }
 
+    public static async Task<DataBase.Models.File> AddFileRecordAsync(string uploadId)
+    {
+        var metaData = MetadataCacheService.Get(uploadId);
+
+        var dbContext = new DatabaseContext();
+
+        var fileEntity = new DataBase.Models.File()
+        {
+            Key = uploadId + "_" + metaData.Name,
+            Name = metaData.Name,
+            Hash = metaData.Hash,
+            Size = metaData.Size,
+            FolderPath = metaData.FolderPath,
+            ContentType = metaData.ContentType,
+            Ext = metaData.Ext,
+            Uploader = metaData.Uploader,
+        };
+
+        try
+        {
+            await dbContext.Files.AddAsync(fileEntity);
+            await dbContext.SaveChangesAsync();
+        }
+        finally
+        {
+            _ = dbContext.DisposeAsync();
+        }
+
+        return fileEntity;
+    }
+
+    // todo 重构
     public static string CreateFileDownloadLink(CreateFileDownloadLinkParam param)
     {
         var filePath = param.FilePath;
@@ -283,34 +426,9 @@ public static class FileUploadService
             filePath = destFileName.Replace(Configuration.Configuration.DownloadFolderPath + "\\", string.Empty);
         }
 
-        DataAccess.DataAccess.Instance.PutDownloadFile(fileId, filePath, param.ExpirationDate);
-
         return fileId;
     }
 
-    public static string CreateSoftLink(string uploadId, string fileName)
-    {
-        var fileId = Guid.NewGuid() + "_" + fileName;
-
-        DataAccess.DataAccess.Instance.PutVirtualFile(fileId, uploadId);
-
-        return fileId;
-    }
-
-    public static Dictionary<string, string> GetDiskFiles()
-    {
-        return DataAccess.DataAccess.Instance.GetDiskFiles();
-    }
-
-    public static Dictionary<string, string> GetSoftLinksFiles()
-    {
-        return DataAccess.DataAccess.Instance.GetSoftLinksFiles();
-    }
-
-    public static Dictionary<string, string> GetDownloadLinksFiles()
-    {
-        return DataAccess.DataAccess.Instance.GetDownloadLinksFiles();
-    }
 
     public static string GenerateUniqueFileName()
     {
@@ -336,69 +454,38 @@ public static class FileUploadService
     /// <returns></returns>
     public static string GetFileDirectory(string fileId)
     {
-        var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
-
-        if (virtualFile != null)
-        {
-            var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
-
-            if (diskFile != null)
-            {
-                return Path.GetDirectoryName(diskFile);
-            }
-        }
-
         return null;
     }
 
     /// <summary>
     /// 根据文件ID获取文件的全路径
     /// </summary>
-    /// <param name="fileId"></param>
+    /// <param name="fileKey"></param>
     /// <returns></returns>
-    public static string GetFileFullPathByFileId(string fileId)
+    public static async Task<string> GetFileFullPathByFileKeyAsync(string fileKey)
     {
-        var virtualFile = DataAccess.DataAccess.Instance.GetVirtualFile(fileId);
+        var dbContext = new DatabaseContext();
 
-        if (virtualFile != null)
+        var file = await dbContext.Files.FirstOrDefaultAsync(item => item.Key == fileKey);
+
+        if (file == null)
         {
-            var diskFile = DataAccess.DataAccess.Instance.GetDiskFile(virtualFile);
-            if (diskFile != null)
-            {
-                return Path.Combine(Configuration.Configuration.UploadFolderPath, diskFile);
-            }
+            return null;
         }
 
-        var downloadLinkEntity = DataAccess.DataAccess.Instance.GetDownloadFile(fileId);
-
-        if (downloadLinkEntity != null)
+        if (!string.IsNullOrWhiteSpace(file.Hash))
         {
-            var notCopyFile = false;
-            var filePath = Path.Combine(Configuration.Configuration.DownloadFolderPath, fileId);
+            var fileHash = await dbContext.FileHashes.FirstOrDefaultAsync(item => item.Hash == file.Hash);
 
-            if (!File.Exists(filePath))
+            if (fileHash == null)
             {
-                notCopyFile = true;
-                filePath = downloadLinkEntity.FilePath;
-            }
-
-            // 已过期
-            if (downloadLinkEntity.ExpiresAt < DateTime.Now.Ticks)
-            {
-                if (File.Exists(filePath) && !notCopyFile)
-                {
-                    File.Delete(filePath);
-                }
-
-                DataAccess.DataAccess.Instance.DeleteDownloadFile(fileId);
-
                 return null;
             }
 
-            return filePath;
+            return Path.Combine(Configuration.Configuration.UploadFolderPath, fileHash.Path);
         }
 
-        return null;
+        return Path.Combine(Configuration.Configuration.UploadFolderPath, file.FolderPath, file.Name);
     }
 
     /// <summary>
@@ -439,7 +526,7 @@ public static class FileUploadService
                     continue;
                 }
 
-                var fullPath = GetFileFullPathByFileId(fileId);
+                var fullPath = await GetFileFullPathByFileKeyAsync(fileId);
                 if (fullPath == null)
                 {
                     continue;
@@ -488,6 +575,46 @@ public static class FileUploadService
         {
             Console.WriteLine("Error compressing file: " + ex.Message);
         }
+    }
+
+    private static long ConvertDateTimeToTimestamp(DateTime dateTime)
+    {
+        var date = DateTime.Now;
+        var unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        long timestamp = (long)(date.ToUniversalTime() - unixEpoch).TotalSeconds;
+        return timestamp * 1000;
+    }
+
+    public static List<ListItemModel> ListItems(string relativePath)
+    {
+        var folderPath = Path.Combine(Configuration.Configuration.UploadFolderPath, relativePath);
+        if (!Directory.Exists(folderPath))
+        {
+            return new List<ListItemModel>(0);
+        }
+
+        var directory = new DirectoryInfo(folderPath);
+        var subDirectories = directory.GetDirectories();
+        var files = directory.GetFiles();
+
+        var list = subDirectories.Select(item => new ListItemModel()
+        {
+            Name = item.Name,
+            CreationTime = ConvertDateTimeToTimestamp(item.CreationTime),
+            LastWriteTime = ConvertDateTimeToTimestamp(item.LastWriteTime),
+            IsFolder = true
+        }).ToList();
+
+        list.AddRange(files.Select(item => new ListItemModel()
+        {
+            Name = item.Name,
+            CreationTime = ConvertDateTimeToTimestamp(item.CreationTime),
+            LastWriteTime = ConvertDateTimeToTimestamp(item.LastWriteTime),
+            Size = item.Length,
+            IsFolder = false
+        }));
+
+        return list;
     }
 
     #endregion

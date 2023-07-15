@@ -35,26 +35,28 @@ class FileUploadEngine {
   }
 
   private async initMultipartUpload(file: File): HttpHandlerResult<IInitMultipartUploadResult> {
-    const targetFolderPath = this.getTargetFolderPath();
+    const folderPath = this.getTargetFolderPath();
     let conflictStrategy = this.conflictStrategy;
 
-    if (file.webkitRelativePath && targetFolderPath) {
+    if (file.webkitRelativePath && folderPath) {
       const parts = file.webkitRelativePath.split('/');
       parts.pop();
     } else {
       conflictStrategy = ConflictStrategy.Overwrite;
     }
 
-    const fileMd5 =
-      file.size !== 0 && this.enableResumableUpload && !targetFolderPath
-        ? await FileHashCalculationEngine.execute(file)
-        : null;
+    const hash =
+        file.size !== 0 && this.enableResumableUpload && !folderPath
+            ? await FileHashCalculationEngine.execute(file)
+            : null;
 
     return requestHelper.initMultipartUpload({
-      fileMd5,
-      fileName: file.name,
+      name: file.name,
+      hash,
+      folderPath,
+      contentType: file.type,
+      size: file.size,
       conflictStrategy,
-      targetFolderPath,
     });
   }
 
@@ -102,12 +104,12 @@ class FileUploadEngine {
       const res = await requestHelper.checkFileInfo(uploadId);
 
       if (res.data.exist) {
-        const createVirtualFileRes = await requestHelper.createSoftLink(uploadId, file.name);
+        const addFileRes = await requestHelper.addFileRecord(uploadId);
         callback({
           percent: 100,
           status: 'success',
-          uid: createVirtualFileRes.data,
-          url: FileUploadEngine.getAccessUrl(createVirtualFileRes.data),
+          uid: addFileRes.data,
+          url: FileUploadEngine.getAccessUrl(addFileRes.data),
         });
         return;
       }

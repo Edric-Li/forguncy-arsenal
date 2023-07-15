@@ -1,6 +1,8 @@
 using System.Text;
 using Arsenal.Server.Common;
+using Arsenal.Server.DataBase;
 using Arsenal.Server.Model;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace Arsenal.Server.Services;
@@ -50,21 +52,37 @@ public sealed class CloudStorageService
         _ = InitializeAsync();
     }
 
-    private static Task InitializeAsync()
+    private static async Task InitializeAsync()
     {
         if (!Configuration.Configuration.AppConfig.UseCloudStorage)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        var diskFiles = DataAccess.DataAccess.Instance.GetDiskFiles();
+        var files = new HashSet<string>();
 
-        var files = diskFiles
-            .Where(i => File.Exists(Path.Combine(Configuration.Configuration.UploadFolderPath, i.Value)))
-            .Select(i => i.Value)
-            .ToList();
+        var databaseContext = new DatabaseContext();
 
-        return ConcurrentExecutionAsync(5, files,
+        var fileList = await databaseContext.Files.ToListAsync();
+        var fileHashes = await databaseContext.FileHashes.ToListAsync();
+        var fileHashesMap = fileHashes.ToDictionary(i => i.Hash, i => i.Path);
+
+        foreach (var file in fileList)
+        {
+            if (string.IsNullOrWhiteSpace(file.Hash))
+            {
+                files.Add(Path.Combine(file.FolderPath, file.Name));
+            }
+            else
+            {
+                if (fileHashesMap.TryGetValue(file.Hash, out var item))
+                {
+                    files.Add(item);
+                }
+            }
+        }
+
+        await ConcurrentExecutionAsync(5, files.ToList(),
             async i => { await RunUploadFileToCloudStorageTaskAsync(i); });
     }
 

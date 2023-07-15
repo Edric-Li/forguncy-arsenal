@@ -31,7 +31,7 @@ public class GetFileFullPathCommand : Command, ICommandExecutableInServerSideAsy
             throw new ArgumentException("文件名称不能为空。");
         }
 
-        var result = FileUploadService.GetFileFullPathByFileId(fileName);
+        var result = await FileUploadService.GetFileFullPathByFileKeyAsync(fileName);
         dataContext.Parameters[Result] = result;
         return new ExecuteResult();
     }

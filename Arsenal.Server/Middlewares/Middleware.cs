@@ -20,7 +20,7 @@ internal class Middleware
         if (context.Request.Path.Value.StartsWith("/Upload/"))
         {
             var fileId = context.Request.Path.Value?.Replace("/Upload/", "");
-            var diskFilePath = FileUploadService.GetFileFullPathByFileId(fileId);
+            var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileId);
 
             if (diskFilePath != null)
             {
@@ -43,7 +43,7 @@ internal class Middleware
         else if (context.Request.Path.Value.StartsWith("/FileDownloadUpload/Download"))
         {
             var fileId = context.Request.Query["file"];
-            var diskFilePath = FileUploadService.GetFileFullPathByFileId(fileId);
+            var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileId);
 
             if (diskFilePath != null)
             {

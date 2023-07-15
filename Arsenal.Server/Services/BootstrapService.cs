@@ -1,4 +1,6 @@
-﻿namespace Arsenal.Server.Services;
+﻿using Arsenal.Server.DataBase;
+
+namespace Arsenal.Server.Services;
 
 public abstract class BootstrapServices
 {
@@ -7,7 +9,7 @@ public abstract class BootstrapServices
         try
         {
             Configuration.Configuration.Instance.EnsureInitialization();
-            DataAccess.DataAccess.Instance.EnsureInitialization();
+            DatabaseInitializer.Instance.EnsureInitialization();
             CloudStorageService.EnsureInitialization();
         }
         catch (Exception e)

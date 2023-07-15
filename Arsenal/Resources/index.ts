@@ -1,5 +1,5 @@
 function runDev() {
-    const origin = "http://localhost:5173";
+    const origin = "http://localhost:5174";
 
     const fragment = document.createDocumentFragment();
 
@@ -13,7 +13,7 @@ function runDev() {
     const reactRefreshScript = document.createElement('script');
     reactRefreshScript.type = 'module';
     reactRefreshScript.innerHTML = `  
-    import RefreshRuntime from "http://localhost:5173/@react-refresh"
+    import RefreshRuntime from "${origin}/@react-refresh"
     RefreshRuntime.injectIntoGlobalHook(window)
     window.$RefreshReg$ = () => {}
     window.$RefreshSig$ = () => (type) => type
