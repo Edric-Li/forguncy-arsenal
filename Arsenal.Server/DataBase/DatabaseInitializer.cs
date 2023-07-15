@@ -16,17 +16,19 @@ public class DatabaseInitializer
     /// </summary>
     private static void InitializeDatabaseConnectionString()
     {
-        var unixTimestampStr = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
-
+        var dbFileName = "db";
+        
         if (Configuration.Configuration.RunAtLocal)
         {
-            var directories = Directory.GetDirectories(Configuration.Configuration.DataFolderPath);
+            var unixTimestampStr = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
 
-            if (directories.Length > 0)
+            var files = Directory.GetFiles(Configuration.Configuration.DataFolderPath);
+
+            if (files.Length > 0)
             {
                 long maxLongValue = 0;
 
-                foreach (var item in directories)
+                foreach (var item in files)
                 {
                     if (!item.EndsWith(".sqlite3"))
                     {
@@ -50,9 +52,12 @@ public class DatabaseInitializer
                 }
             }
 
-            Configuration.Configuration.DatabaseConnectionString =
-                $"Data Source={Path.Combine(Configuration.Configuration.DataFolderPath, unixTimestampStr)}.sqlite3";
+            dbFileName = unixTimestampStr;
         }
+
+        Configuration.Configuration.DatabaseConnectionString =
+            $"Data Source={Path.Combine(Configuration.Configuration.DataFolderPath, dbFileName + ".sqlite3")}";
+        
     }
 
     public void EnsureInitialization()
@@ -96,6 +101,8 @@ public class DatabaseInitializer
             "hash");
 
         await sqLiteUtility.EnsureIndexExistsAsync(Constants.FilesTableName, "ix_arsenal_files_key", "key");
+
+        await MergeDatabaseAsync();
     }
 
     /// <summary>

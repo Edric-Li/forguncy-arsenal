@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal.Server.Controllers;
 
-public class Console : ForguncyApi
+public class ArsenalConsole : ForguncyApi
 {
     [Post]
     public async Task ListItems()
@@ -17,7 +17,7 @@ public class Console : ForguncyApi
         {
             var body = await ParseBodyAsync<ListItemsParam>();
 
-            var result = FileUploadService.ListItems(body.RelativePath?.TrimStart('/') ?? string.Empty);
+            var result = await new ConsoleService().ListItemsAsync(body.RelativePath?.TrimStart('/') ?? string.Empty);
 
             BuildHttpResult(new HttpSuccessResult(result));
         });

@@ -46,9 +46,9 @@ class FileUploadEngine {
     }
 
     const hash =
-        file.size !== 0 && this.enableResumableUpload && !folderPath
-            ? await FileHashCalculationEngine.execute(file)
-            : null;
+      file.size !== 0 && this.enableResumableUpload && !folderPath
+        ? await FileHashCalculationEngine.execute(file)
+        : null;
 
     return requestHelper.initMultipartUpload({
       name: file.name,
@@ -68,6 +68,10 @@ class FileUploadEngine {
 
   public static getAccessUrl(fileName: string): string {
     return Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/' + fileName;
+  }
+
+  public static extractFileNameFromUrl(url: string): string {
+    return url.replace(Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/', '');
   }
 
   public static getDownloadUrl(fileName: string): string {
@@ -108,7 +112,6 @@ class FileUploadEngine {
         callback({
           percent: 100,
           status: 'success',
-          uid: addFileRes.data,
           url: FileUploadEngine.getAccessUrl(addFileRes.data),
         });
         return;
@@ -146,7 +149,6 @@ class FileUploadEngine {
       percent: 100,
       status: 'success',
       name: completeMultipartUploadRes.data.fileName,
-      uid: completeMultipartUploadRes.data.fileId,
       url: FileUploadEngine.getAccessUrl(completeMultipartUploadRes.data.fileId),
     });
   }

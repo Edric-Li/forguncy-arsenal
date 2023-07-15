@@ -167,7 +167,8 @@ public static class FileUploadService
                     var nextFileName = GetNextFileName();
 
                     var fileEntity2 = await dbContext.Files.FirstOrDefaultAsync(
-                        i => i.FolderPath == metadata.FolderPath && i.Name == nextFileName);
+                        i => i.FolderPath == SeparatorConverter.ConvertToDatabaseSeparator(metadata.FolderPath) &&
+                             i.Name == nextFileName);
 
                     if (fileEntity2 == null)
                     {
@@ -355,20 +356,6 @@ public static class FileUploadService
             });
         }
 
-        var fileEntity = new DataBase.Models.File()
-        {
-            Key = uploadId + "_" + metaData.Name,
-            Name = metaData.Name,
-            Hash = metaData.Hash,
-            Size = metaData.Size,
-            FolderPath = metaData.FolderPath,
-            ContentType = metaData.ContentType,
-            Ext = metaData.Ext,
-            Uploader = metaData.Uploader,
-        };
-
-        await dbContext.Files.AddAsync(fileEntity);
-
         await dbContext.SaveChangesAsync();
 
         return await AddFileRecordAsync(uploadId);
@@ -386,10 +373,11 @@ public static class FileUploadService
             Name = metaData.Name,
             Hash = metaData.Hash,
             Size = metaData.Size,
-            FolderPath = metaData.FolderPath,
+            FolderPath = SeparatorConverter.ConvertToDatabaseSeparator(metaData.FolderPath),
             ContentType = metaData.ContentType,
             Ext = metaData.Ext,
             Uploader = metaData.Uploader,
+            CreatedAt = ConvertDateTimeToTimestamp(DateTime.Now)
         };
 
         try
@@ -485,7 +473,8 @@ public static class FileUploadService
             return Path.Combine(Configuration.Configuration.UploadFolderPath, fileHash.Path);
         }
 
-        return Path.Combine(Configuration.Configuration.UploadFolderPath, file.FolderPath, file.Name);
+        return Path.Combine(Configuration.Configuration.UploadFolderPath,
+            SeparatorConverter.ConvertToSystemSeparator(file.FolderPath), file.Name);
     }
 
     /// <summary>
@@ -585,37 +574,7 @@ public static class FileUploadService
         return timestamp * 1000;
     }
 
-    public static List<ListItemModel> ListItems(string relativePath)
-    {
-        var folderPath = Path.Combine(Configuration.Configuration.UploadFolderPath, relativePath);
-        if (!Directory.Exists(folderPath))
-        {
-            return new List<ListItemModel>(0);
-        }
-
-        var directory = new DirectoryInfo(folderPath);
-        var subDirectories = directory.GetDirectories();
-        var files = directory.GetFiles();
-
-        var list = subDirectories.Select(item => new ListItemModel()
-        {
-            Name = item.Name,
-            CreationTime = ConvertDateTimeToTimestamp(item.CreationTime),
-            LastWriteTime = ConvertDateTimeToTimestamp(item.LastWriteTime),
-            IsFolder = true
-        }).ToList();
-
-        list.AddRange(files.Select(item => new ListItemModel()
-        {
-            Name = item.Name,
-            CreationTime = ConvertDateTimeToTimestamp(item.CreationTime),
-            LastWriteTime = ConvertDateTimeToTimestamp(item.LastWriteTime),
-            Size = item.Length,
-            IsFolder = false
-        }));
-
-        return list;
-    }
+ 
 
     #endregion
 }

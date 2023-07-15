@@ -6,12 +6,12 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
 import ImgCrop from 'antd-img-crop';
-import FilePreviewInner, {isImage} from '../file-preview/file-preview-inner';
-import {getBase64} from '../../common/get-base64';
+import FilePreviewInner, { isImage } from '../file-preview/file-preview-inner';
+import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
 import CacheService from '../../common/cache-service';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
-import {ConflictStrategy, ImgCropSettings, WatermarkSettings} from '../../declarations/types';
+import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../declarations/types';
 import useFileUploadEngine from '../../hooks/useFileUploadEngine';
 import usePermission from '../../hooks/usePermission';
 import cx from 'classnames';
@@ -77,6 +77,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const fileListRef = useRef<UploadFile[]>([]);
+  const uploadedFilesRef = useRef<UploadFile[]>([]);
   const listType: UploadListType = useMemo(() => ListType[props.options.listType] as UploadListType, [props]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState<string>();
@@ -140,7 +141,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
             uid: i,
             name: isInternalFile(i) ? i.substring(37) : i,
             status: 'done',
-            percent: 0,
+            percent: 100,
             url: FileUploadEngine.getAccessUrl(i),
           };
         });
@@ -150,8 +151,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
       getValue: () => {
         return fileListRef.current
-          .filter((i) => i.status === 'done' || i.status === 'success')
-          .map((file) => file.uid)
+          .filter((i) => (i.status === 'done' || i.status === 'success') && i.url?.length)
+          .map((file) => FileUploadEngine.extractFileNameFromUrl(file.url!))
           .join('|');
       },
 
@@ -240,6 +241,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     fileListRef.current = [...fileListRef.current, uploadFile];
 
     syncFileListRefDataToState();
+
     await fileUpload.addTask(newFile, (callbackInfo) => {
       const index = fileListRef.current.findIndex((i) => i.uid === uploadFile.uid);
 
@@ -251,13 +253,18 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       fileListRef.current[index] = mergedInfo;
 
       if (mergedInfo.status === 'success') {
-        props.commitValue();
         CacheService.set(callbackInfo.url!, newFile);
+        uploadedFilesRef.current.push(mergedInfo);
+
+        if (uploadedFilesRef.current.length === fileListRef.current.length) {
+          props.commitValue();
+        }
       }
+
       syncFileListRefDataToState();
     });
 
-    return;
+    return false;
   };
 
   const handleRemove: UploadProps['onRemove'] = (file) => {
@@ -311,15 +318,15 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   }, [listType]);
 
   const renderUpload = () => {
-    const {uploadSettings} = props.options;
+    const { uploadSettings } = props.options;
     const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 0);
     return (
-        <Upload
-            isImageUrl={isImageUrl}
-            directory={directory}
-            fileList={fileList}
-            listType={listType}
-            onRemove={handleRemove}
+      <Upload
+        isImageUrl={isImageUrl}
+        directory={directory}
+        fileList={fileList}
+        listType={listType}
+        onRemove={handleRemove}
         onDownload={handleDownload}
         beforeUpload={handleBeforeUpload}
         onPreview={handlePreview}

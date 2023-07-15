@@ -16,22 +16,22 @@ export type HttpHandlerResult<T = object> = Promise<HttpResultData<T>>;
 axios.defaults.baseURL = Forguncy.Helper.SpecialPath.getBaseUrl() + 'customapi/arsenal';
 
 axios.interceptors.response.use(
-    (response) => {
-      if (!response.data.result) {
-        message.error(response.data.message);
-      }
-      return {
-        originalResponse: response,
-        ...response.data,
-      };
-    },
-    async (error) => {
-      return {result: false, message: error.message};
-    },
+  (response) => {
+    if (!response.data.result) {
+      message.error(response.data.message);
+    }
+    return {
+      originalResponse: response,
+      ...response.data,
+    };
+  },
+  async (error) => {
+    return { result: false, message: error.message };
+  },
 );
 
 interface IInitMultipartUploadParam {
-  name: string
+  name: string;
   hash: string | null;
   folderPath: string | null;
   contentType: string;
@@ -87,7 +87,7 @@ const initMultipartUpload = (param: IInitMultipartUploadParam): HttpHandlerResul
 };
 
 const addFileRecord = (uploadId: string): HttpHandlerResult<string> => {
-  return axios.post('/addFileRecord', {uploadId});
+  return axios.post('/addFileRecord', { uploadId });
 };
 
 const completeMultipartUpload = (uploadId: string): HttpHandlerResult<ICompleteMultipartUploadResult> => {

@@ -34,11 +34,10 @@ public class Arsenal : ForguncyApi
 
             var uploadId = FileUploadService.GenerateUniqueFileName();
 
-
             var targetFolderPath =
                 body.FolderPath?.TrimStart('/').TrimEnd('/') ?? FileUploadService.GetCurrentDateFolder();
 
-            MetadataCacheService.Set(uploadId, new FileMetaData()
+            var meteData = new FileMetaData()
             {
                 Name = body.Name,
                 Hash = body.Hash,
@@ -46,10 +45,18 @@ public class Arsenal : ForguncyApi
                 ContentType = body.ContentType,
                 Ext = Path.GetExtension(body.Name),
                 Size = body.Size,
-                Uploader = "Administrator",
                 ConflictStrategy = body.ConflictStrategy ?? ConflictStrategy.Rename
-            });
+            };
 
+            var userIdentity = Context.User.Identity;
+
+            if (userIdentity != null)
+            {
+                meteData.Uploader = userIdentity.Name;
+            }
+
+            MetadataCacheService.Set(uploadId, meteData);
+            
             var fileName = await FileUploadService.GenerateAppropriateFileNameByUploadId(uploadId);
 
             var tempFolderPath = Path.Combine(Configuration.Configuration.TempFolderPath, body.Hash ?? uploadId);

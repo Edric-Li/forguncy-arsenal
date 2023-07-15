@@ -67,6 +67,7 @@ public sealed class CloudStorageService
         var fileHashes = await databaseContext.FileHashes.ToListAsync();
         var fileHashesMap = fileHashes.ToDictionary(i => i.Hash, i => i.Path);
 
+        //todo 有问题
         foreach (var file in fileList)
         {
             if (string.IsNullOrWhiteSpace(file.Hash))
