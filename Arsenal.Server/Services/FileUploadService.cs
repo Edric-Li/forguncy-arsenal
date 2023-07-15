@@ -201,7 +201,7 @@ public static class FileUploadService
 
         if (!ExistsFile(targetFilePath))
         {
-            return targetFilePath;
+            return Path.GetFileName(targetFilePath);
         }
 
         switch (metadata.ConflictStrategy)

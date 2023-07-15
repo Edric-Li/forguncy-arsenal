@@ -9,10 +9,10 @@ namespace Arsenal;
 [OrderWeight((int)ClientCommandOrderWeight.DownloadFileCommand)]
 public class DownloadFileCommand : Command
 {
-    [DisplayName("文件名称")]
-    [JsonProperty("fileName")]
+    [DisplayName("附件值")]
+    [JsonProperty("fileKeys")]
     [FormulaProperty]
-    public object FileName { get; set; }
+    public object FileKeys { get; set; }
 
     public override string ToString()
     {

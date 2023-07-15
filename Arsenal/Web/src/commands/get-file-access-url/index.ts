@@ -1,18 +1,18 @@
 import FileUploadEngine from '../../common/file-upload-engine';
 
 interface ICommandParam {
-  fileName: string;
+  fileKeys: string;
   result: string;
 }
 
 const getFileAccessUrlCommand = (ctx: Forguncy.Plugin.CommandBase) => {
   const param = ctx.CommandParam as ICommandParam;
 
-  const fileNames = ctx.evaluateFormula(param.fileName)?.toString()?.split('|');
+  const fileKeys = ctx.evaluateFormula(param.fileKeys)?.toString()?.split('|');
 
   const urlArray: string[] = [];
 
-  for (const name of fileNames) {
+  for (const name of fileKeys) {
     if (name) {
       urlArray.push(location.origin + FileUploadEngine.getAccessUrl(name));
     }

@@ -12,10 +12,10 @@ namespace Arsenal;
 [OrderWeight((int)ServerCommandOrderWeight.GetFileFullPathCommand)]
 public class GetFileFullPathCommand : Command, ICommandExecutableInServerSideAsync
 {
-    [DisplayName("文件路径")]
+    [DisplayName("附件值")]
     [FormulaProperty]
     [Required]
-    public object FileName { get; set; }
+    public object FileKey { get; set; }
 
     [DisplayName("结果至变量")]
     [ResultToProperty]
@@ -24,14 +24,14 @@ public class GetFileFullPathCommand : Command, ICommandExecutableInServerSideAsy
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
-        var fileName = (await dataContext.EvaluateFormulaAsync(FileName))?.ToString();
+        var fileKey = (await dataContext.EvaluateFormulaAsync(FileKey))?.ToString();
 
-        if (string.IsNullOrWhiteSpace(fileName))
+        if (string.IsNullOrWhiteSpace(fileKey))
         {
             throw new ArgumentException("文件名称不能为空。");
         }
 
-        var result = await FileUploadService.GetFileFullPathByFileKeyAsync(fileName);
+        var result = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
         dataContext.Parameters[Result] = result;
         return new ExecuteResult();
     }

@@ -6,6 +6,7 @@ import CacheService from '../../../common/cache-service';
 import useFileUploadEngine from '../../../hooks/useFileUploadEngine';
 import addWatermarkToFile from '../../../common/add-watermark-to-file';
 import { ConflictStrategy, WatermarkSettings } from '../../../declarations/types';
+import FileUploadEngine from '../../../common/file-upload-engine';
 
 interface ICommandParam {
   folder: string;
@@ -61,12 +62,12 @@ const UploadFolderCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase })
 
         uploadedFilesRef.current.push(uploadFile);
 
-        let fileId = uploadFile.uid;
+        let fileKey = FileUploadEngine.extractFileNameFromUrl(uploadFile.url!);
         let fileName = uploadFile.name;
 
         if (param.advancedSettings.uploadSuccessCommandTriggerTiming === 'all') {
           if (uploadedFilesRef.current.length === fileListRef.current.length) {
-            fileId = uploadedFilesRef.current.map((i) => i.uid).join('|');
+            fileKey = uploadedFilesRef.current.map((i) => FileUploadEngine.extractFileNameFromUrl(i.url!)).join('|');
             fileName = uploadedFilesRef.current.map((i) => i.name).join('|');
           } else {
             return;
@@ -76,7 +77,7 @@ const UploadFolderCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase })
         ctx.executeCustomCommandObject(
           param.uploadSuccessCommand,
           {
-            [param.uploadSuccessCommand.ParamProperties['fileId']]: fileId,
+            [param.uploadSuccessCommand.ParamProperties['fileKey']]: fileKey,
             [param.uploadSuccessCommand.ParamProperties['fileName']]: fileName,
           },
           new Date().getTime().toString() + '-' + Math.ceil(Math.random() * 1000000000),

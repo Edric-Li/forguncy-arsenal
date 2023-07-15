@@ -41,14 +41,15 @@ class FileUploadEngine {
     if (file.webkitRelativePath && folderPath) {
       const parts = file.webkitRelativePath.split('/');
       parts.pop();
-    } else {
-      conflictStrategy = ConflictStrategy.Overwrite;
     }
-
     const hash =
       file.size !== 0 && this.enableResumableUpload && !folderPath
         ? await FileHashCalculationEngine.execute(file)
         : null;
+
+    if (!hash) {
+      conflictStrategy = ConflictStrategy.Rename;
+    }
 
     return requestHelper.initMultipartUpload({
       name: file.name,
@@ -149,7 +150,7 @@ class FileUploadEngine {
       percent: 100,
       status: 'success',
       name: completeMultipartUploadRes.data.fileName,
-      url: FileUploadEngine.getAccessUrl(completeMultipartUploadRes.data.fileId),
+      url: FileUploadEngine.getAccessUrl(completeMultipartUploadRes.data.fileKey),
     });
   }
 }

@@ -129,12 +129,24 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   });
 
   useImperativeHandle(ref, () => {
+    const getValue = () => {
+      return fileListRef.current
+        .filter((i) => (i.status === 'done' || i.status === 'success') && i.url?.length)
+        .map((file) => FileUploadEngine.extractFileNameFromUrl(file.url!))
+        .join('|');
+    };
+
     return {
       setValue: (value: string) => {
         if (!value) {
           return;
         }
         const files = value.split('|').filter((i) => i);
+
+        if (value === getValue()) {
+          // 如果两次值相同，不做处理，否则动画会闪烁
+          return;
+        }
 
         fileListRef.current = files.map((i: string) => {
           return {
@@ -149,12 +161,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         syncFileListRefDataToState();
       },
 
-      getValue: () => {
-        return fileListRef.current
-          .filter((i) => (i.status === 'done' || i.status === 'success') && i.url?.length)
-          .map((file) => FileUploadEngine.extractFileNameFromUrl(file.url!))
-          .join('|');
-      },
+      getValue,
 
       setReadOnly(isReadOnly: boolean) {
         setShowUploadButton(!isReadOnly && hasUploadPermission);
@@ -319,7 +326,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const renderUpload = () => {
     const { uploadSettings } = props.options;
-    const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 0);
+    const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 1);
     return (
       <Upload
         isImageUrl={isImageUrl}

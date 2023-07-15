@@ -9,10 +9,10 @@ namespace Arsenal;
 [OrderWeight((int)ClientCommandOrderWeight.GetFileAccessUrlCommand)]
 public class GetFileAccessUrlCommand : Command
 {
-    [DisplayName("文件名称")]
-    [JsonProperty("fileName")]
+    [DisplayName("附件值")]
+    [JsonProperty("fileKeys")]
     [FormulaProperty]
-    public object FileName { get; set; }
+    public object FileKeys { get; set; }
 
     [DisplayName("结果至变量")]
     [JsonProperty("result")]

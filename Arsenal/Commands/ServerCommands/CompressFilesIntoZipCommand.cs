@@ -15,10 +15,10 @@ namespace Arsenal;
 [OrderWeight((int)ServerCommandOrderWeight.CompressFilesIntoZipCommand)]
 public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSideAsync
 {
-    [DisplayName("文件名称")]
+    [DisplayName("附件值")]
     [FormulaProperty]
     [Required]
-    public object FileNames { get; set; }
+    public object FileKeys { get; set; }
 
     [DisplayName("压缩文件路径")]
     [FormulaProperty]
@@ -34,12 +34,12 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
-        var fileNames = (await dataContext.EvaluateFormulaAsync(FileNames))?.ToString();
+        var fileKeys = (await dataContext.EvaluateFormulaAsync(FileKeys))?.ToString();
         var zipFilePath = (await dataContext.EvaluateFormulaAsync(ZipFilePath))?.ToString();
 
-        if (string.IsNullOrWhiteSpace(fileNames))
+        if (string.IsNullOrWhiteSpace(fileKeys))
         {
-            throw new ArgumentException("文件名称不能为空。");
+            throw new ArgumentException("附件值不能为空。");
         }
 
         if (string.IsNullOrWhiteSpace(zipFilePath))
@@ -52,7 +52,7 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
             throw new Exception($"文件夹{Path.GetDirectoryName(zipFilePath)}下存在同名文件{Path.GetFileName(zipFilePath)}。");
         }
 
-        var files = fileNames.Split("|").ToArray();
+        var files = fileKeys.Split("|").ToArray();
         await FileUploadService.CompressFilesToZipAsync(zipFilePath, files, NeedKeepFolderStructure);
         return new ExecuteResult();
     }

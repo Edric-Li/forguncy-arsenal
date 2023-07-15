@@ -45,7 +45,7 @@ export interface IInitMultipartUploadResult {
 }
 
 export interface ICompleteMultipartUploadResult {
-  fileId: string;
+  fileKey: string;
   fileName: string;
 }
 

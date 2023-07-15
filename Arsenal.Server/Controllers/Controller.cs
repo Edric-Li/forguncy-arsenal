@@ -59,6 +59,11 @@ public class Arsenal : ForguncyApi
             
             var fileName = await FileUploadService.GenerateAppropriateFileNameByUploadId(uploadId);
 
+            if (fileName != meteData.Name)
+            {
+                MetadataCacheService.Get(uploadId).Name = fileName;
+            }
+
             var tempFolderPath = Path.Combine(Configuration.Configuration.TempFolderPath, body.Hash ?? uploadId);
 
             // 如果文件不存在的话,会创建一个文件夹
@@ -121,7 +126,7 @@ public class Arsenal : ForguncyApi
             
             BuildHttpResult(new HttpSuccessResult(new
             {
-                fileId = fileEntity.Key,
+                fileKey = fileEntity.Key,
                 fileName = fileEntity.Name
             }));
         });
