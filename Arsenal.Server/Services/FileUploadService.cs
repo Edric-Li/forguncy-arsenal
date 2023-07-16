@@ -16,7 +16,9 @@ public static class FileUploadService
 {
     #region Private Method
 
-    private static readonly ConcurrentDictionary<string, Task<string>> CompositeTaskMap = new();
+    private static readonly ConcurrentDictionary<string, Task<string>> MergeTaskMap = new();
+
+    private static readonly object MergeTaskMapLock = new();
 
     private static bool ExistsFile(string filePath)
     {
@@ -273,6 +275,11 @@ public static class FileUploadService
             Directory.CreateDirectory(Path.GetDirectoryName(absolutePath) ?? string.Empty);
         }
 
+        if (File.Exists(absolutePath))
+        {
+            return;
+        }
+
         File.Move(filePath, absolutePath);
     }
 
@@ -319,9 +326,28 @@ public static class FileUploadService
 
     public static async Task<DataBase.Models.File> CompleteMultipartUploadAsync(string uploadId)
     {
-        var mergedFilePath = await MergeFileAsync(uploadId);
-
         var metaData = MetadataCacheService.Get(uploadId);
+
+        var key = metaData.Hash ?? uploadId;
+
+        Task<string> task;
+
+        lock (MergeTaskMapLock)
+        {
+            MergeTaskMap.TryGetValue(key, out task);
+        }
+
+        if (task == null)
+        {
+            lock (MergeTaskMapLock)
+            {
+                MergeTaskMap.TryGetValue(uploadId, out task);
+
+                task ??= MergeFileAsync(uploadId);
+            }
+        }
+
+        var mergedFilePath = await task;
 
         var fileName = await GenerateAppropriateFileNameByUploadId(uploadId);
 
