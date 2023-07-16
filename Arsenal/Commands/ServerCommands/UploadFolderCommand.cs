@@ -164,9 +164,14 @@ public class UploadServerFolderCommand : Command, ICommandExecutableInServerSide
         return result;
     }
 
+    public override CommandScope GetCommandScope()
+    {
+        return CommandScope.ExecutableInServer;
+    }
+    
     public override string ToString()
     {
-        return "同步文件夹";
+        return "迁移服务器文件夹到附件文件夹";
     }
 
     public IEnumerable<GenerateParam> GetGenerateParams()
