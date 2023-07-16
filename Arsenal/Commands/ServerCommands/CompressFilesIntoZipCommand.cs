@@ -30,7 +30,10 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
     [DefaultValue(true)]
     public bool NeedKeepFolderStructure { get; set; } = true;
 
-    [DisplayName("冲突策略")] public CompressFilesIntoZipCommandConflictStrategy ConflictStrategy { get; set; }
+    [DisplayName("冲突策略")]
+    [Description("用于处理压缩文件已经存在的情况。")]
+    public CompressFilesIntoZipCommandConflictStrategy ConflictStrategy { get; set; } =
+        CompressFilesIntoZipCommandConflictStrategy.Reject;
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
@@ -53,7 +56,7 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
         }
 
         var files = fileKeys.Split("|").ToArray();
-        await FileUploadService.CompressFilesToZipAsync(zipFilePath, files, NeedKeepFolderStructure);
+        await CompressService.CompressFilesToZipAsync(zipFilePath, files, NeedKeepFolderStructure);
         return new ExecuteResult();
     }
 

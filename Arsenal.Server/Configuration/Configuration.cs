@@ -16,6 +16,8 @@ public class Configuration
 
     public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
 
+    public static string CurrentPluginRootPath => Instance.GetCurrentPluginRoot();
+
     public static readonly Configuration Instance = LazyInstance.Value;
 
     /// <summary>
@@ -67,6 +69,15 @@ public class Configuration
     private string GetRunAtLocalUploadFolderPath()
     {
         return Path.Combine(GetParents(GetType().Assembly.Location, 3).FullName, "Upload");
+    }
+
+    /// <summary>
+    /// 获取当前插件根目录
+    /// </summary>
+    /// <returns></returns>
+    private string GetCurrentPluginRoot()
+    {
+        return GetParents(GetType().Assembly.Location, 1).FullName;
     }
 
     /// <summary>
