@@ -9,7 +9,7 @@ const style: CSSProperties = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-    position: 'absolute'
+  position: 'absolute',
 };
 
 interface IProps {
