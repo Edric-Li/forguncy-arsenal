@@ -35,7 +35,8 @@ internal class Middleware
 
                 if (Configuration.Configuration.AppConfig.UseCloudStorage)
                 {
-                    context.Response.Redirect(diskFilePath.Replace("\\", "/"));
+                    var relativePath = diskFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
+                    context.Response.Redirect(relativePath.Replace("\\", "/"));
                     return;
                 }
             }
@@ -62,19 +63,21 @@ internal class Middleware
 
                 if (Configuration.Configuration.AppConfig.UseCloudStorage)
                 {
+                    var relativePath = diskFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
+
                     if (Configuration.Configuration.AppConfig.UsePublicUrl)
                     {
-                        context.Response.Redirect("Download?file=" + diskFilePath.Replace("\\", "/"));
+                        context.Response.Redirect("Download?file=" + relativePath.Replace("\\", "/"));
                         return;
                     }
 
                     var request = new HttpRequestMessage(HttpMethod.Get,
                         $"{context.Request.Scheme}://{context.Request.Host}{context.Request.PathBase}{context.Request.Path}?file=" +
-                        diskFilePath.Replace("\\", "/"));
+                        relativePath.Replace("\\", "/"));
 
                     var response = await HttpClientHelper.Client.SendAsync(request);
 
-                    var fileName = Path.GetFileName(diskFilePath);
+                    var fileName = Path.GetFileName(relativePath);
                     context.Response.Headers.Add("Content-Type", "application/octet-stream");
                     context.Response.Headers.Add("content-disposition", "attachment;filename=" + fileName);
                     await response.Content.CopyToAsync(context.Response.Body);
