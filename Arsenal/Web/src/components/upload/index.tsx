@@ -158,6 +158,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           };
         });
 
+        uploadedFilesRef.current = fileListRef.current;
+
         syncFileListRefDataToState();
       },
 
