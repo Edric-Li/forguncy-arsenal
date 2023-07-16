@@ -5,7 +5,7 @@ import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
-import ImgCrop from 'antd-img-crop';
+import ImgCrop, { ImgCropProps } from 'antd-img-crop';
 import FilePreviewInner, { isImage } from '../file-preview/file-preview-inner';
 import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
@@ -17,6 +17,7 @@ import usePermission from '../../hooks/usePermission';
 import cx from 'classnames';
 import isImageUrl from '../../common/is-image-url';
 import isInternalFile from '../../common/is-internal-file';
+import isImageFileType from '../../common/is-image-file-type';
 
 enum ListType {
   text,
@@ -309,6 +310,17 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
   };
 
+  const handleBeforeCrop: ImgCropProps['beforeCrop'] = (file, fileList) => {
+    const isImageType = isImageFileType(file.type);
+
+    if (!isImageType) {
+      handleBeforeUpload(file, fileList);
+      return false;
+    }
+
+    return true;
+  };
+
   const renderButton = useMemo(() => {
     if (listType === 'picture-circle' || listType === 'picture-card') {
       return (
@@ -352,10 +364,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   const renderContent = () => {
-    if (props.options.uploadSettings.enableCrop) {
+    if (props.options.uploadSettings.enableCrop && !props.options.uploadSettings.multiple) {
       const { centered, ...others } = props.options.uploadSettings.imgCropSettings;
       return (
-        <ImgCrop {...others} modalProps={{ centered }}>
+        <ImgCrop {...others} modalProps={{ centered }} beforeCrop={handleBeforeCrop}>
           {renderUpload()}
         </ImgCrop>
       );

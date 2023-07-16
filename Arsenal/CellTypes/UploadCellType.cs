@@ -283,7 +283,7 @@ public class UploadSettings : ObjectPropertyBase
 
         if (propertyName == nameof(EnableCrop))
         {
-            return !Multiple;
+            return !Multiple || !GetDesignerPropertyVisible(nameof(Multiple));
         }
 
         if (propertyName == nameof(ImgCropSettings))

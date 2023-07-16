@@ -341,13 +341,17 @@ public static class FileUploadService
         {
             lock (MergeTaskMapLock)
             {
-                MergeTaskMap.TryGetValue(uploadId, out task);
+                MergeTaskMap.TryGetValue(key, out task);
 
                 task ??= MergeFileAsync(uploadId);
+
+                MergeTaskMap.TryAdd(key, task);
             }
         }
 
         var mergedFilePath = await task;
+
+        MergeTaskMap.TryRemove(key, out _);
 
         var fileName = await GenerateAppropriateFileNameByUploadId(uploadId);
 
