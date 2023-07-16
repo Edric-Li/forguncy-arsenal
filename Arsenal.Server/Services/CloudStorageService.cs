@@ -255,4 +255,33 @@ public sealed class CloudStorageService
             throw new Exception($"{response.StatusCode} {await sr.ReadToEndAsync()}");
         }
     }
+
+
+    /// <summary>
+    /// 删除云上的文件
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <exception cref="Exception"></exception>
+    public static async Task DeleteFileAsync(string filePath)
+    {
+        var folder =
+            Path.GetDirectoryName(filePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", ""));
+        var folderPath = Path.Combine(Configuration.Configuration.AppConfig.CloudStorageUploadFolderPath, folder);
+        var cloudFilePath = Path.Combine(folderPath, Path.GetFileName(filePath));
+
+        if (!await FileExistsAsync(cloudFilePath))
+        {
+            return;
+        }
+
+        var response = await SendJsonRequestAsync("DeleteFile", new Dictionary<string, object>()
+        {
+            { "Path", cloudFilePath },
+        });
+
+        if (!response.Result)
+        {
+            throw new Exception(response.Message);
+        }
+    }
 }

@@ -31,6 +31,11 @@ public class ExtractZipFileToDirectoryCommand : Command, ICommandExecutableInSer
         return new ExecuteResult();
     }
 
+    public override CommandScope GetCommandScope()
+    {
+        return CommandScope.ExecutableInServer;
+    }
+    
     public override string ToString()
     {
         return "解压缩文件到文件夹";

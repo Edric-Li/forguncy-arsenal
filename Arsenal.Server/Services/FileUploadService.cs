@@ -487,15 +487,70 @@ public static class FileUploadService
         return File.Exists(filePath) ? new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read) : null;
     }
 
-    private static long ConvertDateTimeToTimestamp(DateTime dateTime)
+    /// <summary>
+    /// 删除文件
+    /// </summary>
+    /// <param name="fileKey"></param>
+    public static async Task DeleteFileAsync(string fileKey)
     {
-        var date = DateTime.Now;
-        var unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        long timestamp = (long)(date.ToUniversalTime() - unixEpoch).TotalSeconds;
-        return timestamp * 1000;
+        var databaseContext = new DatabaseContext();
+
+        try
+        {
+            var fileEntity = await databaseContext.Files.FirstOrDefaultAsync(item => item.Key == fileKey);
+
+            var fileFullPath = await GetFileFullPathByFileKeyAsync(fileKey);
+
+            databaseContext.Files.Remove(fileEntity);
+
+            var needDeleteFile = true;
+
+            if (!string.IsNullOrWhiteSpace(fileEntity.Hash))
+            {
+                var fileHashCount = await databaseContext.Files.CountAsync(item => item.Hash == fileEntity.Hash);
+
+                if (fileHashCount == 1)
+                {
+                    var fileHash =
+                        await databaseContext.FileHashes.FirstOrDefaultAsync(item => item.Hash == fileEntity.Hash);
+
+                    databaseContext.FileHashes.Remove(fileHash);
+                }
+                else
+                {
+                    needDeleteFile = false;
+                }
+            }
+
+            await databaseContext.SaveChangesAsync();
+
+            if (!needDeleteFile)
+            {
+                return;
+            }
+
+            if (File.Exists(fileFullPath))
+            {
+                File.Delete(fileFullPath);
+            }
+
+            if (Configuration.Configuration.AppConfig.UseCloudStorage)
+            {
+                await CloudStorageService.DeleteFileAsync(fileFullPath);
+            }
+        }
+        finally
+        {
+            _ = databaseContext.DisposeAsync();
+        }
     }
 
- 
+    private static long ConvertDateTimeToTimestamp(DateTime dateTime)
+    {
+        var unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var timestamp = (long)(dateTime.ToUniversalTime() - unixEpoch).TotalSeconds;
+        return timestamp * 1000;
+    }
 
     #endregion
 }

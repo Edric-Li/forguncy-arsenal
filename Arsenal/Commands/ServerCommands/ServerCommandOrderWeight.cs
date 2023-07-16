@@ -7,6 +7,7 @@ public enum ServerCommandOrderWeight
     CompressFilesIntoZipCommand,
     ExtractZipFileToDirectoryCommand,
     CreateDownloadLinkToFileCommand,
+    DeleteFileCommand,
     GetFileFullPathCommand,
     GetFileDirectoryCommand
 }
