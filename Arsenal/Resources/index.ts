@@ -203,6 +203,10 @@ namespace Arsenal {
         ComponentName = 'ZipFileAndDownload';
     }
 
+    export class GetDifferenceFileKeysCommand extends ReactCommand {
+        ComponentName = 'GetDifferenceFileKeys';
+    }
+
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.UploadCellType, Arsenal', PCUpload);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.PreviewCellType, Arsenal', FilePreview);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadCommand, Arsenal", UploadCommand);
@@ -211,4 +215,5 @@ namespace Arsenal {
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetFileAccessUrlCommand, Arsenal", GetFileAccessUrlCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetDownloadUrlCommand, Arsenal", GetDownloadUrlCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.ZipFileAndDownloadCommand, Arsenal", ZipFileAndDownloadCommand);
+    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetDifferenceFileKeysCommand, Arsenal", GetDifferenceFileKeysCommand);
 }
