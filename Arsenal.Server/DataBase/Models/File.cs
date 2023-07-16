@@ -51,7 +51,7 @@ public class File
     /// 文件的大小
     /// </summary>
     [Column("size")]
-    public int Size { get; set; }
+    public long Size { get; set; }
 
     /// <summary>
     /// 文件上传者（用户名）

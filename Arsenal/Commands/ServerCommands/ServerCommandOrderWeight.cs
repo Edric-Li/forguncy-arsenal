@@ -9,5 +9,6 @@ public enum ServerCommandOrderWeight
     CreateDownloadLinkToFileCommand,
     DeleteFileCommand,
     GetFileFullPathCommand,
-    GetFileDirectoryCommand
+    GetFileDirectoryCommand,
+    UploadServerFolderCommand,
 }

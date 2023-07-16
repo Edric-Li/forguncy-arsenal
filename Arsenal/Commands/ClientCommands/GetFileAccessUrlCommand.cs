@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
@@ -12,6 +13,7 @@ public class GetFileAccessUrlCommand : Command
     [DisplayName("附件值")]
     [JsonProperty("fileKeys")]
     [FormulaProperty]
+    [Required]
     public object FileKeys { get; set; }
 
     [DisplayName("结果至变量")]

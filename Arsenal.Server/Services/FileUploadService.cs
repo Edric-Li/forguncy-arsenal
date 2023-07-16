@@ -393,6 +393,43 @@ public static class FileUploadService
         return fileEntity;
     }
 
+    public static async Task<string[]> UploadServerFolderAsync(string uploader, List<UploadServerFolderParam> data)
+    {
+        var list = new List<DataBase.Models.File>();
+
+        foreach (var item in data)
+        {
+            var fileEntity = new DataBase.Models.File()
+            {
+                Key = Guid.NewGuid() + "_" + item.Name,
+                Name = item.Name,
+                Hash = null,
+                Size = item.Size,
+                FolderPath = SeparatorConverter.ConvertToDatabaseSeparator(item.FolderPath),
+                ContentType = "",
+                Ext = item.Ext,
+                Uploader = uploader,
+                CreatedAt = ConvertDateTimeToTimestamp(DateTime.Now)
+            };
+
+            list.Add(fileEntity);
+        }
+
+        var dbContext = new DatabaseContext();
+
+        try
+        {
+            await dbContext.Files.AddRangeAsync(list);
+            await dbContext.SaveChangesAsync();
+        }
+        finally
+        {
+            _ = dbContext.DisposeAsync();
+        }
+
+        return list.Select(item => item.Key).ToArray();
+    }
+
     // todo 重构
     public static string CreateFileDownloadLink(CreateFileDownloadLinkParam param)
     {
