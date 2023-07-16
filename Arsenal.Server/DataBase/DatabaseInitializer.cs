@@ -97,10 +97,20 @@ public class DatabaseInitializer
             "created_at int(11) NOT NULL DEFAULT '0'"
         );
 
+        await SqLiteUtility.EnsureTableExistsAsync(Constants.TemporaryDownloadFiles,
+            "id INTEGER PRIMARY KEY AUTOINCREMENT",
+            "key TEXT NOT NULL",
+            "path TEXT NOT NULL",
+            "has_copy int(1) NOT NULL DEFAULT '0'",
+            "expiration_at int(11) NOT NULL DEFAULT '60'"
+        );
+
         await sqLiteUtility.EnsureIndexExistsAsync(Constants.FileHashesTableName, "ix_arsenal_file_hashes_hash",
             "hash");
 
         await sqLiteUtility.EnsureIndexExistsAsync(Constants.FilesTableName, "ix_arsenal_files_key", "key");
+        await sqLiteUtility.EnsureIndexExistsAsync(Constants.TemporaryDownloadFiles,
+            "ix_arsenal_temporary_download_files_key", "key");
 
         await MergeDatabaseAsync();
     }

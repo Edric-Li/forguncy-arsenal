@@ -430,17 +430,20 @@ public static class FileUploadService
         return list.Select(item => item.Key).ToArray();
     }
 
-    // todo 重构
-    public static string CreateFileDownloadLink(CreateFileDownloadLinkParam param)
+    public static async Task<string> CreateFileDownloadLink(CreateFileDownloadLinkParam param)
     {
         var filePath = param.FilePath;
 
-        var fileName = Path.GetFileName(param.FilePath);
-        var fileId = Guid.NewGuid() + "_" + fileName;
+        var fileName = string.IsNullOrWhiteSpace(param.DownloadFileName)
+            ? param.DownloadFileName
+            : Path.GetFileName(param.FilePath);
+
+        // 截取3个字符，使用固定前缀，提升查询效率
+        var fileKey = "tdf" + Guid.NewGuid().ToString()[3..] + "_" + fileName;
 
         if (param.CreateCopy)
         {
-            var destFileName = Path.Combine(Configuration.Configuration.DownloadFolderPath, fileId);
+            var destFileName = Path.Combine(Configuration.Configuration.TemporaryDownloadFolderPath, fileKey);
 
             if (!Directory.Exists(Path.GetDirectoryName(destFileName)))
             {
@@ -448,10 +451,32 @@ public static class FileUploadService
             }
 
             File.Copy(param.FilePath, destFileName);
-            filePath = destFileName.Replace(Configuration.Configuration.DownloadFolderPath + "\\", string.Empty);
+            filePath = destFileName.Replace(Configuration.Configuration.TemporaryDownloadFolderPath + "\\",
+                string.Empty);
         }
 
-        return fileId;
+        var dbContext = new DatabaseContext();
+
+        try
+        {
+            var expirationAt = ConvertDateTimeToTimestamp(DateTime.Now.AddMinutes(param.ExpirationDate));
+
+            dbContext.TemporaryDownloadFiles.Add(new TemporaryDownloadFile()
+            {
+                Key = fileKey,
+                Path = filePath,
+                HasCopy = param.CreateCopy,
+                ExpirationAt = expirationAt
+            });
+
+            await dbContext.SaveChangesAsync();
+        }
+        finally
+        {
+            _ = dbContext.DisposeAsync();
+        }
+
+        return fileKey;
     }
 
 
@@ -491,6 +516,31 @@ public static class FileUploadService
     {
         var dbContext = new DatabaseContext();
 
+        // 可能是临时下载文件
+        if (fileKey.StartsWith("tdf"))
+        {
+            var temporaryDownloadFile =
+                await dbContext.TemporaryDownloadFiles.FirstOrDefaultAsync(item => item.Key == fileKey);
+
+            if (temporaryDownloadFile != null)
+            {
+                var now = ConvertDateTimeToTimestamp(DateTime.Now);
+
+                if (temporaryDownloadFile.ExpirationAt < now)
+                {
+                    return null;
+                }
+
+                if (temporaryDownloadFile.HasCopy)
+                {
+                    return Path.Combine(Configuration.Configuration.TemporaryDownloadFolderPath,
+                        SeparatorConverter.ConvertToSystemSeparator(temporaryDownloadFile.Path));
+                }
+
+                return temporaryDownloadFile.Path;
+            }
+        }
+        
         var file = await dbContext.Files.FirstOrDefaultAsync(item => item.Key == fileKey);
 
         if (file == null)

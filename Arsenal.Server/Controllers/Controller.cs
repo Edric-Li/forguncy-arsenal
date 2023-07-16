@@ -157,7 +157,7 @@ public class Arsenal : ForguncyApi
 
             await CompressService.CompressFilesToZipAsync(zipPath, body.FileIds, body.NeedKeepFolderStructure);
 
-            var data = FileUploadService.CreateFileDownloadLink(new CreateFileDownloadLinkParam()
+            var data = await FileUploadService.CreateFileDownloadLink(new CreateFileDownloadLinkParam
             {
                 FilePath = zipPath,
                 CreateCopy = false,

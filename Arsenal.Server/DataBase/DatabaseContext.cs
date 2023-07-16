@@ -12,6 +12,8 @@ public class DatabaseContext : DbContext
 
     public DbSet<FileHash> FileHashes { get; set; }
 
+    public DbSet<TemporaryDownloadFile> TemporaryDownloadFiles { get; set; }
+
     public DatabaseContext()
     {
         _connectionString = Configuration.Configuration.DatabaseConnectionString;
