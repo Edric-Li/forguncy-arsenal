@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Diagnostics;
+using Arsenal.Server.DataBase.Models;
+using Microsoft.EntityFrameworkCore;
 using File = System.IO.File;
 
 namespace Arsenal.Server.DataBase;
@@ -112,7 +114,10 @@ public class DatabaseInitializer
         await sqLiteUtility.EnsureIndexExistsAsync(Constants.TemporaryDownloadFiles,
             "ix_arsenal_temporary_download_files_key", "key");
 
-        await MergeDatabaseAsync();
+        if (!Configuration.Configuration.RunAtLocal)
+        {
+            await MergeDatabaseAsync();
+        }
     }
 
     /// <summary>
@@ -120,18 +125,44 @@ public class DatabaseInitializer
     /// </summary>
     private static async Task MergeDatabaseAsync()
     {
-        var directories = Directory.GetDirectories(Configuration.Configuration.DataFolderPath);
+        var files = Directory.GetFiles(Configuration.Configuration.DataFolderPath);
 
-        if (directories.Length < 1)
+        if (files.Length < 1)
         {
             return;
         }
 
         var officialDatabaseContext = new DatabaseContext();
 
-        foreach (var item in directories)
+        var deletedSqliteFiles = new HashSet<string>();
+
+        var deletedMarkFiles = files
+            .Where(item => item.EndsWith(".deleted"))
+            .ToArray();
+
+        foreach (var item in deletedMarkFiles)
+        {
+            try
+            {
+                var dbFilePath = item.Replace(".deleted", "");
+                File.Delete(item);
+                File.Delete(dbFilePath);
+                deletedSqliteFiles.Add(dbFilePath);
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
+        }
+
+        foreach (var item in files)
         {
             if (!item.EndsWith(".sqlite3"))
+            {
+                continue;
+            }
+
+            if (deletedSqliteFiles.Contains(item))
             {
                 continue;
             }
@@ -148,7 +179,7 @@ public class DatabaseInitializer
             try
             {
                 var fileHashes = await dbContext.FileHashes.ToListAsync();
-                var files = await dbContext.Files.ToListAsync();
+                var fileEntities = await dbContext.Files.ToListAsync();
 
                 foreach (var fileHash in fileHashes)
                 {
@@ -157,17 +188,38 @@ public class DatabaseInitializer
                         continue;
                     }
 
-                    await officialDatabaseContext.AddAsync(fileHash);
+                    await officialDatabaseContext.AddAsync(new FileHash()
+                    {
+                        Hash = fileHash.Hash,
+                        Path = fileHash.Path
+                    });
                 }
 
-                foreach (var file in files)
+                foreach (var file in fileEntities)
                 {
-                    await officialDatabaseContext.Files.AddAsync(file);
+                    if (await officialDatabaseContext.Files.AnyAsync(x => x.Key == file.Key))
+                    {
+                        continue;
+                    }
+
+                    await officialDatabaseContext.Files.AddAsync(new Models.File()
+                    {
+                        Key = file.Key,
+                        Name = file.Name,
+                        Hash = file.Hash,
+                        FolderPath = file.FolderPath,
+                        ContentType = file.ContentType,
+                        Ext = file.Ext,
+                        Size = file.Size,
+                        Uploader = file.Uploader,
+                        CreatedAt = file.CreatedAt
+                    });
                 }
 
                 await officialDatabaseContext.SaveChangesAsync();
 
-                File.Delete(item);
+                // Sqlite 连接后，文件会被锁定，所以在这里不直接删除，而是创建一个 .deleted 文件，等待下次启动时删除
+                File.Create(item + ".deleted");
             }
             finally
             {
