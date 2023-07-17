@@ -8,6 +8,7 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ClientCommandOrderWeight.DownloadFileCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/download.png")]
 public class DownloadFileCommand : Command
 {
     [DisplayName("附件值")]

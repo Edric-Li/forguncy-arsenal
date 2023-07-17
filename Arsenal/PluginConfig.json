@@ -3,9 +3,11 @@
     "Arsenal.dll"
   ],
   "css": [
+    "Resources/arsenal.core.css"
   ],
   "javascript": [
-    "Resources/arsenal.js"
+    "Resources/arsenal.js",
+    "Resources/arsenal.core.js"
   ],
   "serverApiAssembly": [
     "Arsenal.Server.dll"

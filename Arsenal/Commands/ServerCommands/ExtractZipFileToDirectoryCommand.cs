@@ -9,6 +9,7 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.ExtractZipFileToDirectoryCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/unzip.png")]
 public class ExtractZipFileToDirectoryCommand : Command, ICommandExecutableInServerSideAsync
 {
     [DisplayName("压缩文件路径")]

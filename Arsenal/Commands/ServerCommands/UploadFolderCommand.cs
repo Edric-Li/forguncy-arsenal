@@ -16,6 +16,7 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.UploadServerFolderCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
 public class UploadServerFolderCommand : Command, ICommandExecutableInServerSideAsync, IServerCommandParamGenerator
 {
     [DisplayName("服务器文件夹路径")]

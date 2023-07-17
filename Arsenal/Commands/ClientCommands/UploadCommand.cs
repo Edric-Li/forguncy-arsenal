@@ -8,6 +8,8 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ClientCommandOrderWeight.UploadCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/upload1.png")]
+
 public class UploadCommand : Command
 {
     private object _folder = string.Empty;

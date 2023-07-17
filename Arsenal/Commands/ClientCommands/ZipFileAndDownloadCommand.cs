@@ -8,6 +8,7 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ClientCommandOrderWeight.ZipFileAndDownload)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/zip-and-download.png")]
 public class ZipFileAndDownloadCommand : Command
 {
     [DisplayName("附件值")]

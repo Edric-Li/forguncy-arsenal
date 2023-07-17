@@ -10,6 +10,8 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.GetFileDirectoryCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/get-file-folder.png")]
+
 public class GetFileDirectoryCommand : Command, ICommandExecutableInServerSideAsync
 {
     [DisplayName("附件值")]

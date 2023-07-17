@@ -11,7 +11,7 @@ namespace Arsenal;
 [OrderWeight(1)]
 [Category("Arsenal")]
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
-[Icon("pack://application:,,,/Arsenal;component/Resources/images/icon.png")]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
 public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly
 {
     [DisplayName("权限设置")]

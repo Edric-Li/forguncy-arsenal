@@ -13,6 +13,7 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.CompressFilesIntoZipCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/zip.png")]
 public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSideAsync
 {
     [DisplayName("附件值")]

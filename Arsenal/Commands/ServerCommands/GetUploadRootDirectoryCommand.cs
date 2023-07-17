@@ -9,6 +9,7 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.GetUploadRootDirectoryCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/get-root-path.png")]
 public class GetUploadRootDirectoryCommand : Command, ICommandExecutableInServerSide
 {
     [DisplayName("结果至变量")]

@@ -10,6 +10,7 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.GetFileFullPathCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/get-file-full-path.png")]
 public class GetFileFullPathCommand : Command, ICommandExecutableInServerSideAsync
 {
     [DisplayName("附件值")]
