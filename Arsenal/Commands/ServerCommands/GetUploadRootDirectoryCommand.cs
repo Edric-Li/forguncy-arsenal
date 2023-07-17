@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
+[Category("文件管理 Plus")]
 [OrderWeight((int)ServerCommandOrderWeight.GetUploadRootDirectoryCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/get-root-path.png")]
 public class GetUploadRootDirectoryCommand : Command, ICommandExecutableInServerSide

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Arsenal;
 
 [OrderWeight(2)]
-[Category("Arsenal")]
+[Category("文件管理 Plus")]
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/preview.png")]
 public class PreviewCellType : CellType

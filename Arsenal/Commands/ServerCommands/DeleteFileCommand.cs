@@ -8,7 +8,7 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
+[Category("文件管理 Plus")]
 [OrderWeight((int)ServerCommandOrderWeight.DeleteFileCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/delete-file.png")]
 public class DeleteFileCommand : Command, ICommandExecutableInServerSideAsync

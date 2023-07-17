@@ -14,7 +14,7 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
+[Category("文件管理 Plus")]
 [OrderWeight((int)ServerCommandOrderWeight.UploadServerFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
 public class UploadServerFolderCommand : Command, ICommandExecutableInServerSideAsync, IServerCommandParamGenerator

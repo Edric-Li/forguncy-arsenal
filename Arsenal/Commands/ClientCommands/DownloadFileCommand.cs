@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
+[Category("文件管理 Plus")]
 [OrderWeight((int)ClientCommandOrderWeight.DownloadFileCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/download.png")]
 public class DownloadFileCommand : Command

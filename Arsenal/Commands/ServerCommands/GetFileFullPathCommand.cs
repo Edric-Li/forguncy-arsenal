@@ -8,7 +8,7 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
+[Category("文件管理 Plus")]
 [OrderWeight((int)ServerCommandOrderWeight.GetFileFullPathCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/get-file-full-path.png")]
 public class GetFileFullPathCommand : Command, ICommandExecutableInServerSideAsync

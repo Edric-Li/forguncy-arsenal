@@ -7,7 +7,7 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
+[Category("文件管理 Plus")]
 [OrderWeight((int)ServerCommandOrderWeight.ExtractZipFileToDirectoryCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/unzip.png")]
 public class ExtractZipFileToDirectoryCommand : Command, ICommandExecutableInServerSideAsync
