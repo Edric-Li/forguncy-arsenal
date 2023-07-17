@@ -9,6 +9,7 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.GettingTemporaryDirectoryCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/get-temp-folder.png")]
 public class GettingTemporaryDirectoryCommand : Command, ICommandExecutableInServerSide
 {
     [DisplayName("结果至变量")]

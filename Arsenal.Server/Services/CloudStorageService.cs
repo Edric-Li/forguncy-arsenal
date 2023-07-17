@@ -1,6 +1,8 @@
 using System.Text;
 using Arsenal.Server.Common;
+using Arsenal.Server.DataBase;
 using Arsenal.Server.Model;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace Arsenal.Server.Services;
@@ -50,21 +52,38 @@ public sealed class CloudStorageService
         _ = InitializeAsync();
     }
 
-    private static Task InitializeAsync()
+    private static async Task InitializeAsync()
     {
         if (!Configuration.Configuration.AppConfig.UseCloudStorage)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        var diskFiles = DataAccess.DataAccess.Instance.GetDiskFiles();
+        var files = new HashSet<string>();
 
-        var files = diskFiles
-            .Where(i => File.Exists(Path.Combine(Configuration.Configuration.UploadFolderPath, i.Value)))
-            .Select(i => i.Value)
-            .ToList();
+        var databaseContext = new DatabaseContext();
 
-        return ConcurrentExecutionAsync(5, files,
+        var fileList = await databaseContext.Files.ToListAsync();
+        var fileHashes = await databaseContext.FileHashes.ToListAsync();
+        var fileHashesMap = fileHashes.ToDictionary(i => i.Hash, i => i.Path);
+
+        //todo 有问题
+        foreach (var file in fileList)
+        {
+            if (string.IsNullOrWhiteSpace(file.Hash))
+            {
+                files.Add(Path.Combine(file.FolderPath, file.Name));
+            }
+            else
+            {
+                if (fileHashesMap.TryGetValue(file.Hash, out var item))
+                {
+                    files.Add(item);
+                }
+            }
+        }
+
+        await ConcurrentExecutionAsync(5, files.ToList(),
             async i => { await RunUploadFileToCloudStorageTaskAsync(i); });
     }
 
@@ -234,6 +253,35 @@ public sealed class CloudStorageService
             using var sr = new StreamReader(await response.Content.ReadAsStreamAsync());
 
             throw new Exception($"{response.StatusCode} {await sr.ReadToEndAsync()}");
+        }
+    }
+
+
+    /// <summary>
+    /// 删除云上的文件
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <exception cref="Exception"></exception>
+    public static async Task DeleteFileAsync(string filePath)
+    {
+        var folder =
+            Path.GetDirectoryName(filePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", ""));
+        var folderPath = Path.Combine(Configuration.Configuration.AppConfig.CloudStorageUploadFolderPath, folder);
+        var cloudFilePath = Path.Combine(folderPath, Path.GetFileName(filePath));
+
+        if (!await FileExistsAsync(cloudFilePath))
+        {
+            return;
+        }
+
+        var response = await SendJsonRequestAsync("DeleteFile", new Dictionary<string, object>()
+        {
+            { "Path", cloudFilePath },
+        });
+
+        if (!response.Result)
+        {
+            throw new Exception(response.Message);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
@@ -7,12 +8,15 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ClientCommandOrderWeight.GetDownloadUrlCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/get-file-download-link.png")]
+
 public class GetDownloadUrlCommand : Command
 {
-    [DisplayName("文件名称")]
-    [JsonProperty("fileName")]
+    [DisplayName("附件值")]
+    [JsonProperty("fileKeys")]
     [FormulaProperty]
-    public object FileName { get; set; }
+    [Required]
+    public object FileKeys { get; set; }
 
     [DisplayName("结果至变量")]
     [JsonProperty("result")]

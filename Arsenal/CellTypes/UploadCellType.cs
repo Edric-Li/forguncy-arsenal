@@ -11,7 +11,7 @@ namespace Arsenal;
 [OrderWeight(1)]
 [Category("Arsenal")]
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
-[Icon("pack://application:,,,/Arsenal;component/Resources/images/icon.png")]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
 public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly
 {
     [DisplayName("权限设置")]
@@ -237,6 +237,7 @@ public class UploadSettings : ObjectPropertyBase
 
     [DisplayName("支持断点续传和秒传")]
     [JsonProperty("enableResumableUpload")]
+    [DefaultValue(true)]
     public bool EnableResumableUpload { get; set; } = true;
 
     [DisplayName("支持上传前添加水印")]
@@ -270,11 +271,6 @@ public class UploadSettings : ObjectPropertyBase
             return !string.IsNullOrWhiteSpace(Folder?.ToString());
         }
         
-        if (propertyName == nameof(EnableResumableUpload))
-        {
-            return string.IsNullOrWhiteSpace(TempValueStoreInstance.Folder?.ToString());
-        }
-        
         if (propertyName == nameof(Multiple))
         {
             return MaxCount is null or > 1;
@@ -287,7 +283,7 @@ public class UploadSettings : ObjectPropertyBase
 
         if (propertyName == nameof(EnableCrop))
         {
-            return !Multiple;
+            return !Multiple || !GetDesignerPropertyVisible(nameof(Multiple));
         }
 
         if (propertyName == nameof(ImgCropSettings))

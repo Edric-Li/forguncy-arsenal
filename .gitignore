@@ -343,4 +343,5 @@ healthchecksdb
 Arsenal/Resources/arsenal.js
 Arsenal/Resources/arsenal.js.map
 Arsenal/Resources/arsenal.core.js
+Arsenal/Resources/arsenal.core.css
 Arsenal/Web/vite.config.js

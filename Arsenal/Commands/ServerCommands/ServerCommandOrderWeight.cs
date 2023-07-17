@@ -5,7 +5,10 @@ public enum ServerCommandOrderWeight
     GetUploadRootDirectoryCommand,
     GettingTemporaryDirectoryCommand,
     CompressFilesIntoZipCommand,
+    ExtractZipFileToDirectoryCommand,
     CreateDownloadLinkToFileCommand,
+    DeleteFileCommand,
     GetFileFullPathCommand,
-    GetFileDirectoryCommand
+    GetFileDirectoryCommand,
+    UploadServerFolderCommand,
 }

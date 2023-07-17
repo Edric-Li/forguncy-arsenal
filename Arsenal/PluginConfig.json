@@ -2,9 +2,12 @@
   "assembly": [
     "Arsenal.dll"
   ],
-  "css": [],
+  "css": [
+    "Resources/arsenal.core.css"
+  ],
   "javascript": [
-    "Resources/arsenal.js"
+    "Resources/arsenal.js",
+    "Resources/arsenal.core.js"
   ],
   "serverApiAssembly": [
     "Arsenal.Server.dll"
@@ -15,7 +18,7 @@
   "name_cn": "文件上传",
   "pluginType": "cellType,command",
   "guid": "8748d7dc-994d-45b8-80f9-f510cfcac6ac",
-  "version": "4.0.0.0",
+  "version": "5.0.0.0",
   "dependenceVersion": "9.0.0.0",
   "bundleJavaScript": false,
   "bundleCSS": false

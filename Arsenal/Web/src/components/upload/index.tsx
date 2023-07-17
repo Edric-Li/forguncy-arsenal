@@ -5,7 +5,7 @@ import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
-import ImgCrop from 'antd-img-crop';
+import ImgCrop, { ImgCropProps } from 'antd-img-crop';
 import FilePreviewInner, { isImage } from '../file-preview/file-preview-inner';
 import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
@@ -16,6 +16,8 @@ import useFileUploadEngine from '../../hooks/useFileUploadEngine';
 import usePermission from '../../hooks/usePermission';
 import cx from 'classnames';
 import isImageUrl from '../../common/is-image-url';
+import isInternalFile from '../../common/is-internal-file';
+import isImageFileType from '../../common/is-image-file-type';
 
 enum ListType {
   text,
@@ -76,6 +78,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const fileListRef = useRef<UploadFile[]>([]);
+  const uploadedFilesRef = useRef<UploadFile[]>([]);
   const listType: UploadListType = useMemo(() => ListType[props.options.listType] as UploadListType, [props]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState<string>();
@@ -127,6 +130,13 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   });
 
   useImperativeHandle(ref, () => {
+    const getValue = () => {
+      return fileListRef.current
+        .filter((i) => (i.status === 'done' || i.status === 'success') && i.url?.length)
+        .map((file) => FileUploadEngine.extractFileNameFromUrl(file.url!))
+        .join('|');
+    };
+
     return {
       setValue: (value: string) => {
         if (!value) {
@@ -134,25 +144,27 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         }
         const files = value.split('|').filter((i) => i);
 
+        if (value === getValue()) {
+          // 如果两次值相同，不做处理，否则动画会闪烁
+          return;
+        }
+
         fileListRef.current = files.map((i: string) => {
           return {
             uid: i,
-            name: i.substring(37),
+            name: isInternalFile(i) ? i.substring(37) : i,
             status: 'done',
-            percent: 0,
+            percent: 100,
             url: FileUploadEngine.getAccessUrl(i),
           };
         });
 
+        uploadedFilesRef.current = fileListRef.current;
+
         syncFileListRefDataToState();
       },
 
-      getValue: () => {
-        return fileListRef.current
-          .filter((i) => i.status === 'done' || i.status === 'success')
-          .map((file) => file.uid)
-          .join('|');
-      },
+      getValue,
 
       setReadOnly(isReadOnly: boolean) {
         setShowUploadButton(!isReadOnly && hasUploadPermission);
@@ -239,6 +251,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     fileListRef.current = [...fileListRef.current, uploadFile];
 
     syncFileListRefDataToState();
+
     await fileUpload.addTask(newFile, (callbackInfo) => {
       const index = fileListRef.current.findIndex((i) => i.uid === uploadFile.uid);
 
@@ -250,13 +263,18 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       fileListRef.current[index] = mergedInfo;
 
       if (mergedInfo.status === 'success') {
-        props.commitValue();
         CacheService.set(callbackInfo.url!, newFile);
+        uploadedFilesRef.current.push(mergedInfo);
+
+        if (uploadedFilesRef.current.length === fileListRef.current.length) {
+          props.commitValue();
+        }
       }
+
       syncFileListRefDataToState();
     });
 
-    return;
+    return false;
   };
 
   const handleRemove: UploadProps['onRemove'] = (file) => {
@@ -292,6 +310,17 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
   };
 
+  const handleBeforeCrop: ImgCropProps['beforeCrop'] = (file, fileList) => {
+    const isImageType = isImageFileType(file.type);
+
+    if (!isImageType) {
+      handleBeforeUpload(file, fileList);
+      return false;
+    }
+
+    return true;
+  };
+
   const renderButton = useMemo(() => {
     if (listType === 'picture-circle' || listType === 'picture-card') {
       return (
@@ -311,7 +340,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const renderUpload = () => {
     const { uploadSettings } = props.options;
-    const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 0);
+    const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 1);
     return (
       <Upload
         isImageUrl={isImageUrl}
@@ -335,10 +364,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   const renderContent = () => {
-    if (props.options.uploadSettings.enableCrop) {
+    if (props.options.uploadSettings.enableCrop && !props.options.uploadSettings.multiple) {
       const { centered, ...others } = props.options.uploadSettings.imgCropSettings;
       return (
-        <ImgCrop {...others} modalProps={{ centered }}>
+        <ImgCrop {...others} modalProps={{ centered }} beforeCrop={handleBeforeCrop}>
           {renderUpload()}
         </ImgCrop>
       );

@@ -8,6 +8,8 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ClientCommandOrderWeight.UploadCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/upload1.png")]
+
 public class UploadCommand : Command
 {
     private object _folder = string.Empty;
@@ -43,11 +45,11 @@ public class UploadCommand : Command
     [DisplayName("最大上传文件个数")]
     [IntProperty(AllowNull = true, Watermark = "不限制")]
     [JsonProperty("maxCount")]
-    public int? MaxCount { get; set; }
+    public int? MaxCount { get; set; } = 1;
 
     [DisplayName("上传完成命令")]
     [JsonProperty("uploadSuccessCommand")]
-    [CustomCommandObject(InitParamProperties = "fileId|fileName", InitParamValues = "文件ID|文件名称")]
+    [CustomCommandObject(InitParamProperties = "fileKey|fileName", InitParamValues = "附件值|文件名称")]
     public CustomCommandObject UploadSuccessCommand { get; set; }
 
     [DisplayName("高级设置")]
@@ -105,7 +107,7 @@ public class UploadCommandAdvancedSettings : ObjectPropertyBase
 
     [DisplayName("断点续传/秒传")]
     [JsonProperty("enableResumableUpload")]
-    [DefaultValue(false)]
+    [DefaultValue(true)]
     public bool EnableResumableUpload { get; set; } = true;
 
     public override bool GetDesignerPropertyVisible(string propertyName)
@@ -120,7 +122,7 @@ public class UploadCommandAdvancedSettings : ObjectPropertyBase
             return EnableCrop && GetDesignerPropertyVisible(nameof(EnableCrop));
         }
 
-        if (propertyName == nameof(EnableResumableUpload) || propertyName == nameof(EnableCrop))
+        if (propertyName == nameof(EnableCrop))
         {
             return string.IsNullOrWhiteSpace(TempValueStoreInstance.Folder?.ToString());
         }

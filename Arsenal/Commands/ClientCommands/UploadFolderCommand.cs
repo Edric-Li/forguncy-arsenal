@@ -8,6 +8,8 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ClientCommandOrderWeight.UploadFolderCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/upload-folder.png")]
+
 public class UploadFolderCommand : Command
 {
     private object _folder = string.Empty;
@@ -33,7 +35,7 @@ public class UploadFolderCommand : Command
 
     [DisplayName("上传完成命令")]
     [JsonProperty("uploadSuccessCommand")]
-    [CustomCommandObject(InitParamProperties = "fileId|fileName", InitParamValues = "文件ID|文件名称")]
+    [CustomCommandObject(InitParamProperties = "fileKey|fileName", InitParamValues = "附件值|文件名称")]
     public CustomCommandObject UploadSuccessCommand { get; set; }
 
     [DisplayName("高级设置")]
@@ -66,7 +68,7 @@ public class UploadFolderCommandAdvancedSettings : ObjectPropertyBase
 
     [DisplayName("断点续传/秒传")]
     [JsonProperty("enableResumableUpload")]
-    [DefaultValue(false)]
+    [DefaultValue(true)]
     public bool EnableResumableUpload { get; set; } = true;
 
     public override bool GetDesignerPropertyVisible(string propertyName)
@@ -74,11 +76,6 @@ public class UploadFolderCommandAdvancedSettings : ObjectPropertyBase
         if (propertyName == nameof(WatermarkSettings))
         {
             return EnableWatermark;
-        }
-
-        if (propertyName == nameof(EnableResumableUpload))
-        {
-            return string.IsNullOrWhiteSpace(TempValueStoreInstance.Folder?.ToString());
         }
 
         return base.GetDesignerPropertyVisible(propertyName);

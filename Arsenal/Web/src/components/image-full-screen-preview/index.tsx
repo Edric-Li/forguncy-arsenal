@@ -9,6 +9,7 @@ const style: CSSProperties = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
+  position: 'absolute',
 };
 
 interface IProps {
@@ -35,6 +36,7 @@ const ImageFullScreenPreview = (props: IProps) => {
   return (
     <div style={style}>
       <Image
+        src=''
         style={{ display: 'none' }}
         preview={{
           visible: true,

@@ -13,12 +13,13 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.CompressFilesIntoZipCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/zip.png")]
 public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSideAsync
 {
-    [DisplayName("文件名称")]
+    [DisplayName("附件值")]
     [FormulaProperty]
     [Required]
-    public object FileNames { get; set; }
+    public object FileKeys { get; set; }
 
     [DisplayName("压缩文件路径")]
     [FormulaProperty]
@@ -30,16 +31,19 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
     [DefaultValue(true)]
     public bool NeedKeepFolderStructure { get; set; } = true;
 
-    [DisplayName("冲突策略")] public CompressFilesIntoZipCommandConflictStrategy ConflictStrategy { get; set; }
+    [DisplayName("冲突策略")]
+    [Description("用于处理压缩文件已经存在的情况。")]
+    public CompressFilesIntoZipCommandConflictStrategy ConflictStrategy { get; set; } =
+        CompressFilesIntoZipCommandConflictStrategy.Reject;
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
-        var fileNames = (await dataContext.EvaluateFormulaAsync(FileNames))?.ToString();
+        var fileKeys = (await dataContext.EvaluateFormulaAsync(FileKeys))?.ToString();
         var zipFilePath = (await dataContext.EvaluateFormulaAsync(ZipFilePath))?.ToString();
 
-        if (string.IsNullOrWhiteSpace(fileNames))
+        if (string.IsNullOrWhiteSpace(fileKeys))
         {
-            throw new ArgumentException("文件名称不能为空。");
+            throw new ArgumentException("附件值不能为空。");
         }
 
         if (string.IsNullOrWhiteSpace(zipFilePath))
@@ -52,8 +56,8 @@ public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSi
             throw new Exception($"文件夹{Path.GetDirectoryName(zipFilePath)}下存在同名文件{Path.GetFileName(zipFilePath)}。");
         }
 
-        var files = fileNames.Split("|").ToArray();
-        await FileUploadService.CompressFilesToZipAsync(zipFilePath, files, NeedKeepFolderStructure);
+        var files = fileKeys.Split("|").ToArray();
+        await CompressService.CompressFilesToZipAsync(zipFilePath, files, NeedKeepFolderStructure);
         return new ExecuteResult();
     }
 

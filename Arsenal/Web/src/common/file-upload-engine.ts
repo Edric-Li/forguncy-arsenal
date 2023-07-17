@@ -35,26 +35,29 @@ class FileUploadEngine {
   }
 
   private async initMultipartUpload(file: File): HttpHandlerResult<IInitMultipartUploadResult> {
-    const targetFolderPath = this.getTargetFolderPath();
+    const folderPath = this.getTargetFolderPath();
     let conflictStrategy = this.conflictStrategy;
 
-    if (file.webkitRelativePath && targetFolderPath) {
+    if (file.webkitRelativePath && folderPath) {
       const parts = file.webkitRelativePath.split('/');
       parts.pop();
-    } else {
-      conflictStrategy = ConflictStrategy.Overwrite;
     }
-
-    const fileMd5 =
-      file.size !== 0 && this.enableResumableUpload && !targetFolderPath
+    const hash =
+      file.size !== 0 && this.enableResumableUpload && !folderPath
         ? await FileHashCalculationEngine.execute(file)
         : null;
 
+    if (!hash) {
+      conflictStrategy = ConflictStrategy.Rename;
+    }
+
     return requestHelper.initMultipartUpload({
-      fileMd5,
-      fileName: file.name,
+      name: file.name,
+      hash,
+      folderPath,
+      contentType: file.type,
+      size: file.size,
       conflictStrategy,
-      targetFolderPath,
     });
   }
 
@@ -66,6 +69,10 @@ class FileUploadEngine {
 
   public static getAccessUrl(fileName: string): string {
     return Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/' + fileName;
+  }
+
+  public static extractFileNameFromUrl(url: string): string {
+    return url.replace(Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/', '');
   }
 
   public static getDownloadUrl(fileName: string): string {
@@ -102,12 +109,11 @@ class FileUploadEngine {
       const res = await requestHelper.checkFileInfo(uploadId);
 
       if (res.data.exist) {
-        const createVirtualFileRes = await requestHelper.createSoftLink(uploadId, file.name);
+        const addFileRes = await requestHelper.addFileRecord(uploadId);
         callback({
           percent: 100,
           status: 'success',
-          uid: createVirtualFileRes.data,
-          url: FileUploadEngine.getAccessUrl(createVirtualFileRes.data),
+          url: FileUploadEngine.getAccessUrl(addFileRes.data),
         });
         return;
       }
@@ -144,8 +150,7 @@ class FileUploadEngine {
       percent: 100,
       status: 'success',
       name: completeMultipartUploadRes.data.fileName,
-      uid: completeMultipartUploadRes.data.fileId,
-      url: FileUploadEngine.getAccessUrl(completeMultipartUploadRes.data.fileId),
+      url: FileUploadEngine.getAccessUrl(completeMultipartUploadRes.data.fileKey),
     });
   }
 }

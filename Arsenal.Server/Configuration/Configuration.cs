@@ -10,13 +10,20 @@ public class Configuration
 
     public static string UploadFolderPath => Path.Combine(RootFolderPath, "files");
 
-    public static string DownloadFolderPath => Path.Combine(RootFolderPath, "download_files");
+    public static string TemporaryDownloadFolderPath => Path.Combine(RootFolderPath, "temporary_download_files");
 
     public static string TempFolderPath => Path.Combine(RootFolderPath, "temp");
 
     public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
 
+    public static string CurrentPluginRootPath => Instance.GetCurrentPluginRoot();
+
     public static readonly Configuration Instance = LazyInstance.Value;
+
+    /// <summary>
+    /// 数据库链接串
+    /// </summary>
+    public static string DatabaseConnectionString { get; set; } = string.Empty;
 
     public static AppConfig AppConfig { get; private set; }
 
@@ -62,6 +69,15 @@ public class Configuration
     private string GetRunAtLocalUploadFolderPath()
     {
         return Path.Combine(GetParents(GetType().Assembly.Location, 3).FullName, "Upload");
+    }
+
+    /// <summary>
+    /// 获取当前插件根目录
+    /// </summary>
+    /// <returns></returns>
+    private string GetCurrentPluginRoot()
+    {
+        return GetParents(GetType().Assembly.Location, 1).FullName;
     }
 
     /// <summary>

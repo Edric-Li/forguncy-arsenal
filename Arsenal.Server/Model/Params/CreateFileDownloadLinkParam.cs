@@ -11,6 +11,12 @@ public class CreateFileDownloadLinkParam
     public string FilePath { get; set; }
 
     /// <summary>
+    /// 下载文件名 
+    /// </summary>
+    [JsonProperty("fileName")]
+    public string DownloadFileName { get; set; }
+
+    /// <summary>
     /// 有效期
     /// 可以设置此属性来指定下载链接的有效期限。如果将过期时间设置为 0，则表示下载链接永不过期。
     /// </summary>

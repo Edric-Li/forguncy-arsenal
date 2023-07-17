@@ -10,12 +10,14 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ServerCommandOrderWeight.GetFileDirectoryCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/get-file-folder.png")]
+
 public class GetFileDirectoryCommand : Command, ICommandExecutableInServerSideAsync
 {
-    [DisplayName("文件路径")]
+    [DisplayName("附件值")]
     [FormulaProperty]
     [Required]
-    public object FileName { get; set; }
+    public object FileKey { get; set; }
 
     [DisplayName("结果至变量")]
     [ResultToProperty]
@@ -24,14 +26,14 @@ public class GetFileDirectoryCommand : Command, ICommandExecutableInServerSideAs
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
-        var fileName = (await dataContext.EvaluateFormulaAsync(FileName))?.ToString();
+        var fileKey = (await dataContext.EvaluateFormulaAsync(FileKey))?.ToString();
 
-        if (string.IsNullOrWhiteSpace(fileName))
+        if (string.IsNullOrWhiteSpace(fileKey))
         {
             throw new ArgumentException("文件名称不能为空。");
         }
 
-        var result = FileUploadService.GetFileDirectory(fileName);
+        var result = FileUploadService.GetFileDirectory(fileKey);
         dataContext.Parameters[Result] = result;
         return new ExecuteResult();
     }

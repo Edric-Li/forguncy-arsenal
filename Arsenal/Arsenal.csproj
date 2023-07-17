@@ -71,9 +71,44 @@
 		</Reference>
 	</ItemGroup>
 	<ItemGroup>
-	  <Resource Include="Resources\images\Icon.png" />
-	  <None Remove="Resources\images\preview.png" />
-	  <Resource Include="Resources\images\preview.png" />
+		<Resource Include="Resources\images\Icon.png" />
+		<None Remove="Resources\images\preview.png" />
+		<None Remove="Resources\images\fileUpload.png" />
+		<Resource Include="Resources\images\preview.png" />
+		<None Remove="Resources\images\upload.png" />
+		<Resource Include="Resources\images\upload.png" />
+		<None Remove="Resources\images\create-download-link.png" />
+		<Resource Include="Resources\images\create-download-link.png" />
+		<None Remove="Resources\images\download.png" />
+		<Resource Include="Resources\images\download.png" />
+		<None Remove="Resources\images\get-file-access-link.png" />
+		<Resource Include="Resources\images\get-file-access-link.png" />
+		<None Remove="Resources\images\get-file-download-link.png" />
+		<Resource Include="Resources\images\get-file-download-link.png" />
+		<None Remove="Resources\images\get-file-folder.png" />
+		<Resource Include="Resources\images\get-file-folder.png" />
+		<None Remove="Resources\images\get-file-full-path.png" />
+		<Resource Include="Resources\images\get-file-full-path.png" />
+		<None Remove="Resources\images\get-root-path.png" />
+		<Resource Include="Resources\images\get-root-path.png" />
+		<None Remove="Resources\images\get-temp-folder.png" />
+		<Resource Include="Resources\images\get-temp-folder.png" />
+		<None Remove="Resources\images\upload-folder.png" />
+		<Resource Include="Resources\images\upload-folder.png" />
+		<None Remove="Resources\images\upload1.png" />
+		<Resource Include="Resources\images\upload1.png" />
+		<None Remove="Resources\images\zip-and-download.png" />
+		<Resource Include="Resources\images\zip-and-download.png" />
+		<None Remove="Resources\images\zip.png" />
+		<Resource Include="Resources\images\zip.png" />
+		<None Remove="Resources\images\delete-file.png" />
+		<Resource Include="Resources\images\delete-file.png" />
+		<None Remove="Resources\images\unzip.png" />
+		<Resource Include="Resources\images\unzip.png" />
+		<None Remove="Resources\images\move.png" />
+		<Resource Include="Resources\images\move.png" />
+		<None Remove="Resources\images\calculation-of-differences.png" />
+		<Resource Include="Resources\images\calculation-of-differences.png" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Web\dist\assets" />

@@ -8,13 +8,14 @@ namespace Arsenal;
 
 [Category("Arsenal")]
 [OrderWeight((int)ClientCommandOrderWeight.ZipFileAndDownload)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/zip-and-download.png")]
 public class ZipFileAndDownloadCommand : Command
 {
-    [DisplayName("文件名称")]
+    [DisplayName("附件值")]
     [FormulaProperty]
     [Required]
-    [JsonProperty("fileNames")]
-    public object FileNames { get; set; }
+    [JsonProperty("fileKeys")]
+    public object FileKeys { get; set; }
 
     [DisplayName("下载文件名")]
     [FormulaProperty]
