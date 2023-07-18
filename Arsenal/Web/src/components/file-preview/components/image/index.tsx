@@ -26,7 +26,7 @@ const ImagePreview = (props: IPreviewComponentProps) => {
       const containerHeight = ref.current!.offsetHeight;
       let [imageWidth, imageHeight] = await getImageSize(props.url);
 
-      if (imageWidth > containerWidth && imageHeight > containerHeight) {
+      if (imageWidth > containerWidth || imageHeight > containerHeight) {
         const size = adjustImageSize(imageWidth, imageHeight, containerWidth, containerHeight);
         imageWidth = size.width;
         imageHeight = size.height;
