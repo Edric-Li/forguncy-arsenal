@@ -8,3 +8,10 @@
 .arsenal-upload-un-clickable-list .ant-upload-list-item-container {
   pointer-events: none;
 }
+
+.arsenal-drag-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0;
+}

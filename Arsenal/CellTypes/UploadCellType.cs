@@ -28,6 +28,15 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     [JsonProperty("listType")]
     public ListType ListType { get; set; } = ListType.Text;
 
+    [DisplayName("允许拖拽")]
+    [JsonProperty("allowDragAndDrop")]
+    public bool AllowDragAndDrop { get; set; }
+
+    [DisplayName("拖拽区域设置")]
+    [JsonProperty("dragAndDropSettings")]
+    [ObjectProperty(IndentLevel = 2, ObjType = typeof(DragAndDropSettings))]
+    public DragAndDropSettings DragAndDropSettings { get; set; } = new();
+
     [CategoryHeader("其他")]
     [DisplayName("禁用")]
     [DefaultValue(false)]
@@ -55,6 +64,16 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     {
         CommonUtils.CopyWebSiteFilesToDesigner(context);
         return null;
+    }
+
+    public override bool GetDesignerPropertyVisible(string propertyName)
+    {
+        if (propertyName == nameof(DragAndDropSettings))
+        {
+            return AllowDragAndDrop;
+        }
+
+        return base.GetDesignerPropertyVisible(propertyName);
     }
 
     public override string ToString()
@@ -293,4 +312,16 @@ public class UploadSettings : ObjectPropertyBase
 
         return base.GetDesignerPropertyVisible(propertyName);
     }
+}
+
+public class DragAndDropSettings : ObjectPropertyBase
+{
+    [UserControlPageProperty]
+    [DisplayName("拖拽区域对应组件")]
+    [JsonProperty("dragUserControlPage")]
+    public string DragUserControlPage { get; set; }
+
+    [DisplayName("拖拽区域对应组件高度")]
+    [JsonProperty("height")]
+    public int Height { get; set; } = 300;
 }

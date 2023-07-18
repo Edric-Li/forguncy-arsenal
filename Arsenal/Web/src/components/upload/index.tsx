@@ -1,5 +1,12 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { DeleteOutlined, DownloadOutlined, EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  EyeOutlined,
+  InboxOutlined,
+  PlusOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 import { Button, message, Modal, Upload } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
@@ -18,6 +25,8 @@ import cx from 'classnames';
 import isImageUrl from '../../common/is-image-url';
 import isInternalFile from '../../common/is-internal-file';
 import isImageFileType from '../../common/is-image-file-type';
+import Dragger from 'antd/es/upload/Dragger';
+import createUserControlPageInContainer from '../../common/create-user-control-page-in-container';
 
 enum ListType {
   text,
@@ -61,6 +70,11 @@ export interface IOptions {
     maxSize: number;
     allowedExtensions: string;
   };
+  allowDragAndDrop: boolean;
+  dragAndDropSettings: {
+    dragUserControlPage: string;
+    height: number;
+  };
 }
 
 export interface IProps {
@@ -75,6 +89,7 @@ const maxDialogHeight = ~~document.body.clientHeight - 105;
 
 const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const uploadContainerRef = useRef<HTMLDivElement | null>(null);
+  const dragContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const fileListRef = useRef<UploadFile[]>([]);
@@ -112,7 +127,22 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
     setShowUploadButton(hasUploadPermission && !props.options.ReadOnly);
     setShowUploadList(newUploadList);
+
+    if (props.options.allowDragAndDrop && dragContainerRef.current) {
+      const rootEl = $(dragContainerRef.current).parent().parent().parent();
+
+      rootEl.children('.ant-upload-btn').css('padding', 0);
+      rootEl.css('height', props.options.dragAndDropSettings.height + 'px').css('overflow', 'auto');
+
+      $(dragContainerRef.current).css('height', '100%').css('opacity', 1);
+    }
+
+    if (props.options.dragAndDropSettings.dragUserControlPage && dragContainerRef.current) {
+      createUserControlPageInContainer(dragContainerRef.current, props.options.dragAndDropSettings.dragUserControlPage);
+    }
   }, []);
+
+  const hasDragComponent = useMemo(() => !!props.options.dragAndDropSettings.dragUserControlPage, [props.options]);
 
   useEffect(() => {
     if (!directory) {
@@ -321,6 +351,28 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     return true;
   };
 
+  const uploadProps = useMemo(() => {
+    const { uploadSettings } = props.options;
+    const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 1);
+
+    return {
+      isImageUrl: isImageUrl,
+      directory: directory,
+      fileList: fileList,
+      listType: listType,
+      onRemove: handleRemove,
+      onDownload: handleDownload,
+      beforeUpload: handleBeforeUpload,
+      onPreview: handlePreview,
+      multiple: multiple,
+      accept: uploadSettings.allowedExtensions,
+      maxCount: uploadSettings.maxCount,
+      disabled: disabled,
+      openFileDialogOnClick: !disabled && showUploadButton,
+      showUploadList: showUploadList,
+    };
+  }, [props, disabled, showUploadButton, showUploadList, fileList, directory, listType]);
+
   const renderButton = useMemo(() => {
     if (listType === 'picture-circle' || listType === 'picture-card') {
       return (
@@ -339,25 +391,26 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   }, [listType]);
 
   const renderUpload = () => {
-    const { uploadSettings } = props.options;
-    const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 1);
+    if (props.options.allowDragAndDrop) {
+      return (
+        <Dragger {...uploadProps}>
+          <div ref={dragContainerRef} className='arsenal-drag-container'>
+            {!hasDragComponent && (
+              <>
+                <p className='ant-upload-drag-icon'>
+                  <InboxOutlined />
+                </p>
+                <p className='ant-upload-text'>点击或拖动文件至此区域上传</p>
+                <p className='ant-upload-hint'>支持单个或批量上传。</p>
+              </>
+            )}
+          </div>
+        </Dragger>
+      );
+    }
+
     return (
-      <Upload
-        isImageUrl={isImageUrl}
-        directory={directory}
-        fileList={fileList}
-        listType={listType}
-        onRemove={handleRemove}
-        onDownload={handleDownload}
-        beforeUpload={handleBeforeUpload}
-        onPreview={handlePreview}
-        multiple={multiple}
-        accept={uploadSettings.allowedExtensions}
-        maxCount={uploadSettings.maxCount}
-        disabled={disabled}
-        openFileDialogOnClick={!disabled && showUploadButton}
-        showUploadList={showUploadList}
-      >
+      <Upload {...uploadProps}>
         {<div ref={uploadContainerRef}>{showUploadButton && <div>{renderButton}</div>}</div>}
       </Upload>
     );
