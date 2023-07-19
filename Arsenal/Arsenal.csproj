@@ -21,6 +21,11 @@
 	  <None Remove="Resources\arsenal.js" />
 	  <None Remove="Resources\arsenal.js.map" />
 	  <None Remove="Resources\arsenal.core.js" />
+	  <None Remove="Resources\arsenal.core.css" />
+	  <Compile Remove="Resources\dist\**" />
+	  <EmbeddedResource Remove="Resources\dist\**" />
+	  <Page Remove="Resources\dist\**" />
+	  <None Remove="Resources\dist\**" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Resources\images\Icon.png" />

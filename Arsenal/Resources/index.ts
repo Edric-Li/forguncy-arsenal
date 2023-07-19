@@ -1,33 +1,3 @@
-function runDev() {
-    const origin = "http://localhost:5173";
-
-    const fragment = document.createDocumentFragment();
-
-    const creatModuleScriptElement = (src) => {
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.src = origin + src;
-        return script;
-    };
-
-    const reactRefreshScript = document.createElement('script');
-    reactRefreshScript.type = 'module';
-    reactRefreshScript.innerHTML = `  
-    import RefreshRuntime from "${origin}/@react-refresh"
-    RefreshRuntime.injectIntoGlobalHook(window)
-    window.$RefreshReg$ = () => {}
-    window.$RefreshSig$ = () => (type) => type
-    window.__vite_plugin_react_preamble_installed__ = true`;
-
-    fragment.append(reactRefreshScript);
-    fragment.append(creatModuleScriptElement(`/@vite/client`));
-    fragment.append(creatModuleScriptElement('/src/main.tsx?t=1678179320265'));
-    document.head.appendChild(fragment);
-}
-
-window.__reactCellTypes = window.__reactCellTypes || {};
-runDev();
-
 namespace Arsenal {
 
     interface IMethodTasks {
@@ -35,8 +5,21 @@ namespace Arsenal {
         args: any[];
     }
 
-    export class ReactCellType extends Forguncy.Plugin.CellTypeBase {
+    function waitForCondition(callback, interval) {
+        return new Promise((resolve) => {
+            const checkCondition = () => {
+                if (callback()) {
+                    resolve(true);
+                    clearInterval(intervalId);
+                }
+            };
 
+            const intervalId = setInterval(checkCondition, interval);
+        });
+    }
+
+
+    export class ReactCellType extends Forguncy.Plugin.CellTypeBase {
         ComponentName: string;
 
         _reactComponentLoaded = false;
@@ -45,13 +28,10 @@ namespace Arsenal {
 
         _originalMethods: { [key: string]: Function } = {};
 
-        _prototype: { [key: string]: Function } = {};
-
         __reactComponent: IReactCellTypeRef;
 
         _reactComponentMethods: string[] = [
             "setValueToElement",
-            "getValueFromElement"
         ];
 
         constructor(...args) {
@@ -59,24 +39,18 @@ namespace Arsenal {
             const self = this;
             this._originalMethods = {};
 
-            // @ts-ignore
-            const originalPrototype = this._prototype;
-            // @ts-ignore
-            this._prototype = ReactCellType.prototype.__proto__;
-
             this._reactComponentMethods.forEach(methodName => {
-                this._originalMethods[methodName] = this[methodName];
+                this._originalMethods[methodName] = this[methodName].bind(self);
 
-                this._prototype[methodName] = (...args: any[]) => {
+                this[methodName] = (...args: any[]) => {
                     if (self._reactComponentLoaded) {
-                        this._prototype[methodName] = this._originalMethods[methodName];
-                        this._originalMethods[methodName](...args);
+                        this[methodName] = this._originalMethods[methodName].bind(self);
+                        this[methodName](...args);
                     } else {
                         self._methodExecutionQueue.push({name: methodName, args});
                     }
                 }
             });
-            this._prototype = originalPrototype;
         }
 
         public getValueFromElement(): any {
@@ -102,29 +76,53 @@ namespace Arsenal {
             this.__reactComponent?.setDisable?.(this.isDisabled());
         }
 
-        // 只是没有类型引用,但实际有使用,请勿删除
         onReactComponentLoaded() {
             this._reactComponentLoaded = true;
 
             if (this._methodExecutionQueue.length) {
                 this._methodExecutionQueue.forEach(task => {
-                    this._originalMethods[task.name](...task.args);
-                    this._prototype[task.name] = this._originalMethods[task.name];
+                    this[task.name] = this._originalMethods[task.name].bind(this);
+                    this[task.name](...task.args);
                 });
             }
         }
 
         onPageLoaded(info) {
-            const timer = setInterval(() => {
-                if (window.createReactComponent) {
-                    window.createReactComponent(this, this.ComponentName);
-                    return clearInterval(timer);
-                }
-            }, 25);
+            waitForCondition(() => window.Arsenal.createReactComponent, 25).then(() => {
+                window.Arsenal.createReactComponent(this, this.ComponentName);
+            });
         }
 
         createContent() {
             return $('<div/>');
+        }
+    }
+
+    class ReactCommand extends Forguncy.Plugin.CommandBase {
+        protected ComponentName;
+
+        __reactCommandExecutor: () => void = null;
+
+        constructor() {
+            super();
+
+            waitForCondition(() => window.Arsenal && window.Arsenal.createReactCommand, 25).then(() => {
+                this.__reactCommandExecutor = window.Arsenal.createReactCommand(this, this.ComponentName);
+            });
+        }
+
+        execute() {
+            return new Promise((resolve) => {
+                if (this.__reactCommandExecutor) {
+                    this.__reactCommandExecutor();
+                    return resolve(null);
+                }
+
+                waitForCondition(() => this.__reactCommandExecutor, 25).then(() => {
+                    this.__reactCommandExecutor();
+                    resolve(null);
+                });
+            })
         }
     }
 
@@ -142,40 +140,6 @@ namespace Arsenal {
 
     export class FilePreview extends ReactCellType {
         ComponentName = 'FilePreview';
-    }
-
-    class ReactCommand extends Forguncy.Plugin.CommandBase {
-        protected ComponentName;
-
-        __reactCommandExecutor: () => void = null;
-
-        constructor() {
-            super();
-
-            const timer = setInterval(() => {
-                if (window.createReactCommand) {
-                    this.__reactCommandExecutor = window.createReactCommand(this, this.ComponentName);
-                    return clearInterval(timer);
-                }
-            }, 25);
-        }
-
-        execute() {
-            return new Promise((resolve) => {
-                if (this.__reactCommandExecutor) {
-                    this.__reactCommandExecutor();
-                    return resolve(null);
-                }
-
-                const timer = setInterval(() => {
-                    if (this.__reactCommandExecutor) {
-                        this.__reactCommandExecutor();
-                        clearInterval(timer);
-                        resolve(null);
-                    }
-                }, 25)
-            })
-        }
     }
 
     export class UploadCommand extends ReactCommand {

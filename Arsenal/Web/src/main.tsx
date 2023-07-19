@@ -17,7 +17,15 @@ function createReactCommand(commandBase: Forguncy.Plugin.CommandBase, commandNam
   });
 }
 
-window.createReactCommand = createReactCommand;
-window.createReactComponent = createReactComponent;
+if (!window.Arsenal) {
+  window.Arsenal = {
+    createReactCommand,
+    createReactComponent,
+  };
+} else {
+  window.Arsenal.createReactCommand = createReactCommand;
+  window.Arsenal.createReactComponent = createReactComponent;
+}
+
 
 window.$ = window.jQuery;

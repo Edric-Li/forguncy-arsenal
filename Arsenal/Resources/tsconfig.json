@@ -7,7 +7,7 @@
       "DOM",
       "ES2016.Array.Include"
     ],
-    "outFile": "arsenal.js",
+    "outDir": "dist",
     "experimentalDecorators": true
   },
   "compileOnSave": true,

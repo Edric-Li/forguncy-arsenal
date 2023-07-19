@@ -9,7 +9,7 @@ function main() {
   shelljs.exec('vite build');
 
   const distDir = path.resolve(__dirname, '../dist/assets');
-  const targetDir = path.resolve(__dirname, '../../Resources');
+  const targetDir = path.resolve(__dirname, '../../Resources/dist');
   const files = fs.readdirSync(distDir);
 
   fs.copySync(
