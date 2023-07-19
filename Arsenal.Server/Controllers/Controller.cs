@@ -1,36 +1,20 @@
-﻿using System.Diagnostics;
-using Arsenal.Server.Common;
+﻿using Arsenal.Server.Common;
 using Arsenal.Server.Model;
 using Arsenal.Server.Model.HttpResult;
 using Arsenal.Server.Model.Params;
 using Arsenal.Server.Services;
 using GrapeCity.Forguncy.ServerApi;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 
 namespace Arsenal.Server.Controllers;
 
 public class Arsenal : ForguncyApi
 {
-    private async Task SecurityExecutionFuncAsync(Func<Task> func)
-    {
-        try
-        {
-            await func.Invoke();
-        }
-        catch (Exception e)
-        {
-            BuildHttpResult(new HttpFailureResult(e.Message));
-            Trace.WriteLine(e);
-        }
-    }
-
     [Post]
     public async Task InitMultipartUpload()
     {
-        await SecurityExecutionFuncAsync(async () =>
+        await Context.HandleErrorAsync(async () =>
         {
-            var body = await ParseBodyAsync<InitMultipartUploadParam>();
+            var body = await Context.ParseBodyAsync<InitMultipartUploadParam>();
 
             var uploadId = FileUploadService.GenerateUniqueFileName();
 
@@ -56,7 +40,7 @@ public class Arsenal : ForguncyApi
             }
 
             MetadataCacheService.Set(uploadId, meteData);
-            
+
             var fileName = await FileUploadService.GenerateAppropriateFileNameByUploadId(uploadId);
 
             if (fileName != meteData.Name)
@@ -72,7 +56,7 @@ public class Arsenal : ForguncyApi
                 Directory.CreateDirectory(tempFolderPath);
             }
 
-            BuildHttpResult(new HttpSuccessResult(new
+            Context.BuildResult(new HttpSuccessResult(new
             {
                 uploadId,
                 fileName
@@ -83,7 +67,7 @@ public class Arsenal : ForguncyApi
     [Get]
     public async Task CheckFileInfo()
     {
-        await SecurityExecutionFuncAsync(async () =>
+        await Context.HandleErrorAsync(async () =>
         {
             var uploadId = Context.Request.Query["uploadId"];
 
@@ -91,7 +75,7 @@ public class Arsenal : ForguncyApi
 
             var parts = FileUploadService.ListParts(uploadId);
 
-            BuildHttpResult(new HttpSuccessResult(new
+            Context.BuildResult(new HttpSuccessResult(new
             {
                 exist,
                 parts
@@ -102,7 +86,7 @@ public class Arsenal : ForguncyApi
     [Post]
     public async Task UploadPart()
     {
-        await SecurityExecutionFuncAsync(async () =>
+        await Context.HandleErrorAsync(async () =>
         {
             var files = Context.Request.Form.Files;
 
@@ -110,21 +94,20 @@ public class Arsenal : ForguncyApi
             Context.Request.Form.TryGetValue("uploadId", out var uploadId);
 
             await FileUploadService.UploadPartAsync(uploadId, Convert.ToInt32(partNumber), files[0]);
-
-            BuildHttpResult(new HttpSuccessResult());
+            Context.BuildResult(new HttpSuccessResult());
         });
     }
 
     [Post]
     public async Task CompleteMultipartUpload()
     {
-        await SecurityExecutionFuncAsync(async () =>
+        await Context.HandleErrorAsync(async () =>
         {
-            var body = await ParseBodyAsync<CompleteMultipartUploadParam>();
+            var body = await Context.ParseBodyAsync<CompleteMultipartUploadParam>();
 
             var fileEntity = await FileUploadService.CompleteMultipartUploadAsync(body.UploadId);
-            
-            BuildHttpResult(new HttpSuccessResult(new
+
+            Context.BuildResult(new HttpSuccessResult(new
             {
                 fileKey = fileEntity.Key,
                 fileName = fileEntity.Name
@@ -135,22 +118,22 @@ public class Arsenal : ForguncyApi
     [Post]
     public async Task AddFileRecord()
     {
-        await SecurityExecutionFuncAsync(async () =>
+        await Context.HandleErrorAsync(async () =>
         {
-            var body = await ParseBodyAsync<AddFileRecordParam>();
+            var body = await Context.ParseBodyAsync<AddFileRecordParam>();
 
             var fileEntity = await FileUploadService.AddFileRecordAsync(body.UploadId);
 
-            BuildHttpResult(new HttpSuccessResult(fileEntity.Key));
+            Context.BuildResult(new HttpSuccessResult(fileEntity.Key));
         });
     }
 
     [Post]
     public async Task CompressFilesIntoZip()
     {
-        await SecurityExecutionFuncAsync(async () =>
+        await Context.HandleErrorAsync(async () =>
         {
-            var body = await ParseBodyAsync<CompressFilesIntoZipParam>();
+            var body = await Context.ParseBodyAsync<CompressFilesIntoZipParam>();
 
             var zipPath = Path.Combine(Configuration.Configuration.TempFolderPath, Guid.NewGuid().ToString(),
                 body.ZipName);
@@ -164,24 +147,7 @@ public class Arsenal : ForguncyApi
                 ExpirationDate = 3
             });
 
-            BuildHttpResult(new HttpSuccessResult(data));
+            Context.BuildResult(new HttpSuccessResult(data));
         });
-    }
- 
-    private async Task<T> ParseBodyAsync<T>() where T : new()
-    {
-        var reader = new StreamReader(Context.Request.Body);
-
-        var body = await reader.ReadToEndAsync();
-
-        var data = JsonConvert.DeserializeObject<T>(body);
-
-        return data ?? new T();
-    }
-
-    private void BuildHttpResult(HttpResult result)
-    {
-        Context.Response.ContentType = "application/json";
-        Context.Response.WriteAsync(JsonConvert.SerializeObject(result, Formatting.None));
     }
 }
