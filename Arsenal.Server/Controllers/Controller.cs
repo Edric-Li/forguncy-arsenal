@@ -137,7 +137,7 @@ public class Arsenal : ForguncyApi
     {
         await SecurityExecutionFuncAsync(async () =>
         {
-            var body = await ParseBodyAsync<CreateSoftLinkParam>();
+            var body = await ParseBodyAsync<AddFileRecordParam>();
 
             var fileEntity = await FileUploadService.AddFileRecordAsync(body.UploadId);
 

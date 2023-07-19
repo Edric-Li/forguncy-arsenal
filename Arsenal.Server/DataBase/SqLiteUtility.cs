@@ -3,10 +3,21 @@ using System.Diagnostics;
 
 namespace Arsenal.Server.DataBase;
 
+/// <summary>
+/// Sqlite数据库工具类
+/// </summary>
 public class SqLiteUtility
 {
+    /// <summary>
+    /// 数据库连接字符串
+    /// </summary>
     private static string ConnectionString => Configuration.Configuration.DatabaseConnectionString;
 
+    /// <summary>
+    /// 确保表存在
+    /// </summary>
+    /// <param name="tableName">表名</param>
+    /// <param name="columns">列信息</param>
     public static async Task EnsureTableExistsAsync(string tableName, params string[] columns)
     {
         try
@@ -36,6 +47,12 @@ public class SqLiteUtility
         }
     }
 
+    /// <summary>
+    /// 表是否存在
+    /// </summary>
+    /// <param name="connection"></param>
+    /// <param name="tableName"></param>
+    /// <returns></returns>
     private static async Task<bool> TableExistsAsync(SQLiteConnection connection, string tableName)
     {
         await using var command = connection.CreateCommand();
@@ -46,6 +63,12 @@ public class SqLiteUtility
         return count > 0;
     }
 
+    /// <summary>
+    /// 生成创建表的SQL语句
+    /// </summary>
+    /// <param name="tableName"></param>
+    /// <param name="columns"></param>
+    /// <returns></returns>
     private static string GenerateCreateTableQuery(string tableName, params string[] columns)
     {
         var createTableQuery = $"CREATE TABLE {tableName} (";
@@ -64,6 +87,12 @@ public class SqLiteUtility
         return createTableQuery;
     }
 
+    /// <summary>
+    /// 确保索引存在
+    /// </summary>
+    /// <param name="tableName"></param>
+    /// <param name="indexName"></param>
+    /// <param name="columnName"></param>
     public async Task EnsureIndexExistsAsync(string tableName, string indexName, string columnName)
     {
         try
@@ -94,6 +123,12 @@ public class SqLiteUtility
         }
     }
 
+    /// <summary>
+    /// 索引是否存在
+    /// </summary>
+    /// <param name="connection"></param>
+    /// <param name="indexName"></param>
+    /// <returns></returns>
     private static bool IndexExists(SQLiteConnection connection, string indexName)
     {
         using var command = connection.CreateCommand();
@@ -104,6 +139,13 @@ public class SqLiteUtility
         return count > 0;
     }
 
+    /// <summary>
+    /// 获取创建索引的SQL语句
+    /// </summary>
+    /// <param name="tableName"></param>
+    /// <param name="indexName"></param>
+    /// <param name="columnName"></param>
+    /// <returns></returns>
     private static string GenerateCreateIndexQuery(string tableName, string indexName, string columnName)
     {
         return $"CREATE INDEX IF NOT EXISTS {indexName} ON {tableName} ({columnName})";

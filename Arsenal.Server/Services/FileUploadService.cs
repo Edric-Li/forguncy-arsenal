@@ -20,11 +20,6 @@ public static class FileUploadService
 
     private static readonly object MergeTaskMapLock = new();
 
-    private static bool ExistsFile(string filePath)
-    {
-        return File.Exists(filePath);
-    }
-
     public static async Task<bool> CheckFileInfoAsync(string uploadId)
     {
         var metaData = MetadataCacheService.Get(uploadId);
@@ -91,7 +86,7 @@ public static class FileUploadService
 
         var tmpFile = Path.Combine(Configuration.Configuration.TempFolderPath, folderName, ".merge");
 
-        if (ExistsFile(tmpFile))
+        if (File.Exists(tmpFile))
         {
             File.Delete(tmpFile);
         }
@@ -201,7 +196,7 @@ public static class FileUploadService
 
         var targetFilePath = GetAbsolutePath(metadata.Name);
 
-        if (!ExistsFile(targetFilePath))
+        if (!File.Exists(targetFilePath))
         {
             return Path.GetFileName(targetFilePath);
         }
@@ -221,7 +216,7 @@ public static class FileUploadService
 
                 var nextFilePath = GetNextFilePath();
 
-                while (ExistsFile(nextFilePath))
+                while (File.Exists(nextFilePath))
                 {
                     num++;
                 }
@@ -371,7 +366,7 @@ public static class FileUploadService
 
         if (Configuration.Configuration.AppConfig.UseCloudStorage)
         {
-            _ = CloudStorageService.CreateTaskAsync(
+            _ = CloudStorageService.CreateUploadTaskAsync(
                 targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
         }
 
@@ -518,7 +513,7 @@ public static class FileUploadService
 
             var filePath = Path.Combine(Configuration.Configuration.UploadFolderPath, name);
 
-            if (ExistsFile(filePath))
+            if (File.Exists(filePath))
             {
                 continue;
             }
