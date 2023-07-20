@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { ConfigProvider } from 'antd';
+import React, {useEffect, useRef} from 'react';
+import {ConfigProvider} from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
 import FilePreview from '../../file-preview';
 import PCUploadWrapper from '../upload-celltype';
+import TableView from '../../table-view';
 
 interface Props {
   componentName: string;
@@ -23,6 +24,8 @@ const CellTypeWrapper = (props: Props) => {
     Component = PCUploadWrapper;
   } else if (props.componentName === 'FilePreview') {
     Component = FilePreview;
+  } else if (props.componentName === 'TableView') {
+    Component = TableView;
   }
 
   return (

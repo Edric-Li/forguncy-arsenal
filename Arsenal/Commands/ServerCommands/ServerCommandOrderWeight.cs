@@ -11,4 +11,5 @@ public enum ServerCommandOrderWeight
     GetFileFullPathCommand,
     GetFileDirectoryCommand,
     UploadServerFolderCommand,
+    ListItemsCommand,
 }

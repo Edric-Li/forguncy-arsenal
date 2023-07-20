@@ -142,6 +142,10 @@ namespace Arsenal {
         ComponentName = 'FilePreview';
     }
 
+    export class TableView extends ReactCellType {
+        ComponentName = 'TableView';
+    }
+
     export class UploadCommand extends ReactCommand {
         ComponentName = 'Upload';
     }
@@ -172,6 +176,7 @@ namespace Arsenal {
 
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.UploadCellType, Arsenal', PCUpload);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.PreviewCellType, Arsenal', FilePreview);
+    Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.TableViewCellType, Arsenal', TableView);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadCommand, Arsenal", UploadCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.UploadFolderCommand, Arsenal", UploadFolderCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.DownloadFileCommand, Arsenal", DownloadFileCommand);

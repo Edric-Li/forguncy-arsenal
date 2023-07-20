@@ -1,24 +1,24 @@
 ﻿using Arsenal.Server.Common;
-using Arsenal.Server.DataBase;
-using Arsenal.Server.Model;
+using Arsenal.Server.Model.Params;
 using Arsenal.Server.Model.Result;
 using Microsoft.EntityFrameworkCore;
 
 namespace Arsenal.Server.Services;
 
-public class ConsoleService : IDisposable
+/// <summary>
+/// 检索服务
+/// </summary>
+public class RetrievalService : ServerBase
 {
-    private DatabaseContext _databaseContext;
-
-    private DatabaseContext DatabaseContext => _databaseContext ??= new DatabaseContext();
-
     /// <summary>
     /// 数据大的时候，此方法性能不好，后续有时间了在优化
     /// </summary>
-    /// <param name="relativePath"></param>
+    /// <param name="param"></param>
     /// <returns></returns>
-    public async Task<ListItemsResult> ListItemsAsync(string relativePath)
+    public async Task<List<ListItemsResult>> ListItemsAsync(ListItemsParam param)
     {
+        var relativePath = param.RelativePath?.TrimStart('/') ?? string.Empty;
+
         var folderPath = SeparatorConverter.ConvertToDatabaseSeparator(relativePath);
         var folderDeep = relativePath.Count(c => c == '/');
 
@@ -31,14 +31,14 @@ public class ConsoleService : IDisposable
             .Where(item => item.FolderPath.StartsWith(folderPath))
             .ToListAsync();
 
-        var files = new List<ListFileItemModel>();
-        var folderMap = new Dictionary<string, ListFolderItemModel>();
+        var files = new List<ListItemsResult>();
+        var folderNameWithSizeMap = new Dictionary<string, long>();
 
         foreach (var item in fileList)
         {
             if (item.FolderPath == relativePath)
             {
-                files.Add(new ListFileItemModel()
+                files.Add(new ListItemsResult()
                 {
                     Name = item.Name,
                     Size = item.Size,
@@ -53,30 +53,34 @@ public class ConsoleService : IDisposable
 
                 var folderName = arr[folderDeep];
 
-                if (!folderMap.ContainsKey(folderName))
+                if (!folderNameWithSizeMap.ContainsKey(folderName))
                 {
-                    folderMap.Add(folderName, new ListFolderItemModel()
-                    {
-                        Name = folderName,
-                        Size = item.Size,
-                    });
+                    folderNameWithSizeMap.Add(folderName, item.Size);
                 }
                 else
                 {
-                    folderMap[folderName].Size += item.Size;
+                    folderNameWithSizeMap[folderName] += item.Size;
                 }
             }
         }
 
-        return new ListItemsResult()
-        {
-            Files = files,
-            Folders = folderMap.Values.ToList()
-        };
-    }
+        var result = new List<ListItemsResult>();
 
-    public void Dispose()
-    {
-        _databaseContext?.DisposeAsync();
+        foreach (var dic in folderNameWithSizeMap)
+        {
+            result.Add(new ListItemsResult()
+            {
+                Name = dic.Key,
+                Size = dic.Value,
+                IsFolder = true,
+            });
+        }
+
+        foreach (var file in files)
+        {
+            result.Add(file);
+        }
+
+        return result;
     }
 }
