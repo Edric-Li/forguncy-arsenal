@@ -136,6 +136,10 @@ namespace Arsenal {
         Upload(...args) {
             this.__reactComponent.runtimeMethod["upload"](...args);
         }
+
+        UploadFolder(...args) {
+            this.__reactComponent.runtimeMethod["uploadFolder"](...args);
+        }
     }
 
     export class FilePreview extends ReactCellType {

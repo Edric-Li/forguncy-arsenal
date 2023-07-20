@@ -47,6 +47,17 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     public bool ReadOnly { get; set; } = false;
 
     [RunTimeMethod]
+    [DisplayName("上传")]
+    public void Upload()
+    {
+    }
+
+    [RunTimeMethod]
+    [DisplayName("上传文件夹")]
+    public void UploadFolder()
+    {
+    }
+    [RunTimeMethod]
     [DisplayName("设置元素显示状态")]
     public void SetElementDisplayState(
         [ItemDisplayName("元素")] [Required] Element element,

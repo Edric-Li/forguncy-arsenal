@@ -99,6 +99,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [previewTitle, setPreviewTitle] = useState<string>();
   const [previewImage, setPreviewImage] = useState<string>('');
   const [disabled, setDisabled] = useState<boolean>(props.options.IsDisabled);
+  const [isReadOnly, setIsReadOnly] = useState<boolean>(props.options.ReadOnly);
+  const [hiddenElements, setHiddenElements] = useState<Set<Element>>(new Set());
 
   const [messageApi, contextHolder] = message.useMessage();
   const [directory, setDirectory] = useState(false);
@@ -116,18 +118,6 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   );
 
   useEffect(() => {
-    const newUploadList = {
-      showDownloadIcon: hasDownloadPermission,
-      showPreviewIcon: hasPreviewPermission,
-      showRemoveIcon: !props.options.ReadOnly && hasDeletePermission,
-      downloadIcon: <DownloadOutlined />,
-      previewIcon: <EyeOutlined />,
-      removeIcon: <DeleteOutlined />,
-    };
-
-    setShowUploadButton(hasUploadPermission && !props.options.ReadOnly);
-    setShowUploadList(newUploadList);
-
     if (props.options.allowDragAndDrop && dragContainerRef.current) {
       const rootEl = $(dragContainerRef.current).parent().parent().parent();
 
@@ -142,14 +132,27 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
   }, []);
 
+  useEffect(() => {
+    const newUploadList = {
+      showDownloadIcon: hasDownloadPermission || !hiddenElements.has(Element.Download),
+      showPreviewIcon: hasPreviewPermission || !hiddenElements.has(Element.Preview),
+      showRemoveIcon: (!props.options.ReadOnly && hasDeletePermission) || !hiddenElements.has(Element.Delete),
+      downloadIcon: <DownloadOutlined/>,
+      previewIcon: <EyeOutlined/>,
+      removeIcon: <DeleteOutlined/>,
+    };
+
+    setShowUploadButton(hasUploadPermission && !props.options.ReadOnly && !hiddenElements.has(Element.Upload));
+    setShowUploadList(newUploadList);
+  }, [hiddenElements, isReadOnly]);
+
   const hasDragComponent = useMemo(() => !!props.options.dragAndDropSettings.dragUserControlPage, [props.options]);
 
   useEffect(() => {
     if (!directory) {
       return;
     }
-    uploadContainerRef.current?.click();
-    setDirectory(false);
+    openFileDailog();
   }, [directory]);
 
   const fileUpload = useFileUploadEngine({
@@ -159,12 +162,16 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     evaluateFormula: props.evaluateFormula,
   });
 
+  const openFileDailog = () => {
+    $(uploadContainerRef.current!).parent().children('input').click();
+  };
+
   useImperativeHandle(ref, () => {
     const getValue = () => {
       return fileListRef.current
-        .filter((i) => (i.status === 'done' || i.status === 'success') && i.url?.length)
-        .map((file) => FileUploadEngine.extractFileNameFromUrl(file.url!))
-        .join('|');
+          .filter((i) => (i.status === 'done' || i.status === 'success') && i.url?.length)
+          .map((file) => FileUploadEngine.extractFileNameFromUrl(file.url!))
+          .join('|');
     };
 
     return {
@@ -197,7 +204,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       getValue,
 
       setReadOnly(isReadOnly: boolean) {
-        setShowUploadButton(!isReadOnly && hasUploadPermission);
+        setIsReadOnly(isReadOnly);
       },
 
       setDisable(isDisabled: boolean) {
@@ -205,39 +212,19 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       },
 
       runtimeMethod: {
-        upload(directory: boolean) {
-          if (!directory) {
-            uploadContainerRef.current?.click();
-          } else {
-            setDirectory(directory);
-          }
+        upload() {
+          openFileDailog();
+        },
+
+        uploadFolder() {
+          setDirectory(true);
         },
 
         setElementDisplayState(element: Element, elementState: ElementState) {
-          if (element === Element.Upload && hasUploadPermission) {
-            return setShowUploadButton(elementState === ElementState.Visible);
-          }
-
-          if (element === Element.Delete && hasDeletePermission) {
-            return setShowUploadList({
-              ...showUploadList,
-              showRemoveIcon: elementState === ElementState.Visible,
-            });
-          }
-
-          if (element === Element.Preview && hasPreviewPermission) {
-            return setShowUploadList({
-              ...showUploadList,
-              showPreviewIcon: elementState === ElementState.Visible,
-            });
-          }
-
-          if (element === Element.Download && hasDownloadPermission) {
-            return setShowUploadList({
-              ...showUploadList,
-              showDownloadIcon: elementState === ElementState.Visible,
-            });
-          }
+          const newHiddenElements = new Set(hiddenElements);
+          const method = elementState === ElementState.Hidden ? 'add' : 'delete';
+          newHiddenElements[method](element);
+          setHiddenElements(newHiddenElements);
         },
       },
     };
@@ -246,6 +233,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
   const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
+    if (directory) {
+      setDirectory(false);
+    }
     if (file.size / 1024 / 1024 > props.options.uploadSettings.maxSize) {
       messageApi.error({
         key: 'arsenal',
