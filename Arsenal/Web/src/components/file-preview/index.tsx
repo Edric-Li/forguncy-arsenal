@@ -41,7 +41,7 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           name = item.substring(37);
           url = FileUploadEngine.getAccessUrl(item);
         } else {
-          item.split('/').at(-1);
+          name = item.split('/').at(-1);
         }
         filesMap.current.set(key, url);
 

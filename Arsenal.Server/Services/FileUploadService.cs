@@ -484,7 +484,9 @@ public static class FileUploadService
 
         try
         {
-            var expirationAt = ConvertDateTimeToTimestamp(DateTime.Now.AddMinutes(param.ExpirationDate));
+            var expirationAt =
+                ConvertDateTimeToTimestamp(
+                    DateTime.Now.AddMinutes(param.ExpirationDate == 0 ? long.MaxValue : param.ExpirationDate));
 
             dbContext.TemporaryDownloadFiles.Add(new TemporaryDownloadFile()
             {

@@ -1,5 +1,5 @@
-import React, {useEffect, useRef} from 'react';
-import {ConfigProvider} from 'antd';
+import React, { useEffect, useRef } from 'react';
+import { ConfigProvider } from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
 import FilePreview from '../../file-preview';
 import PCUploadWrapper from '../upload-celltype';

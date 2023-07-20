@@ -27,5 +27,4 @@ if (!window.Arsenal) {
   window.Arsenal.createReactComponent = createReactComponent;
 }
 
-
 window.$ = window.jQuery;

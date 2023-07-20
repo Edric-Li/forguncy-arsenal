@@ -1,39 +1,37 @@
-import React, {forwardRef, useEffect, useMemo, useState} from 'react';
-import {Space, Table, TableProps} from 'antd';
+import React, { forwardRef, useEffect, useMemo, useState } from 'react';
+import { Space, Table, TableProps } from 'antd';
 import ResizeObserver from 'rc-resize-observer';
-import {FolderOutlined} from '@ant-design/icons';
-
+import { FolderOutlined } from '@ant-design/icons';
 
 interface DataType {
-    key: React.Key;
-    name: string;
-    size: number;
-    type: string;
-    updatedAt: number;
-    isFolder: boolean;
+  key: React.Key;
+  name: string;
+  size: number;
+  type: string;
+  updatedAt: number;
+  isFolder: boolean;
 }
 
-
 const dataSource = [
-    {
-        key: '1',
-        name: 'test',
-        size: 123,
-        type: 'folder',
-        isFolder: true,
-        updatedAt: 123456789
-    },
-    {
-        key: '2',
-        name: 'test',
-        size: 123,
-        type: 'folder',
-        updatedAt: 123456789
-    }
+  {
+    key: '1',
+    name: 'test',
+    size: 123,
+    type: 'folder',
+    isFolder: true,
+    updatedAt: 123456789,
+  },
+  {
+    key: '2',
+    name: 'test',
+    size: 123,
+    type: 'folder',
+    updatedAt: 123456789,
+  },
 ];
 
 const TableView = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
-    /* const [tableScrollY, setTableScrollY] = useState<number>(0);
+  /* const [tableScrollY, setTableScrollY] = useState<number>(0);
      const columns = [
          {
              title: '文件名',
@@ -120,7 +118,7 @@ const TableView = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
          </div>
      );*/
 
-    return null;
+  return null;
 });
 
 export default TableView;
