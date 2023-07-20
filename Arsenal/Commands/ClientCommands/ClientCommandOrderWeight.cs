@@ -9,4 +9,6 @@ public enum ClientCommandOrderWeight
     GetDownloadUrlCommand,
     GetDifferenceFileKeysCommand,
     ZipFileAndDownload,
+    CancelUploadCommand,
+    CancelDeleteCommand,
 }

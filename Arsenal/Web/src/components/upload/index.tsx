@@ -484,9 +484,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     if (props.options.uploadSettings.enableCrop && !props.options.uploadSettings.multiple) {
       const { centered, ...others } = props.options.uploadSettings.imgCropSettings;
       return (
-        <ImgCrop {...others} modalProps={{ centered }} beforeCrop={handleBeforeCrop}>
-          {renderUpload()}
-        </ImgCrop>
+          <ImgCrop {...others} modalProps={{centered}} beforeCrop={handleBeforeCrop}>
+            {renderUpload()}
+          </ImgCrop>
       );
     }
 
@@ -499,7 +499,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     if (isImage(previewImage)) {
-      return <ImageFullScreenPreview url={previewImage} onClose={handleCancel} />;
+      return <ImageFullScreenPreview url={previewImage} onClose={handleCancel}/>;
     }
 
     return (

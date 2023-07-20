@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Arsenal.Common;
 using GrapeCity.Forguncy.CellTypes;
+using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
 
@@ -26,6 +27,11 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     [ObjectProperty(ObjType = typeof(UploadSettings))]
     public UploadSettings UploadSettings { get; set; } = new();
 
+    [DisplayName("事件设置")]
+    [JsonProperty("eventSettings")]
+    [ObjectProperty(ObjType = typeof(EventSettings))]
+    public EventSettings EventSettings { get; set; } = new();
+
     [DisplayName("文件列表类型")]
     [JsonProperty("listType")]
     public ListType ListType
@@ -48,7 +54,7 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     public bool ReadOnly { get; set; } = false;
 
     [RunTimeMethod]
-    [DisplayName("上传")]
+    [DisplayName("上传文件")]
     public void Upload()
     {
     }
@@ -58,6 +64,7 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     public void UploadFolder()
     {
     }
+
     [RunTimeMethod]
     [DisplayName("设置元素显示状态")]
     public void SetElementDisplayState(
@@ -374,4 +381,31 @@ public class DragAndDropSettings : ObjectPropertyBase
     [DisplayName("拖拽区域对应组件高度")]
     [JsonProperty("height")]
     public int Height { get; set; } = 300;
+}
+
+public class EventSettings : ObjectPropertyBase
+{
+    [DisplayName("上传前")]
+    [JsonProperty("beforeUpload")]
+    [CustomCommandObject(InitParamProperties = "uid|name|ext|relativePath|size",
+        InitParamValues = "文件名称|扩展名|相对路径|大小|取消令牌")]
+    public CustomCommandObject BeforeUpload { get; set; }
+
+    [DisplayName("上传后")]
+    [JsonProperty("afterUpload")]
+    [CustomCommandObject(InitParamProperties = "uid|name|ext|relativePath|size",
+        InitParamValues = "文件名称|扩展名|相对路径|大小")]
+    public CustomCommandObject AfterUpload { get; set; }
+
+    [DisplayName("删除前")]
+    [JsonProperty("beforeDelete")]
+    [CustomCommandObject(InitParamProperties = "uid|name|ext|relativePath|size",
+        InitParamValues = "文件名称|扩展名|相对路径|大小|取消令牌")]
+    public CustomCommandObject BeforeDelete { get; set; }
+
+    [DisplayName("删除后")]
+    [JsonProperty("afterDelete")]
+    [CustomCommandObject(InitParamProperties = "uid|name|ext|relativePath|size",
+        InitParamValues = "文件名称|扩展名|相对路径|大小")]
+    public CustomCommandObject AfterDelete { get; set; }
 }
