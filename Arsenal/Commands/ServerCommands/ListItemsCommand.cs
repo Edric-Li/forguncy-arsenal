@@ -10,7 +10,7 @@ namespace Arsenal;
 
 [Category("文件管理 Plus")]
 [OrderWeight((int)ServerCommandOrderWeight.GetUploadRootDirectoryCommand)]
-public class ListItemsCommand : Command, ICommandExecutableInServerSideAsync
+public class ListItemsCommand : ICommandExecutableInServerSideAsync
 {
     [DisplayName("父目录")] [FormulaProperty] public object RelativePath { get; set; }
 
@@ -34,10 +34,10 @@ public class ListItemsCommand : Command, ICommandExecutableInServerSideAsync
         return new ExecuteResult();
     }
 
-    public override CommandScope GetCommandScope()
+    /*public override CommandScope GetCommandScope()
     {
         return CommandScope.ExecutableInServer;
-    }
+    }*/
 
     public override string ToString()
     {

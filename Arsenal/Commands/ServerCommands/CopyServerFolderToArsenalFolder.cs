@@ -15,9 +15,10 @@ using GrapeCity.Forguncy.Plugin;
 namespace Arsenal;
 
 [Category("文件管理 Plus")]
-[OrderWeight((int)ServerCommandOrderWeight.UploadServerFolderCommand)]
+[OrderWeight((int)ServerCommandOrderWeight.CopyServerFolderToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
-public class UploadServerFolderCommand : Command, ICommandExecutableInServerSideAsync, IServerCommandParamGenerator
+public class CopyServerFolderToArsenalFolderCommand : Command, ICommandExecutableInServerSideAsync,
+    IServerCommandParamGenerator
 {
     [DisplayName("服务器文件夹路径")]
     [FormulaProperty]
@@ -172,7 +173,7 @@ public class UploadServerFolderCommand : Command, ICommandExecutableInServerSide
     
     public override string ToString()
     {
-        return "迁移服务器文件夹到附件文件夹";
+        return "复制服务器文件夹到附件文件夹";
     }
 
     public IEnumerable<GenerateParam> GetGenerateParams()

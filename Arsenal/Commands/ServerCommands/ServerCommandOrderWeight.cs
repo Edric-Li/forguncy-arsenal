@@ -2,14 +2,16 @@
 
 public enum ServerCommandOrderWeight
 {
+    DeleteFileCommand,
     GetUploadRootDirectoryCommand,
     GettingTemporaryDirectoryCommand,
     CompressFilesIntoZipCommand,
     ExtractZipFileToDirectoryCommand,
-    CreateDownloadLinkToFileCommand,
-    DeleteFileCommand,
     GetFileFullPathCommand,
     GetFileDirectoryCommand,
-    UploadServerFolderCommand,
+    CreateDownloadLinkToFileCommand,
+    CreateAccessLinkToFileCommand,
+    CopyServerFileToArsenalFolderCommand,
+    CopyServerFolderToArsenalFolderCommand,
     ListItemsCommand,
 }

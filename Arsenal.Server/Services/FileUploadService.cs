@@ -45,6 +45,11 @@ public static class FileUploadService
             relativePath = item.Path;
         }
 
+        return await ExistsFileAsync(relativePath);
+    }
+
+    public static async Task<bool> ExistsFileAsync(string relativePath)
+    {
         var filePath = Path.Combine(Configuration.Configuration.UploadFolderPath, relativePath);
 
         var existsFile = File.Exists(filePath);
@@ -418,6 +423,48 @@ public static class FileUploadService
         return fileEntity;
     }
 
+    public static async Task<string> CopyServerFileToArsenalFolder(string uploader, string localFilePath,
+        UploadServerFolderParam param)
+    {
+        var destDirectory = Path.Combine(Configuration.Configuration.UploadFolderPath, param.FolderPath);
+
+        var destFileName = Path.Combine(destDirectory, param.Name);
+
+        if (!Directory.Exists(destDirectory))
+        {
+            Directory.CreateDirectory(destDirectory);
+        }
+
+        File.Copy(localFilePath, destFileName);
+
+        var fileEntity = new DataBase.Models.File()
+        {
+            Key = Guid.NewGuid() + "_" + param.Name,
+            Name = param.Name,
+            Hash = null,
+            Size = param.Size,
+            FolderPath = SeparatorConverter.ConvertToDatabaseSeparator(param.FolderPath),
+            ContentType = "",
+            Ext = param.Ext,
+            Uploader = uploader,
+            CreatedAt = ConvertDateTimeToTimestamp(DateTime.Now)
+        };
+
+        var dbContext = new DatabaseContext();
+
+        try
+        {
+            await dbContext.Files.AddAsync(fileEntity);
+            await dbContext.SaveChangesAsync();
+        }
+        finally
+        {
+            _ = dbContext.DisposeAsync();
+        }
+
+        return fileEntity.Key;
+    }
+
     public static async Task<string[]> UploadServerFolderAsync(string uploader, List<UploadServerFolderParam> data)
     {
         var list = new List<DataBase.Models.File>();
@@ -459,7 +506,7 @@ public static class FileUploadService
     {
         var filePath = param.FilePath;
 
-        var fileName = string.IsNullOrWhiteSpace(param.DownloadFileName)
+        var fileName = !string.IsNullOrWhiteSpace(param.DownloadFileName)
             ? param.DownloadFileName
             : Path.GetFileName(param.FilePath);
 

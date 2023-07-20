@@ -7,7 +7,7 @@ namespace Arsenal;
 
 [OrderWeight(4)]
 [Category("文件管理 Plus")]
-[SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
+[SupportUsingScope(PageScope.None, ListViewScope.None)]
 public class TableViewCellType : CellType
 {
     [DisplayName("附件值")]
