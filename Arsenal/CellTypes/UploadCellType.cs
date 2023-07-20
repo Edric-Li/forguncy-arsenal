@@ -14,6 +14,8 @@ namespace Arsenal;
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
 public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly
 {
+    private ListType _listType = ListType.Text;
+    
     [DisplayName("权限设置")]
     [JsonProperty("permissionSettings")]
     [ObjectProperty(ObjType = typeof(PermissionSettings))]
@@ -26,16 +28,15 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
 
     [DisplayName("文件列表类型")]
     [JsonProperty("listType")]
-    public ListType ListType { get; set; } = ListType.Text;
-
-    [DisplayName("允许拖拽")]
-    [JsonProperty("allowDragAndDrop")]
-    public bool AllowDragAndDrop { get; set; }
-
-    [DisplayName("拖拽区域设置")]
-    [JsonProperty("dragAndDropSettings")]
-    [ObjectProperty(IndentLevel = 2, ObjType = typeof(DragAndDropSettings))]
-    public DragAndDropSettings DragAndDropSettings { get; set; } = new();
+    public ListType ListType
+    {
+        get => _listType;
+        set
+        {
+            _listType = value;
+            TempValueStoreInstance.ListType = value;
+        }
+    }
 
     [CategoryHeader("其他")]
     [DisplayName("禁用")]
@@ -77,20 +78,26 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
         return null;
     }
 
-    public override bool GetDesignerPropertyVisible(string propertyName)
+    public override bool GetRunTimeMethodVisible(string name)
     {
-        if (propertyName == nameof(DragAndDropSettings))
+        if (name == nameof(UploadFolder))
         {
-            return AllowDragAndDrop;
+            return UploadSettings.AllowFolderSelection;
         }
 
-        return base.GetDesignerPropertyVisible(propertyName);
+        return base.GetRunTimeMethodVisible(name);
     }
 
     public override string ToString()
     {
         return "文件上传";
     }
+}
+
+public enum FileSelectionType
+{
+    [Description("文件")] File,
+    [Description("文件夹")] Folder,
 }
 
 public enum ListType
@@ -294,13 +301,30 @@ public class UploadSettings : ObjectPropertyBase
     [ObjectProperty(ObjType = typeof(ImgCropSettings))]
     public ImgCropSettings ImgCropSettings { get; set; } = new();
 
+    [DisplayName("允许选择文件夹")]
+    [JsonProperty("allowFolderSelection")]
+    public bool AllowFolderSelection { get; set; }
+
+    [DisplayName("默认选择文件类型")]
+    [JsonProperty("defaultSelectionOfFileType")]
+    public FileSelectionType DefaultSelectionOfFileType { get; set; }
+
+    [DisplayName("允许拖拽")]
+    [JsonProperty("allowDragAndDrop")]
+    public bool AllowDragAndDrop { get; set; }
+
+    [DisplayName("拖拽区域设置")]
+    [JsonProperty("dragAndDropSettings")]
+    [ObjectProperty(ObjType = typeof(DragAndDropSettings))]
+    public DragAndDropSettings DragAndDropSettings { get; set; } = new();
+
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
         if (propertyName == nameof(ConflictStrategy))
         {
             return !string.IsNullOrWhiteSpace(Folder?.ToString());
         }
-        
+
         if (propertyName == nameof(Multiple))
         {
             return MaxCount is null or > 1;
@@ -319,6 +343,21 @@ public class UploadSettings : ObjectPropertyBase
         if (propertyName == nameof(ImgCropSettings))
         {
             return EnableCrop && GetDesignerPropertyVisible(nameof(EnableCrop));
+        }
+
+        if (propertyName == nameof(DragAndDropSettings))
+        {
+            return AllowDragAndDrop;
+        }
+
+        if (propertyName == nameof(AllowFolderSelection))
+        {
+            return TempValueStoreInstance.ListType is ListType.Text or ListType.Picture;
+        }
+
+        if (propertyName == nameof(DefaultSelectionOfFileType))
+        {
+            return AllowFolderSelection && GetDesignerPropertyVisible(nameof(AllowFolderSelection));
         }
 
         return base.GetDesignerPropertyVisible(propertyName);

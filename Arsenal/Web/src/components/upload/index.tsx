@@ -7,8 +7,8 @@ import {
   PlusOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { Button, message, Modal, Upload } from 'antd';
-import type { RcFile, UploadProps } from 'antd/es/upload';
+import {message, Modal, Upload, Dropdown, Button} from 'antd';
+import type {RcFile, UploadProps} from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
@@ -27,6 +27,7 @@ import isInternalFile from '../../common/is-internal-file';
 import isImageFileType from '../../common/is-image-file-type';
 import Dragger from 'antd/es/upload/Dragger';
 import createUserControlPageInContainer from '../../common/create-user-control-page-in-container';
+import {MenuProps} from 'antd/es/menu';
 
 enum ListType {
   text,
@@ -45,6 +46,11 @@ enum Element {
 enum ElementState {
   Visible,
   Hidden,
+}
+
+enum FileSelectionType {
+  File,
+  Folder,
 }
 
 export interface IOptions {
@@ -69,11 +75,13 @@ export interface IOptions {
     maxCount: number;
     maxSize: number;
     allowedExtensions: string;
-  };
-  allowDragAndDrop: boolean;
-  dragAndDropSettings: {
-    dragUserControlPage: string;
-    height: number;
+    allowDragAndDrop: boolean;
+    dragAndDropSettings: {
+      dragUserControlPage: string;
+      height: number;
+    };
+    allowFolderSelection: boolean;
+    defaultSelectionOfFileType: FileSelectionType;
   };
 }
 
@@ -101,9 +109,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [disabled, setDisabled] = useState<boolean>(props.options.IsDisabled);
   const [isReadOnly, setIsReadOnly] = useState<boolean>(props.options.ReadOnly);
   const [hiddenElements, setHiddenElements] = useState<Set<Element>>(new Set());
+  const [dropdownItemItems, setDropdownItemItems] = useState<MenuProps['items']>([]);
 
   const [messageApi, contextHolder] = message.useMessage();
-  const [directory, setDirectory] = useState(false);
   const [showUploadList, setShowUploadList] = useState<ShowUploadListInterface>();
   const [showUploadButton, setShowUploadButton] = useState(false);
 
@@ -113,23 +121,42 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const hasPreviewPermission = useMemo(() => permission.hasPermission(props.options.permissionSettings.preview), []);
   const hasDownloadPermission = useMemo(() => permission.hasPermission(props.options.permissionSettings.download), []);
   const isUnClickableList = useMemo(
-    () => disabled || (!hasDownloadPermission && !hasPreviewPermission && !hasDeletePermission),
-    [hasDownloadPermission, hasPreviewPermission, hasDeletePermission, disabled],
+      () => disabled || (!hasDownloadPermission && !hasPreviewPermission && !hasDeletePermission),
+      [hasDownloadPermission, hasPreviewPermission, hasDeletePermission, disabled],
   );
 
+  const defaultIsFolder = useMemo(() => {
+    return (
+        props.options.uploadSettings.defaultSelectionOfFileType === FileSelectionType.Folder &&
+        (listType === 'text' || listType === 'picture')
+    );
+  }, []);
+
   useEffect(() => {
-    if (props.options.allowDragAndDrop && dragContainerRef.current) {
+    if (props.options.uploadSettings.allowDragAndDrop && dragContainerRef.current) {
       const rootEl = $(dragContainerRef.current).parent().parent().parent();
 
       rootEl.children('.ant-upload-btn').css('padding', 0);
-      rootEl.css('height', props.options.dragAndDropSettings.height + 'px').css('overflow', 'auto');
+      rootEl.css('height', props.options.uploadSettings.dragAndDropSettings.height + 'px').css('overflow', 'auto');
 
       $(dragContainerRef.current).css('height', '100%').css('opacity', 1);
     }
 
-    if (props.options.dragAndDropSettings.dragUserControlPage && dragContainerRef.current) {
-      createUserControlPageInContainer(dragContainerRef.current, props.options.dragAndDropSettings.dragUserControlPage);
+    if (props.options.uploadSettings.dragAndDropSettings.dragUserControlPage && dragContainerRef.current) {
+      createUserControlPageInContainer(
+          dragContainerRef.current,
+          props.options.uploadSettings.dragAndDropSettings.dragUserControlPage,
+      );
     }
+
+    const dropdownItemLabel = defaultIsFolder ? '上传文件' : '上传文件夹';
+
+    setDropdownItemItems([
+      {
+        key: 'upload-extend',
+        label: dropdownItemLabel,
+      },
+    ]);
   }, []);
 
   useEffect(() => {
@@ -146,14 +173,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     setShowUploadList(newUploadList);
   }, [hiddenElements, isReadOnly]);
 
-  const hasDragComponent = useMemo(() => !!props.options.dragAndDropSettings.dragUserControlPage, [props.options]);
-
-  useEffect(() => {
-    if (!directory) {
-      return;
-    }
-    openFileDailog();
-  }, [directory]);
+  const hasDragComponent = useMemo(
+      () => !!props.options.uploadSettings.dragAndDropSettings.dragUserControlPage,
+      [props.options],
+  );
 
   const fileUpload = useFileUploadEngine({
     enableResumableUpload: props.options.uploadSettings.enableResumableUpload,
@@ -162,8 +185,20 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     evaluateFormula: props.evaluateFormula,
   });
 
-  const openFileDailog = () => {
-    $(uploadContainerRef.current!).parent().children('input').click();
+  const handleUpload = (isDirectory: boolean = defaultIsFolder) => {
+    if (isDirectory) {
+      $('.ant-upload input').attr('directory', 'directory').attr('webkitdirectory', 'webkitdirectory');
+    } else {
+      $('.ant-upload input').removeAttr('directory').removeAttr('webkitdirectory');
+    }
+
+    $('.ant-upload').children('input').click();
+
+    if (defaultIsFolder) {
+      $('.ant-upload input').attr('directory', 'directory').attr('webkitdirectory', 'webkitdirectory');
+    } else {
+      $('.ant-upload input').removeAttr('directory').removeAttr('webkitdirectory');
+    }
   };
 
   useImperativeHandle(ref, () => {
@@ -213,11 +248,11 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
       runtimeMethod: {
         upload() {
-          openFileDailog();
+          handleUpload(false);
         },
 
         uploadFolder() {
-          setDirectory(true);
+          handleUpload(true);
         },
 
         setElementDisplayState(element: Element, elementState: ElementState) {
@@ -233,12 +268,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
   const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
-    if (directory) {
-      setDirectory(false);
-    }
     if (file.size / 1024 / 1024 > props.options.uploadSettings.maxSize) {
       messageApi.error({
-        key: 'arsenal',
+        key: 'arsenal-size',
         type: 'error',
         content: `上传的文件 ${file.name} 的大小超出了限制, 最大上传文件的大小为 ${props.options.uploadSettings.maxSize} MB。`,
       });
@@ -248,7 +280,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     if (props.options.uploadSettings.maxCount) {
       if (fileListRef.current.length >= props.options.uploadSettings.maxCount) {
         messageApi.error({
-          key: 'arsenal',
+          key: 'arsenal-count',
           type: 'error',
           content: `上传的文件数量超出了限制, 最大上传数量为 ${props.options.uploadSettings.maxCount}。`,
         });
@@ -341,13 +373,13 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     return true;
   };
 
-  const uploadProps = useMemo(() => {
-    const { uploadSettings } = props.options;
+  const uploadProps = useMemo<UploadProps<any>>(() => {
+    const {uploadSettings} = props.options;
     const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 1);
 
     return {
       isImageUrl: isImageUrl,
-      directory: directory,
+      directory: true,
       fileList: fileList,
       listType: listType,
       onRemove: handleRemove,
@@ -361,48 +393,90 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       openFileDialogOnClick: !disabled && showUploadButton,
       showUploadList: showUploadList,
     };
-  }, [props, disabled, showUploadButton, showUploadList, fileList, directory, listType]);
+  }, [props, disabled, showUploadButton, showUploadList, fileList, listType]);
 
   const renderButton = useMemo(() => {
     if (listType === 'picture-circle' || listType === 'picture-card') {
       return (
-        <div>
-          <PlusOutlined />
-          <div style={{ marginTop: 8 }}>上传</div>
-        </div>
+          <div
+              onClick={() => {
+                handleUpload(false);
+              }}
+          >
+            <PlusOutlined/>
+            <div style={{marginTop: 8}}>上传</div>
+          </div>
+      );
+    }
+
+    if (props.options.uploadSettings.allowFolderSelection) {
+      return (
+          <Dropdown.Button
+              menu={{
+                items: dropdownItemItems,
+                onClick: (e) => {
+                  handleUpload(!defaultIsFolder);
+                },
+              }}
+              disabled={disabled}
+              onClick={() => {
+                handleUpload();
+              }}
+          >
+            <UploadOutlined/>
+            上传
+          </Dropdown.Button>
       );
     }
 
     return (
-      <Button icon={<UploadOutlined />} disabled={disabled}>
-        上传
-      </Button>
+        <Button icon={<UploadOutlined/>} disabled={disabled}>
+          上传
+        </Button>
     );
-  }, [listType]);
+  }, [listType, dropdownItemItems]);
 
   const renderUpload = () => {
-    if (props.options.allowDragAndDrop) {
+    if (props.options.uploadSettings.allowDragAndDrop) {
       return (
-        <Dragger {...uploadProps}>
-          <div ref={dragContainerRef} className='arsenal-drag-container'>
-            {!hasDragComponent && (
-              <>
-                <p className='ant-upload-drag-icon'>
-                  <InboxOutlined />
-                </p>
-                <p className='ant-upload-text'>点击或拖动文件至此区域上传</p>
-                <p className='ant-upload-hint'>支持单个或批量上传。</p>
-              </>
-            )}
-          </div>
+          <Dragger {...uploadProps}>
+            <div
+                ref={dragContainerRef}
+                className='arsenal-drag-container'
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleUpload();
+                }}
+            >
+              {!hasDragComponent && (
+                  <>
+                    <p className='ant-upload-drag-icon'>
+                      <InboxOutlined/>
+                    </p>
+                    <p className='ant-upload-text'>点击或拖动文件至此区域上传</p>
+                    <p className='ant-upload-hint'>支持单个或批量上传。</p>
+                  </>
+              )}
+            </div>
         </Dragger>
       );
     }
 
     return (
-      <Upload {...uploadProps}>
-        {<div ref={uploadContainerRef}>{showUploadButton && <div>{renderButton}</div>}</div>}
-      </Upload>
+        <Upload {...uploadProps}>
+          {
+            <div
+                ref={uploadContainerRef}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+            >
+              {showUploadButton && <div>{renderButton}</div>}
+            </div>
+          }
+        </Upload>
     );
   };
 
