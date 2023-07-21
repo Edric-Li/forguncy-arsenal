@@ -7,8 +7,8 @@ import {
   PlusOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import {message, Modal, Upload, Dropdown, Button} from 'antd';
-import type {RcFile, UploadProps} from 'antd/es/upload';
+import { message, Modal, Upload, Dropdown, Button } from 'antd';
+import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
@@ -27,7 +27,9 @@ import isInternalFile from '../../common/is-internal-file';
 import isImageFileType from '../../common/is-image-file-type';
 import Dragger from 'antd/es/upload/Dragger';
 import createUserControlPageInContainer from '../../common/create-user-control-page-in-container';
-import {MenuProps} from 'antd/es/menu';
+import { MenuProps } from 'antd/es/menu';
+import executeCommand from '../../common/execute-command';
+import getExtname from '../../common/get-extname';
 
 enum ListType {
   text,
@@ -63,6 +65,12 @@ export interface IOptions {
     preview: string[];
     delete: string[];
   };
+  eventSettings: {
+    beforeUpload: Forguncy.Plugin.ICustomCommandObject;
+    afterUpload: Forguncy.Plugin.ICustomCommandObject;
+    beforeDelete: Forguncy.Plugin.ICustomCommandObject;
+    beforeDownload: Forguncy.Plugin.ICustomCommandObject;
+  };
   uploadSettings: {
     enableWatermark: boolean;
     watermarkSettings: WatermarkSettings;
@@ -90,6 +98,7 @@ export interface IProps {
   evaluateFormula: (value: string) => unknown;
   commitValue: () => void;
   options: IOptions;
+  runTimePageName: string;
 }
 
 const maxDialogWidth = ~~document.body.clientWidth;
@@ -121,14 +130,14 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const hasPreviewPermission = useMemo(() => permission.hasPermission(props.options.permissionSettings.preview), []);
   const hasDownloadPermission = useMemo(() => permission.hasPermission(props.options.permissionSettings.download), []);
   const isUnClickableList = useMemo(
-      () => disabled || (!hasDownloadPermission && !hasPreviewPermission && !hasDeletePermission),
-      [hasDownloadPermission, hasPreviewPermission, hasDeletePermission, disabled],
+    () => disabled || (!hasDownloadPermission && !hasPreviewPermission && !hasDeletePermission),
+    [hasDownloadPermission, hasPreviewPermission, hasDeletePermission, disabled],
   );
 
   const defaultIsFolder = useMemo(() => {
     return (
-        props.options.uploadSettings.defaultSelectionOfFileType === FileSelectionType.Folder &&
-        (listType === 'text' || listType === 'picture')
+      props.options.uploadSettings.defaultSelectionOfFileType === FileSelectionType.Folder &&
+      (listType === 'text' || listType === 'picture')
     );
   }, []);
 
@@ -144,8 +153,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
     if (props.options.uploadSettings.dragAndDropSettings.dragUserControlPage && dragContainerRef.current) {
       createUserControlPageInContainer(
-          dragContainerRef.current,
-          props.options.uploadSettings.dragAndDropSettings.dragUserControlPage,
+        dragContainerRef.current,
+        props.options.uploadSettings.dragAndDropSettings.dragUserControlPage,
       );
     }
 
@@ -164,9 +173,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       showDownloadIcon: hasDownloadPermission || !hiddenElements.has(Element.Download),
       showPreviewIcon: hasPreviewPermission || !hiddenElements.has(Element.Preview),
       showRemoveIcon: (!props.options.ReadOnly && hasDeletePermission) || !hiddenElements.has(Element.Delete),
-      downloadIcon: <DownloadOutlined/>,
-      previewIcon: <EyeOutlined/>,
-      removeIcon: <DeleteOutlined/>,
+      downloadIcon: <DownloadOutlined />,
+      previewIcon: <EyeOutlined />,
+      removeIcon: <DeleteOutlined />,
     };
 
     setShowUploadButton(hasUploadPermission && !props.options.ReadOnly && !hiddenElements.has(Element.Upload));
@@ -174,8 +183,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   }, [hiddenElements, isReadOnly]);
 
   const hasDragComponent = useMemo(
-      () => !!props.options.uploadSettings.dragAndDropSettings.dragUserControlPage,
-      [props.options],
+    () => !!props.options.uploadSettings.dragAndDropSettings.dragUserControlPage,
+    [props.options],
   );
 
   const fileUpload = useFileUploadEngine({
@@ -204,9 +213,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   useImperativeHandle(ref, () => {
     const getValue = () => {
       return fileListRef.current
-          .filter((i) => (i.status === 'done' || i.status === 'success') && i.url?.length)
-          .map((file) => FileUploadEngine.extractFileNameFromUrl(file.url!))
-          .join('|');
+        .filter((i) => (i.status === 'done' || i.status === 'success') && i.url?.length)
+        .map((file) => FileUploadEngine.extractFileNameFromUrl(file.url!))
+        .join('|');
     };
 
     return {
@@ -267,6 +276,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
+  const isCancelled = (cancellationToken: string) => {
+    return window.Arsenal.canceledTokenSet.has(cancellationToken);
+  };
+
   const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
     if (file.size / 1024 / 1024 > props.options.uploadSettings.maxSize) {
       messageApi.error({
@@ -288,6 +301,21 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       }
     }
 
+    const initParams = {
+      [props.options.eventSettings.beforeUpload.ParamProperties['name']]: file.name,
+      [props.options.eventSettings.beforeUpload.ParamProperties['ext']]: getExtname(file.name),
+      [props.options.eventSettings.beforeUpload.ParamProperties['size']]: file.size,
+      [props.options.eventSettings.beforeUpload.ParamProperties['cancellationToken']]: file.uid,
+    };
+
+    if (props.options.eventSettings.beforeUpload) {
+      await executeCommand(props.options.eventSettings.beforeUpload, initParams, props.runTimePageName);
+
+      if (isCancelled(file.uid)) {
+        window.Arsenal.canceledTokenSet.delete(file.uid);
+        return false;
+      }
+    }
     const newFile =
       file.type.startsWith('image/') && props.options.uploadSettings.enableWatermark
         ? await addWatermarkToFile(file, props.options.uploadSettings.watermarkSettings)
@@ -321,6 +349,19 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         if (uploadedFilesRef.current.length === fileListRef.current.length) {
           props.commitValue();
         }
+        if (props.options.eventSettings.afterUpload) {
+          executeCommand(
+            props.options.eventSettings.afterUpload,
+            {
+              [props.options.eventSettings.afterUpload.ParamProperties['name']]: file.name,
+              [props.options.eventSettings.afterUpload.ParamProperties['fileKey']]:
+                FileUploadEngine.extractFileNameFromUrl(callbackInfo.url!),
+              [props.options.eventSettings.afterUpload.ParamProperties['ext']]: getExtname(file.name),
+              [props.options.eventSettings.afterUpload.ParamProperties['size']]: file.size,
+            },
+            props.runTimePageName,
+          );
+        }
       }
 
       syncFileListRefDataToState();
@@ -329,10 +370,29 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     return false;
   };
 
-  const handleRemove: UploadProps['onRemove'] = (file) => {
+  const handleRemove: UploadProps['onRemove'] = async (file) => {
     if (!hasDeletePermission || props.options.ReadOnly) {
       return false;
     }
+
+    if (props.options.eventSettings.beforeDelete) {
+      await executeCommand(
+        props.options.eventSettings.beforeDelete,
+        {
+          [props.options.eventSettings.beforeDelete.ParamProperties['name']]: file.name,
+          [props.options.eventSettings.beforeDelete.ParamProperties['fileKey']]:
+            FileUploadEngine.extractFileNameFromUrl(file.url!),
+          [props.options.eventSettings.beforeDelete.ParamProperties['cancellationToken']]: file.uid,
+        },
+        props.runTimePageName,
+      );
+
+      if (isCancelled(file.uid)) {
+        window.Arsenal.canceledTokenSet.delete(file.uid);
+        return false;
+      }
+    }
+
     const index = fileListRef.current.findIndex((item) => item.uid === file.uid);
     fileListRef.current.splice(index, 1);
     syncFileListRefDataToState();
@@ -356,10 +416,30 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     setPreviewTitle(file.name || file.url!.substring(file.url!.lastIndexOf('/') + 1));
   };
 
-  const handleDownload: UploadProps['onDownload'] = (file: UploadFile) => {
-    if (showUploadList?.showDownloadIcon) {
-      FileUploadEngine.download(file.uid);
+  const handleDownload: UploadProps['onDownload'] = async (file: UploadFile) => {
+    if (!showUploadList?.showDownloadIcon) {
+      return;
     }
+
+    if (props.options.eventSettings.beforeDownload) {
+      await executeCommand(
+        props.options.eventSettings.beforeDownload,
+        {
+          [props.options.eventSettings.beforeDownload.ParamProperties['name']]: file.name,
+          [props.options.eventSettings.beforeDownload.ParamProperties['fileKey']]:
+            FileUploadEngine.extractFileNameFromUrl(file.url!),
+          [props.options.eventSettings.beforeDownload.ParamProperties['cancellationToken']]: file.uid,
+        },
+        props.runTimePageName,
+      );
+
+      if (isCancelled(file.uid)) {
+        window.Arsenal.canceledTokenSet.delete(file.uid);
+        return;
+      }
+    }
+
+    FileUploadEngine.download(file.uid);
   };
 
   const handleBeforeCrop: ImgCropProps['beforeCrop'] = (file, fileList) => {
@@ -374,7 +454,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   const uploadProps = useMemo<UploadProps<any>>(() => {
-    const {uploadSettings} = props.options;
+    const { uploadSettings } = props.options;
     const multiple = uploadSettings.multiple && (!uploadSettings.maxCount || uploadSettings.maxCount > 1);
 
     return {
@@ -398,85 +478,85 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const renderButton = useMemo(() => {
     if (listType === 'picture-circle' || listType === 'picture-card') {
       return (
-          <div
-              onClick={() => {
-                handleUpload(false);
-              }}
-          >
-            <PlusOutlined/>
-            <div style={{marginTop: 8}}>上传</div>
-          </div>
+        <div
+          onClick={() => {
+            handleUpload(false);
+          }}
+        >
+          <PlusOutlined />
+          <div style={{ marginTop: 8 }}>上传</div>
+        </div>
       );
     }
 
     if (props.options.uploadSettings.allowFolderSelection) {
       return (
-          <Dropdown.Button
-              menu={{
-                items: dropdownItemItems,
-                onClick: (e) => {
-                  handleUpload(!defaultIsFolder);
-                },
-              }}
-              disabled={disabled}
-              onClick={() => {
-                handleUpload();
-              }}
-          >
-            <UploadOutlined/>
-            上传
-          </Dropdown.Button>
+        <Dropdown.Button
+          menu={{
+            items: dropdownItemItems,
+            onClick: (e) => {
+              handleUpload(!defaultIsFolder);
+            },
+          }}
+          disabled={disabled}
+          onClick={() => {
+            handleUpload();
+          }}
+        >
+          <UploadOutlined />
+          上传
+        </Dropdown.Button>
       );
     }
 
     return (
-        <Button icon={<UploadOutlined/>} disabled={disabled}>
-          上传
-        </Button>
+      <Button icon={<UploadOutlined />} disabled={disabled} onClick={() => handleUpload()}>
+        上传
+      </Button>
     );
   }, [listType, dropdownItemItems]);
 
   const renderUpload = () => {
     if (props.options.uploadSettings.allowDragAndDrop) {
       return (
-          <Dragger {...uploadProps}>
-            <div
-                ref={dragContainerRef}
-                className='arsenal-drag-container'
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleUpload();
-                }}
-            >
-              {!hasDragComponent && (
-                  <>
-                    <p className='ant-upload-drag-icon'>
-                      <InboxOutlined/>
-                    </p>
-                    <p className='ant-upload-text'>点击或拖动文件至此区域上传</p>
-                    <p className='ant-upload-hint'>支持单个或批量上传。</p>
-                  </>
-              )}
-            </div>
+        <Dragger {...uploadProps}>
+          <div
+            ref={dragContainerRef}
+            className='arsenal-drag-container'
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleUpload();
+            }}
+          >
+            {!hasDragComponent && (
+              <>
+                <p className='ant-upload-drag-icon'>
+                  <InboxOutlined />
+                </p>
+                <p className='ant-upload-text'>点击或拖动文件至此区域上传</p>
+                <p className='ant-upload-hint'>支持单个或批量上传。</p>
+              </>
+            )}
+          </div>
         </Dragger>
       );
     }
 
     return (
-        <Upload {...uploadProps}>
-          {
-            <div
-                ref={uploadContainerRef}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-            >
-              {showUploadButton && <div>{renderButton}</div>}
-            </div>
-          }
-        </Upload>
+      <Upload {...uploadProps}>
+        {
+          <div
+            ref={uploadContainerRef}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            {showUploadButton && <div>{renderButton}</div>}
+          </div>
+        }
+      </Upload>
     );
   };
 
@@ -484,9 +564,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     if (props.options.uploadSettings.enableCrop && !props.options.uploadSettings.multiple) {
       const { centered, ...others } = props.options.uploadSettings.imgCropSettings;
       return (
-          <ImgCrop {...others} modalProps={{centered}} beforeCrop={handleBeforeCrop}>
-            {renderUpload()}
-          </ImgCrop>
+        <ImgCrop {...others} modalProps={{ centered }} beforeCrop={handleBeforeCrop}>
+          {renderUpload()}
+        </ImgCrop>
       );
     }
 
@@ -499,7 +579,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     if (isImage(previewImage)) {
-      return <ImageFullScreenPreview url={previewImage} onClose={handleCancel}/>;
+      return <ImageFullScreenPreview url={previewImage} onClose={handleCancel} />;
     }
 
     return (

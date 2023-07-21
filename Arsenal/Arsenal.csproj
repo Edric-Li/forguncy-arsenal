@@ -114,6 +114,8 @@
 		<Resource Include="Resources\images\move.png" />
 		<None Remove="Resources\images\calculation-of-differences.png" />
 		<Resource Include="Resources\images\calculation-of-differences.png" />
+		<None Remove="Resources\images\cancel.png" />
+		<Resource Include="Resources\images\cancel.png" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Web\dist\assets" />

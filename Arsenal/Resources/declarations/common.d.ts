@@ -14,6 +14,8 @@ type IReactCellTypeRef = Partial<{
 
 
 declare class CellType extends CellTypeBase {
+    runTimePageName: string;
+
     onReactComponentLoaded();
 
     __reactComponent: IReactCellTypeRef;

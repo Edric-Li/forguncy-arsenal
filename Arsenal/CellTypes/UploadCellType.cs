@@ -387,25 +387,25 @@ public class EventSettings : ObjectPropertyBase
 {
     [DisplayName("上传前")]
     [JsonProperty("beforeUpload")]
-    [CustomCommandObject(InitParamProperties = "uid|name|ext|relativePath|size",
-        InitParamValues = "文件名称|扩展名|相对路径|大小|取消令牌")]
+    [CustomCommandObject(InitParamProperties = "name|ext|size|cancellationToken",
+        InitParamValues = "文件名称|扩展名|大小|取消令牌")]
     public CustomCommandObject BeforeUpload { get; set; }
 
     [DisplayName("上传后")]
     [JsonProperty("afterUpload")]
-    [CustomCommandObject(InitParamProperties = "uid|name|ext|relativePath|size",
-        InitParamValues = "文件名称|扩展名|相对路径|大小")]
+    [CustomCommandObject(InitParamProperties = "name|ext|size|fileKey",
+        InitParamValues = "文件名称|扩展名|大小|附件值")]
     public CustomCommandObject AfterUpload { get; set; }
 
     [DisplayName("删除前")]
     [JsonProperty("beforeDelete")]
-    [CustomCommandObject(InitParamProperties = "uid|name|ext|relativePath|size",
-        InitParamValues = "文件名称|扩展名|相对路径|大小|取消令牌")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
+        InitParamValues = "文件名称|附件值|取消令牌")]
     public CustomCommandObject BeforeDelete { get; set; }
 
-    [DisplayName("删除后")]
-    [JsonProperty("afterDelete")]
-    [CustomCommandObject(InitParamProperties = "uid|name|ext|relativePath|size",
-        InitParamValues = "文件名称|扩展名|相对路径|大小")]
-    public CustomCommandObject AfterDelete { get; set; }
+    [DisplayName("下载前")]
+    [JsonProperty("beforeDownload")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
+        InitParamValues = "文件名称|附件值|取消令牌")]
+    public CustomCommandObject BeforeDownload { get; set; }
 }
