@@ -106,7 +106,6 @@ const maxDialogWidth = ~~document.body.clientWidth;
 const maxDialogHeight = ~~document.body.clientHeight - 105;
 
 const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
-  const uploadContainerRef = useRef<HTMLDivElement | null>(null);
   const dragContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -500,14 +499,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const renderButton = useMemo(() => {
     if (listType === 'picture-circle' || listType === 'picture-card') {
       return (
-        <div
-          onClick={() => {
-            handleUpload(false);
-          }}
-        >
-          <PlusOutlined />
-          <div style={{ marginTop: 8 }}>上传</div>
-        </div>
+          <>
+            <PlusOutlined/>
+            <div style={{marginTop: 8}}>上传</div>
+          </>
       );
     }
 
@@ -569,11 +564,15 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       <Upload {...uploadProps}>
         {
           <div
-            ref={uploadContainerRef}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
+              className="arsenal-filled-and-centered"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (listType === 'picture-circle' || listType === 'picture-card') {
+                  handleUpload(false);
+                }
+              }}
           >
             {showUploadButton && <div>{renderButton}</div>}
           </div>
