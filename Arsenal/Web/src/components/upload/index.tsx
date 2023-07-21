@@ -70,6 +70,7 @@ export interface IOptions {
     afterUpload: Forguncy.Plugin.ICustomCommandObject;
     beforeDelete: Forguncy.Plugin.ICustomCommandObject;
     beforeDownload: Forguncy.Plugin.ICustomCommandObject;
+    beforePreview: Forguncy.Plugin.ICustomCommandObject;
   };
   uploadSettings: {
     enableWatermark: boolean;
@@ -301,14 +302,14 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       }
     }
 
-    const initParams = {
-      [props.options.eventSettings.beforeUpload.ParamProperties['name']]: file.name,
-      [props.options.eventSettings.beforeUpload.ParamProperties['ext']]: getExtname(file.name),
-      [props.options.eventSettings.beforeUpload.ParamProperties['size']]: file.size,
-      [props.options.eventSettings.beforeUpload.ParamProperties['cancellationToken']]: file.uid,
-    };
-
     if (props.options.eventSettings.beforeUpload) {
+      const initParams = {
+        [props.options.eventSettings.beforeUpload.ParamProperties['name']]: file.name,
+        [props.options.eventSettings.beforeUpload.ParamProperties['ext']]: getExtname(file.name),
+        [props.options.eventSettings.beforeUpload.ParamProperties['size']]: file.size,
+        [props.options.eventSettings.beforeUpload.ParamProperties['cancellationToken']]: file.uid,
+      };
+
       await executeCommand(props.options.eventSettings.beforeUpload, initParams, props.runTimePageName);
 
       if (isCancelled(file.uid)) {
@@ -345,6 +346,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       if (mergedInfo.status === 'success') {
         CacheService.set(callbackInfo.url!, newFile);
         uploadedFilesRef.current.push(mergedInfo);
+        // 必须要在这里设置为done，否则会导致上传完成后，下载按钮不可用（Antd.Design源码中是这样判断的）
+        mergedInfo.status = 'done';
 
         if (uploadedFilesRef.current.length === fileListRef.current.length) {
           props.commitValue();
@@ -408,6 +411,25 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       }
       return;
     }
+
+    if (props.options.eventSettings.beforePreview) {
+      await executeCommand(
+        props.options.eventSettings.beforePreview,
+        {
+          [props.options.eventSettings.beforePreview.ParamProperties['name']]: file.name,
+          [props.options.eventSettings.beforePreview.ParamProperties['fileKey']]:
+            FileUploadEngine.extractFileNameFromUrl(file.url!),
+          [props.options.eventSettings.beforePreview.ParamProperties['cancellationToken']]: file.uid,
+        },
+        props.runTimePageName,
+      );
+
+      if (isCancelled(file.uid)) {
+        window.Arsenal.canceledTokenSet.delete(file.uid);
+        return;
+      }
+    }
+
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj as RcFile);
     }

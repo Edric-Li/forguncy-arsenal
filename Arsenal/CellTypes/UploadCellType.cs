@@ -22,15 +22,15 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     [ObjectProperty(ObjType = typeof(PermissionSettings))]
     public PermissionSettings PermissionSettings { get; set; } = new();
 
-    [DisplayName("上传设置")]
-    [JsonProperty("uploadSettings")]
-    [ObjectProperty(ObjType = typeof(UploadSettings))]
-    public UploadSettings UploadSettings { get; set; } = new();
-
     [DisplayName("事件设置")]
     [JsonProperty("eventSettings")]
     [ObjectProperty(ObjType = typeof(EventSettings))]
     public EventSettings EventSettings { get; set; } = new();
+
+    [DisplayName("上传设置")]
+    [JsonProperty("uploadSettings")]
+    [ObjectProperty(ObjType = typeof(UploadSettings))]
+    public UploadSettings UploadSettings { get; set; } = new();
 
     [DisplayName("文件列表类型")]
     [JsonProperty("listType")]
@@ -397,15 +397,21 @@ public class EventSettings : ObjectPropertyBase
         InitParamValues = "文件名称|扩展名|大小|附件值")]
     public CustomCommandObject AfterUpload { get; set; }
 
-    [DisplayName("删除前")]
-    [JsonProperty("beforeDelete")]
+    [DisplayName("预览前")]
+    [JsonProperty("beforePreview")]
     [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
         InitParamValues = "文件名称|附件值|取消令牌")]
-    public CustomCommandObject BeforeDelete { get; set; }
-
+    public CustomCommandObject BeforePreview { get; set; }
+    
     [DisplayName("下载前")]
     [JsonProperty("beforeDownload")]
     [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
         InitParamValues = "文件名称|附件值|取消令牌")]
     public CustomCommandObject BeforeDownload { get; set; }
+
+    [DisplayName("删除前")]
+    [JsonProperty("beforeDelete")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
+        InitParamValues = "文件名称|附件值|取消令牌")]
+    public CustomCommandObject BeforeDelete { get; set; }
 }
