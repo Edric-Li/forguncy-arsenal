@@ -25,7 +25,6 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [items, setItems] = useState<TabsProps['items']>([]);
   const filesMap = useRef<Map<string, string>>(new Map<string, string>());
   const options = props.cellType.CellElement.CellType as IPreviewOptions;
-
   useEffect(() => {
     props.cellType.setValueToElement = (jelement, value) => {
       if (typeof value !== 'string') {

@@ -29,3 +29,22 @@
   align-items: center;
   justify-content: center;
 }
+
+.arsenal-fgc-container {
+  border: 1px dashed transparent;
+}
+
+.arsenal-fgc-container.arsenal-drag-over {
+  border: 1px dashed #1890ff;
+}
+
+.arsenal-fgc-container.arsenal-drag-transition {
+  transition: border-color 0.3s ease;
+}
+
+.arsenal-watermark {
+  position: absolute !important;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}

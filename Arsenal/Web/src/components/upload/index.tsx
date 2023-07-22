@@ -30,6 +30,7 @@ import createUserControlPageInContainer from '../../common/create-user-control-p
 import { MenuProps } from 'antd/es/menu';
 import executeCommand from '../../common/execute-command';
 import getExtname from '../../common/get-extname';
+import parseDataTransferItemList from '../../common/parse-data-transfer-iten-list';
 
 enum ListType {
   text,
@@ -166,6 +167,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         label: dropdownItemLabel,
       },
     ]);
+
+    props.container.addClass('arsenal-fgc-container');
   }, []);
 
   useEffect(() => {
@@ -195,18 +198,19 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   });
 
   const handleUpload = (isDirectory: boolean = defaultIsFolder) => {
+    const el = $('.ant-upload input', props.container);
     if (isDirectory) {
-      $('.ant-upload input').attr('directory', 'directory').attr('webkitdirectory', 'webkitdirectory');
+      el.attr('directory', 'directory').attr('webkitdirectory', 'webkitdirectory');
     } else {
-      $('.ant-upload input').removeAttr('directory').removeAttr('webkitdirectory');
+      el.removeAttr('directory').removeAttr('webkitdirectory');
     }
 
-    $('.ant-upload').children('input').click();
+    el.click();
 
     if (defaultIsFolder) {
-      $('.ant-upload input').attr('directory', 'directory').attr('webkitdirectory', 'webkitdirectory');
+      el.attr('directory', 'directory').attr('webkitdirectory', 'webkitdirectory');
     } else {
-      $('.ant-upload input').removeAttr('directory').removeAttr('webkitdirectory');
+      el.removeAttr('directory').removeAttr('webkitdirectory');
     }
   };
 
@@ -280,7 +284,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     return window.Arsenal.canceledTokenSet.has(cancellationToken);
   };
 
-  const handleBeforeUpload: UploadProps['beforeUpload'] = async (file) => {
+  const handleBeforeUpload = async (file: CustomFile | RcFile) => {
     if (file.size / 1024 / 1024 > props.options.uploadSettings.maxSize) {
       messageApi.error({
         key: 'arsenal-size',
@@ -321,9 +325,13 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         ? await addWatermarkToFile(file, props.options.uploadSettings.watermarkSettings)
         : file;
 
+    const customFile: CustomFile = newFile as CustomFile;
+    customFile.uid = file.uid;
+    customFile.relativePath = file.webkitRelativePath;
+
     const uploadFile: UploadFile = {
       uid: file.uid,
-      name: newFile.name,
+      name: file.name,
       status: 'uploading',
       percent: 0,
     };
@@ -332,7 +340,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
     syncFileListRefDataToState();
 
-    await fileUpload.addTask(newFile, (callbackInfo) => {
+    await fileUpload.addTask(customFile, (callbackInfo) => {
       const index = fileListRef.current.findIndex((i) => i.uid === uploadFile.uid);
 
       const mergedInfo = {
@@ -406,7 +414,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const handlePreview = async (file: UploadFile) => {
     if (!hasPreviewPermission) {
       if (hasDownloadPermission) {
-        FileUploadEngine.download(file.uid);
+        FileUploadEngine.download(FileUploadEngine.extractFileNameFromUrl(file.url!));
       }
       return;
     }
@@ -459,20 +467,79 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         return;
       }
     }
-
-    FileUploadEngine.download(file.uid);
+    FileUploadEngine.download(FileUploadEngine.extractFileNameFromUrl(file.url! + '1'));
   };
 
   const handleBeforeCrop: ImgCropProps['beforeCrop'] = (file, fileList) => {
     const isImageType = isImageFileType(file.type);
 
     if (!isImageType) {
-      handleBeforeUpload(file, fileList);
+      handleBeforeUpload(file);
       return false;
     }
 
     return true;
   };
+
+  useEffect(() => {
+    let isMouseOverContainer = false;
+
+    const handlePasteFile = (event: ClipboardEvent) => {
+      if (event.clipboardData) {
+        parseDataTransferItemList(event.clipboardData.items, handleBeforeUpload);
+      }
+    };
+
+    const handleDocumentPaste = (event: ClipboardEvent) => {
+      // 如果当前光标在该容器上, 或者整个页面只有一个上传组件, 则处理粘贴事件
+      // 之所以使用光标判断是因为Antd.Design的button会把paste事件吃掉
+      if (
+        isMouseOverContainer ||
+        document.querySelectorAll('input[type="file"]:not(#forguncy_FileInput)').length === 1
+      ) {
+        handlePasteFile(event);
+      }
+    };
+
+    const mouseoverHandler = () => (isMouseOverContainer = true);
+    const mouseoutHandler = () => (isMouseOverContainer = false);
+
+    const dragoverHandler = (e: DragEvent) => {
+      props.container.addClass('arsenal-drag-over').addClass('arsenal-drag-transition');
+      e.preventDefault();
+    };
+    const dragleaveHandler = () => {
+      props.container.removeClass('arsenal-drag-over');
+    };
+
+    const dropHandler = (e: DragEvent) => {
+      props.container.removeClass('arsenal-drag-over');
+
+      if (e.dataTransfer) {
+        parseDataTransferItemList(e.dataTransfer.items, handleBeforeUpload);
+      }
+
+      e.preventDefault();
+    };
+
+    const el = props.container[0];
+
+    el.addEventListener('mouseover', mouseoverHandler);
+    el.addEventListener('mouseout', mouseoutHandler);
+    el.addEventListener('dragover', dragoverHandler);
+    el.addEventListener('dragleave', dragleaveHandler);
+    el.addEventListener('drop', dropHandler);
+    document.addEventListener('paste', handleDocumentPaste);
+
+    return () => {
+      el.removeEventListener('mouseover', mouseoverHandler);
+      el.removeEventListener('mouseout', mouseoutHandler);
+      el.removeEventListener('dragover', dragoverHandler);
+      el.removeEventListener('dragleave', dragleaveHandler);
+      el.removeEventListener('drop', dropHandler);
+      document.removeEventListener('paste', handleDocumentPaste);
+    };
+  }, []);
 
   const uploadProps = useMemo<UploadProps<any>>(() => {
     const { uploadSettings } = props.options;
@@ -499,10 +566,10 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const renderButton = useMemo(() => {
     if (listType === 'picture-circle' || listType === 'picture-card') {
       return (
-          <>
-            <PlusOutlined/>
-            <div style={{marginTop: 8}}>上传</div>
-          </>
+        <>
+          <PlusOutlined />
+          <div style={{ marginTop: 8 }}>上传</div>
+        </>
       );
     }
 
@@ -564,15 +631,15 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       <Upload {...uploadProps}>
         {
           <div
-              className="arsenal-filled-and-centered"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+            className='arsenal-filled-and-centered'
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
 
-                if (listType === 'picture-circle' || listType === 'picture-card') {
-                  handleUpload(false);
-                }
-              }}
+              if (listType === 'picture-circle' || listType === 'picture-card') {
+                handleUpload(false);
+              }
+            }}
           >
             {showUploadButton && <div>{renderButton}</div>}
           </div>

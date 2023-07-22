@@ -21,6 +21,7 @@ if (!window.Arsenal) {
   window.Arsenal = {
     createReactCommand,
     createReactComponent,
+    canceledTokenSet: new Set(),
   };
 } else {
   window.Arsenal.createReactCommand = createReactCommand;

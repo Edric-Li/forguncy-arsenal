@@ -631,7 +631,8 @@ public static class FileUploadService
                 return null;
             }
 
-            return Path.Combine(Configuration.Configuration.UploadFolderPath, fileHash.Path);
+            return Path.Combine(Configuration.Configuration.UploadFolderPath,
+                SeparatorConverter.ConvertToSystemSeparator(fileHash.Path));
         }
 
         return Path.Combine(Configuration.Configuration.UploadFolderPath,

@@ -3,6 +3,9 @@ import BigNumber from 'bignumber.js';
 import requestHelper, { HttpHandlerResult, IInitMultipartUploadResult } from './request-helper';
 import { ConflictStrategy } from '../declarations/types';
 import { UploadFile } from 'antd/es/upload/interface';
+import { message } from 'antd';
+import CacheService from './cache-service';
+import { RcFile } from 'antd/es/upload';
 
 export interface FileUploadOptions {
   enableResumableUpload: boolean;
@@ -34,18 +37,17 @@ class FileUploadEngine {
     return this.evaluateFormula(this.folder) as string;
   }
 
-  private async initMultipartUpload(file: File): HttpHandlerResult<IInitMultipartUploadResult> {
-    const folderPath = this.getTargetFolderPath();
+  private async initMultipartUpload(file: CustomFile): HttpHandlerResult<IInitMultipartUploadResult> {
+    let folderPath = this.getTargetFolderPath();
     let conflictStrategy = this.conflictStrategy;
 
-    if (file.webkitRelativePath && folderPath) {
-      const parts = file.webkitRelativePath.split('/');
+    if (file.webkitRelativePath || file.relativePath) {
+      const parts = (file.webkitRelativePath ?? file.relativePath).split('/');
       parts.pop();
+
+      folderPath = [...(folderPath ?? '').split('/').filter((item) => item.length > 0), ...parts].join('/');
     }
-    const hash =
-      file.size !== 0 && this.enableResumableUpload && !folderPath
-        ? await FileHashCalculationEngine.execute(file)
-        : null;
+    const hash = file.size !== 0 && this.enableResumableUpload ? await FileHashCalculationEngine.execute(file) : null;
 
     if (!hash) {
       conflictStrategy = ConflictStrategy.Rename;
@@ -81,14 +83,37 @@ class FileUploadEngine {
     );
   }
 
-  public static download(uidOrUrl: string) {
-    const a = document.createElement('a');
-    a.href = uidOrUrl?.includes(':/') ? uidOrUrl : this.getDownloadUrl(uidOrUrl);
-    a.click();
-    a.remove();
+  static checkFileExists(url: string): Promise<boolean> {
+    return new Promise(async (resolve) => {
+      try {
+        if (CacheService.get(url)) {
+          return true;
+        }
+
+        const response = await fetch(url, { method: 'HEAD' });
+        resolve(response.ok);
+      } catch (e) {
+        resolve(true);
+      }
+    });
   }
 
-  public async addTask(file: File, callback: (callbackInfo: Partial<UploadFile>) => void) {
+  public static download(uidOrUrl: string) {
+    const href = uidOrUrl?.includes(':/') ? uidOrUrl : this.getDownloadUrl(uidOrUrl);
+
+    this.checkFileExists(href).then((exists) => {
+      if (exists) {
+        const a = document.createElement('a');
+        a.href = href;
+        a.click();
+        a.remove();
+      } else {
+        message.error('抱歉，文件不存在，请确认后再尝试下载。');
+      }
+    });
+  }
+
+  public async addTask(file: CustomFile | RcFile, callback: (callbackInfo: Partial<UploadFile>) => void) {
     const initMultipartUploadResult = await this.initMultipartUpload(file);
     if (!initMultipartUploadResult.result) {
       return callback({
@@ -105,7 +130,7 @@ class FileUploadEngine {
       new BigNumber(file.size).div(new BigNumber(FileHashCalculationEngine.chunkSize)).toNumber(),
     );
 
-    if (this.enableResumableUpload && this.getTargetFolderPath() === null) {
+    if (this.enableResumableUpload) {
       const res = await requestHelper.checkFileInfo(uploadId);
 
       if (res.data.exist) {
