@@ -8,6 +8,7 @@ using Arsenal.Server.Model;
 using Arsenal.Server.Model.Params;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Exception = System.Exception;
 using File = System.IO.File;
 
 namespace Arsenal.Server.Services;
@@ -36,6 +37,8 @@ public static class FileUploadService
             var dbContext = new DatabaseContext();
 
             var item = await dbContext.FileHashes.FirstOrDefaultAsync(item => item.Hash == metaData.Hash);
+
+            await dbContext.DisposeAsync();
 
             if (item == null)
             {
@@ -141,47 +144,55 @@ public static class FileUploadService
     {
         var dbContext = new DatabaseContext();
 
-        var fileEntity = await dbContext.Files.FirstOrDefaultAsync(
-            i => i.FolderPath == metadata.FolderPath && i.Name == metadata.Name);
-
-        // 如果不存在, 直接返回原始名称即可
-        if (fileEntity == null)
+        try
         {
-            return metadata.Name;
-        }
+            var fileEntity = await dbContext.Files.FirstOrDefaultAsync(
+                i => i.FolderPath == metadata.FolderPath && i.Name == metadata.Name);
 
-        switch (metadata.ConflictStrategy)
-        {
-            case ConflictStrategy.Overwrite:
-                dbContext.Remove(fileEntity);
-                await dbContext.SaveChangesAsync();
-                break;
+            // 如果不存在, 直接返回原始名称即可
+            if (fileEntity == null)
+            {
+                return metadata.Name;
+            }
 
-            case ConflictStrategy.Rename:
-                var num = 1;
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(metadata.Name);
-                var extension = Path.GetExtension(metadata.Name);
+            switch (metadata.ConflictStrategy)
+            {
+                case ConflictStrategy.Overwrite:
+                    dbContext.Remove(fileEntity);
+                    await dbContext.SaveChangesAsync();
+                    break;
 
-                string GetNextFileName() => $"{fileNameWithoutExtension}({num}){extension}";
+                case ConflictStrategy.Rename:
+                    var num = 1;
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(metadata.Name);
+                    var extension = Path.GetExtension(metadata.Name);
 
-                while (true)
-                {
-                    var nextFileName = GetNextFileName();
+                    string GetNextFileName() => $"{fileNameWithoutExtension}({num}){extension}";
 
-                    var fileEntity2 = await dbContext.Files.FirstOrDefaultAsync(
-                        i => i.FolderPath == SeparatorConverter.ConvertToDatabaseSeparator(metadata.FolderPath) &&
-                             i.Name == nextFileName);
-
-                    if (fileEntity2 == null)
+                    while (true)
                     {
-                        return nextFileName;
-                    }
+                        var nextFileName = GetNextFileName();
 
-                    num++;
-                }
-            case ConflictStrategy.Reject:
-            default:
-                throw new Exception($"文件夹{metadata.FolderPath}下存在同名文件{metadata.Name}。");
+                        var fileEntity2 = await dbContext.Files.FirstOrDefaultAsync(
+                            i => i.FolderPath == SeparatorConverter.ConvertToDatabaseSeparator(metadata.FolderPath) &&
+                                 i.Name == nextFileName);
+
+                        if (fileEntity2 == null)
+                        {
+                            return nextFileName;
+                        }
+
+                        num++;
+                    }
+                case ConflictStrategy.Reject:
+                default:
+                    throw new Exception($"文件夹{metadata.FolderPath}下存在同名文件{metadata.Name}。");
+            }
+        }
+        catch (Exception e)
+        {
+            _ = dbContext.DisposeAsync();
+            Trace.WriteLine(e.Message);
         }
 
         return null;
@@ -377,16 +388,27 @@ public static class FileUploadService
 
         var dbContext = new DatabaseContext();
 
-        if (!string.IsNullOrWhiteSpace(metaData.Hash))
+        try
         {
-            dbContext.FileHashes.Add(new FileHash
+            if (!string.IsNullOrWhiteSpace(metaData.Hash))
             {
-                Hash = metaData.Hash,
-                Path = relativePath
-            });
-        }
+                dbContext.FileHashes.Add(new FileHash
+                {
+                    Hash = metaData.Hash,
+                    Path = relativePath
+                });
+            }
 
-        await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            Trace.WriteLine(e.Message);
+        }
+        finally
+        {
+            _ = dbContext.DisposeAsync();
+        }
 
         return await AddFileRecordAsync(uploadId);
     }
@@ -590,53 +612,66 @@ public static class FileUploadService
     {
         var dbContext = new DatabaseContext();
 
-        // 可能是临时下载文件
-        if (fileKey.StartsWith("tdf"))
+        try
         {
-            var temporaryDownloadFile =
-                await dbContext.TemporaryDownloadFiles.FirstOrDefaultAsync(item => item.Key == fileKey);
-
-            if (temporaryDownloadFile != null)
+            // 可能是临时下载文件
+            if (fileKey.StartsWith("tdf"))
             {
-                var now = ConvertDateTimeToTimestamp(DateTime.Now);
+                var temporaryDownloadFile =
+                    await dbContext.TemporaryDownloadFiles.FirstOrDefaultAsync(item => item.Key == fileKey);
 
-                if (temporaryDownloadFile.ExpirationAt < now)
+                if (temporaryDownloadFile != null)
                 {
-                    return null;
-                }
+                    var now = ConvertDateTimeToTimestamp(DateTime.Now);
 
-                if (temporaryDownloadFile.HasCopy)
-                {
-                    return Path.Combine(Configuration.Configuration.TemporaryDownloadFolderPath,
-                        SeparatorConverter.ConvertToSystemSeparator(temporaryDownloadFile.Path));
-                }
+                    if (temporaryDownloadFile.ExpirationAt < now)
+                    {
+                        return null;
+                    }
 
-                return temporaryDownloadFile.Path;
+                    if (temporaryDownloadFile.HasCopy)
+                    {
+                        return Path.Combine(Configuration.Configuration.TemporaryDownloadFolderPath,
+                            SeparatorConverter.ConvertToSystemSeparator(temporaryDownloadFile.Path));
+                    }
+
+                    return temporaryDownloadFile.Path;
+                }
             }
-        }
-        
-        var file = await dbContext.Files.FirstOrDefaultAsync(item => item.Key == fileKey);
 
-        if (file == null)
-        {
-            return null;
-        }
+            var file = await dbContext.Files.FirstOrDefaultAsync(item => item.Key == fileKey);
 
-        if (!string.IsNullOrWhiteSpace(file.Hash))
-        {
-            var fileHash = await dbContext.FileHashes.FirstOrDefaultAsync(item => item.Hash == file.Hash);
-
-            if (fileHash == null)
+            if (file == null)
             {
                 return null;
             }
 
+            if (!string.IsNullOrWhiteSpace(file.Hash))
+            {
+                var fileHash = await dbContext.FileHashes.FirstOrDefaultAsync(item => item.Hash == file.Hash);
+
+                if (fileHash == null)
+                {
+                    return null;
+                }
+
+                return Path.Combine(Configuration.Configuration.UploadFolderPath,
+                    SeparatorConverter.ConvertToSystemSeparator(fileHash.Path));
+            }
+
             return Path.Combine(Configuration.Configuration.UploadFolderPath,
-                SeparatorConverter.ConvertToSystemSeparator(fileHash.Path));
+                SeparatorConverter.ConvertToSystemSeparator(file.FolderPath), file.Name);
+        }
+        catch (Exception e)
+        {
+            Trace.WriteLine(e.Message);
+        }
+        finally
+        {
+            _ = dbContext.DisposeAsync();
         }
 
-        return Path.Combine(Configuration.Configuration.UploadFolderPath,
-            SeparatorConverter.ConvertToSystemSeparator(file.FolderPath), file.Name);
+        return null;
     }
 
     /// <summary>

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
+using Arsenal.Common;
 using Arsenal.Server.Common;
 using Arsenal.Server.Configuration;
 using Arsenal.Server.Model.Params;
@@ -16,7 +17,8 @@ namespace Arsenal;
 [Category("文件管理 Plus")]
 [OrderWeight((int)ServerCommandOrderWeight.CopyServerFileToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
-public class CopyServerFileToArsenalFolderCommand : Command, ICommandExecutableInServerSideAsync, IServerCommandParamGenerator
+public class CopyServerFileToArsenalFolderCommand : Command, ICommandExecutableInServerSideAsync,
+    IServerCommandParamGenerator, INeedUploadFileByUser
 {
     [DisplayName("服务器文件路径")]
     [FormulaProperty]
@@ -109,11 +111,6 @@ public class CopyServerFileToArsenalFolderCommand : Command, ICommandExecutableI
         return CommandScope.ExecutableInServer;
     }
 
-    public override string ToString()
-    {
-        return "复制服务器文件到附件文件夹下";
-    }
-
     public IEnumerable<GenerateParam> GetGenerateParams()
     {
         yield return new GenerateObjectParam()
@@ -130,6 +127,22 @@ public class CopyServerFileToArsenalFolderCommand : Command, ICommandExecutableI
                 "大小（字节）"
             },
         };
+    }
+
+    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
+    {
+        return new List<FileCopyInfo>(0);
+    }
+
+    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
+    {
+        CommonUtils.CopyWebSiteFilesToDesigner(context);
+        return null;
+    }
+
+    public override string ToString()
+    {
+        return "复制服务器文件到附件文件夹下";
     }
 }
 

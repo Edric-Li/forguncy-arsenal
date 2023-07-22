@@ -54,6 +54,9 @@ public abstract class CloudStorageService
 
         var fileList = await databaseContext.Files.ToListAsync();
         var fileHashes = await databaseContext.FileHashes.ToListAsync();
+
+        _ = databaseContext.DisposeAsync();
+        
         var fileHashesMap = fileHashes.ToDictionary(i => i.Hash, i => i.Path);
 
         //todo 有问题

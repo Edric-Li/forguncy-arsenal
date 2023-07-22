@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Arsenal.Common;
 using Arsenal.Server.Common;
 using Arsenal.Server.Configuration;
 using Arsenal.Server.Model.Params;
@@ -18,7 +19,7 @@ namespace Arsenal;
 [OrderWeight((int)ServerCommandOrderWeight.CopyServerFolderToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
 public class CopyServerFolderToArsenalFolderCommand : Command, ICommandExecutableInServerSideAsync,
-    IServerCommandParamGenerator
+    IServerCommandParamGenerator, INeedUploadFileByUser
 {
     [DisplayName("服务器文件夹路径")]
     [FormulaProperty]
@@ -170,11 +171,6 @@ public class CopyServerFolderToArsenalFolderCommand : Command, ICommandExecutabl
     {
         return CommandScope.ExecutableInServer;
     }
-    
-    public override string ToString()
-    {
-        return "复制服务器文件夹到附件文件夹";
-    }
 
     public IEnumerable<GenerateParam> GetGenerateParams()
     {
@@ -192,6 +188,22 @@ public class CopyServerFolderToArsenalFolderCommand : Command, ICommandExecutabl
                 "大小（字节）"
             },
         };
+    }
+
+    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
+    {
+        return new List<FileCopyInfo>(0);
+    }
+
+    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
+    {
+        CommonUtils.CopyWebSiteFilesToDesigner(context);
+        return null;
+    }
+
+    public override string ToString()
+    {
+        return "复制服务器文件夹到附件文件夹";
     }
 }
 

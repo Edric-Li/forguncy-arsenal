@@ -155,98 +155,108 @@ public class DatabaseInitializer
         }
 
         var officialDatabaseContext = new DatabaseContext();
-
-        var deletedSqliteFiles = new HashSet<string>();
-
-        var deletedMarkFiles = files
-            .Where(item => item.EndsWith(".deleted"))
-            .ToArray();
-
-        foreach (var item in deletedMarkFiles)
+        try
         {
-            try
+            var deletedSqliteFiles = new HashSet<string>();
+
+            var deletedMarkFiles = files
+                .Where(item => item.EndsWith(".deleted"))
+                .ToArray();
+
+            foreach (var item in deletedMarkFiles)
             {
-                var dbFilePath = item.Replace(".deleted", "");
-                File.Delete(item);
-                File.Delete(dbFilePath);
-                deletedSqliteFiles.Add(dbFilePath);
+                try
+                {
+                    var dbFilePath = item.Replace(".deleted", "");
+                    File.Delete(item);
+                    File.Delete(dbFilePath);
+                    deletedSqliteFiles.Add(dbFilePath);
+                }
+                catch (Exception e)
+                {
+                    Trace.WriteLine(e);
+                }
             }
-            catch (Exception e)
+
+            foreach (var item in files)
             {
-                Trace.WriteLine(e);
+                if (!item.EndsWith(".sqlite3"))
+                {
+                    continue;
+                }
+
+                if (deletedSqliteFiles.Contains(item))
+                {
+                    continue;
+                }
+
+                var value = item.Replace(".sqlite3", "");
+
+                if (!long.TryParse(Path.GetFileName(value), out _))
+                {
+                    continue;
+                }
+
+                var dbContext = new DatabaseContext($"Data Source={item}");
+
+                try
+                {
+                    var fileHashes = await dbContext.FileHashes.ToListAsync();
+                    var fileEntities = await dbContext.Files.ToListAsync();
+
+                    foreach (var fileHash in fileHashes)
+                    {
+                        if (await officialDatabaseContext.FileHashes.AnyAsync(x => x.Hash == fileHash.Hash))
+                        {
+                            continue;
+                        }
+
+                        await officialDatabaseContext.AddAsync(new FileHash()
+                        {
+                            Hash = fileHash.Hash,
+                            Path = fileHash.Path
+                        });
+                    }
+
+                    foreach (var file in fileEntities)
+                    {
+                        if (await officialDatabaseContext.Files.AnyAsync(x => x.Key == file.Key))
+                        {
+                            continue;
+                        }
+
+                        await officialDatabaseContext.Files.AddAsync(new Models.File()
+                        {
+                            Key = file.Key,
+                            Name = file.Name,
+                            Hash = file.Hash,
+                            FolderPath = file.FolderPath,
+                            ContentType = file.ContentType,
+                            Ext = file.Ext,
+                            Size = file.Size,
+                            Uploader = file.Uploader,
+                            CreatedAt = file.CreatedAt
+                        });
+                    }
+
+                    await officialDatabaseContext.SaveChangesAsync();
+
+                    // Sqlite 连接后，文件会被锁定，所以在这里不直接删除，而是创建一个 .deleted 文件，等待下次启动时删除
+                    File.Create(item + ".deleted");
+                }
+                finally
+                {
+                    _ = dbContext.DisposeAsync();
+                }
             }
         }
-
-        foreach (var item in files)
+        catch (Exception e)
         {
-            if (!item.EndsWith(".sqlite3"))
-            {
-                continue;
-            }
-
-            if (deletedSqliteFiles.Contains(item))
-            {
-                continue;
-            }
-
-            var value = item.Replace(".sqlite3", "");
-
-            if (!long.TryParse(Path.GetFileName(value), out _))
-            {
-                continue;
-            }
-
-            var dbContext = new DatabaseContext($"Data Source={item}");
-
-            try
-            {
-                var fileHashes = await dbContext.FileHashes.ToListAsync();
-                var fileEntities = await dbContext.Files.ToListAsync();
-
-                foreach (var fileHash in fileHashes)
-                {
-                    if (await officialDatabaseContext.FileHashes.AnyAsync(x => x.Hash == fileHash.Hash))
-                    {
-                        continue;
-                    }
-
-                    await officialDatabaseContext.AddAsync(new FileHash()
-                    {
-                        Hash = fileHash.Hash,
-                        Path = fileHash.Path
-                    });
-                }
-
-                foreach (var file in fileEntities)
-                {
-                    if (await officialDatabaseContext.Files.AnyAsync(x => x.Key == file.Key))
-                    {
-                        continue;
-                    }
-
-                    await officialDatabaseContext.Files.AddAsync(new Models.File()
-                    {
-                        Key = file.Key,
-                        Name = file.Name,
-                        Hash = file.Hash,
-                        FolderPath = file.FolderPath,
-                        ContentType = file.ContentType,
-                        Ext = file.Ext,
-                        Size = file.Size,
-                        Uploader = file.Uploader,
-                        CreatedAt = file.CreatedAt
-                    });
-                }
-
-                await officialDatabaseContext.SaveChangesAsync();
-
-                // Sqlite 连接后，文件会被锁定，所以在这里不直接删除，而是创建一个 .deleted 文件，等待下次启动时删除
-                File.Create(item + ".deleted");
-            }
-            finally
-            {
-                _ = dbContext.DisposeAsync();
-            }
+            Trace.WriteLine(e.Message);
+        }
+        finally
+        {
+            _ = officialDatabaseContext.DisposeAsync();
         }
     }
 }

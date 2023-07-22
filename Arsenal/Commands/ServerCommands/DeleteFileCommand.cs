@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Arsenal.Common;
 using Arsenal.Server.Services;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
@@ -11,7 +13,7 @@ namespace Arsenal;
 [Category("文件管理 Plus")]
 [OrderWeight((int)ServerCommandOrderWeight.DeleteFileCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/delete-file.png")]
-public class DeleteFileCommand : Command, ICommandExecutableInServerSideAsync
+public class DeleteFileCommand : Command, ICommandExecutableInServerSideAsync, INeedUploadFileByUser
 {
     [DisplayName("附件值")]
     [FormulaProperty]
@@ -42,6 +44,17 @@ public class DeleteFileCommand : Command, ICommandExecutableInServerSideAsync
         return CommandScope.ExecutableInServer;
     }
 
+    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
+    {
+        return new List<FileCopyInfo>(0);
+    }
+
+    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
+    {
+        CommonUtils.CopyWebSiteFilesToDesigner(context);
+        return null;
+    }
+    
     public override string ToString()
     {
         return "删除文件";
