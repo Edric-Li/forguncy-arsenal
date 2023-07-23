@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using GrapeCity.Forguncy.CellTypes;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
@@ -38,6 +37,7 @@ public class PreviewCellType : CellType
     }
 }
 
+[Designer("Arsenal.Designer.PreviewWatermarkSettingsDesigner, Arsenal")]
 public class PreviewWatermarkSettings : ObjectPropertyBase
 {
     [DisplayName("宽度")]
@@ -76,6 +76,8 @@ public class PreviewWatermarkSettings : ObjectPropertyBase
     [JsonProperty("font")]
     [ObjectProperty(ObjType = typeof(PreviewFontSettings))]
     public PreviewFontSettings Font { get; set; } = new();
+
+    [DisplayName("打开模拟器")] [JsonIgnore] public object WatermarkSimulator { get; set; }
 }
 
 public class PreviewFontSettings : ObjectPropertyBase

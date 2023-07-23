@@ -15,6 +15,8 @@ public abstract class CommonUtils
 {
     private static bool _isCopyingWebSiteFilesToDesigner;
 
+    private static string _watermarkEditorIndexHtmlPath;
+
     private static readonly object CopyWebSiteFilesToDesignerLock = new();
 
     private static ConcurrentDictionary<Type, Dictionary<string, string>> _jsonMetaDataCache = new();
@@ -25,7 +27,7 @@ public abstract class CommonUtils
     /// <param name="folderPath"></param>
     /// <param name="num"></param>
     /// <returns></returns>
-    private static DirectoryInfo GetFolderSpecifyParent(string folderPath, int num)
+    public static DirectoryInfo GetFolderSpecifyParent(string folderPath, int num)
     {
         var directoryInfo = Directory.GetParent(folderPath);
 
@@ -144,5 +146,43 @@ public abstract class CommonUtils
 
         _jsonMetaDataCache.TryAdd(type, propertyPaths);
         return propertyPaths;
+    }
+
+    /// <summary>
+    /// 获取水印模拟器的index.html路径
+    /// </summary>
+    /// <param name="uploadFilesFolderPath"></param>
+    /// <returns></returns>
+    public static string GetWatermarkEditorIndexHtmlPath(string uploadFilesFolderPath)
+    {
+        if (!string.IsNullOrWhiteSpace(_watermarkEditorIndexHtmlPath))
+        {
+            return _watermarkEditorIndexHtmlPath;
+        }
+
+        var pluginFolderPath = Path.Combine(GetFolderSpecifyParent(uploadFilesFolderPath, 2).FullName, "Plugin");
+
+        var directories = Directory.GetDirectories(pluginFolderPath, "*", SearchOption.TopDirectoryOnly);
+
+        foreach (var directory in directories)
+        {
+            var pluginJsonPath = Path.Combine(directory, "PluginConfig.json");
+
+            if (!File.Exists(pluginJsonPath))
+            {
+                continue;
+            }
+
+            var pluginConfig = JsonConvert.DeserializeObject<PluginConfig>(File.ReadAllText(pluginJsonPath));
+
+            if (pluginConfig.Guid == "8748d7dc-994d-45b8-80f9-f510cfcac6ac")
+            {
+                _watermarkEditorIndexHtmlPath =
+                    Path.Combine(directory, "Resources\\dist\\watermark-editor\\index.html");
+                return _watermarkEditorIndexHtmlPath;
+            }
+        }
+
+        return null;
     }
 }
