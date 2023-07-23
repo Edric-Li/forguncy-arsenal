@@ -321,7 +321,7 @@ public class UploadSettings : ObjectPropertyBase
     [JsonProperty("defaultSelectionOfFileType")]
     public FileSelectionType DefaultSelectionOfFileType { get; set; }
 
-    [DisplayName("允许拖拽")]
+    [DisplayName("显示拖拽区域")]
     [JsonProperty("allowDragAndDrop")]
     public bool AllowDragAndDrop { get; set; }
 
