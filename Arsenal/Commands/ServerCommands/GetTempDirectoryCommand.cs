@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.GettingTemporaryDirectoryCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/get-temp-folder.png")]
 public class GettingTemporaryDirectoryCommand : Command, ICommandExecutableInServerSide

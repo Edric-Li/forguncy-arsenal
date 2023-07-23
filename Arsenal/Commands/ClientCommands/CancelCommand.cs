@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [OrderWeight((int)ClientCommandOrderWeight.CancelCommand)]
 [Description(
     "当触发了部分事件时，您将获得一个取消令牌，通过调用该命令并且传入对应的取消令牌后，您可以中止正在进行的操作，以便在需要的情况下停止或撤销操作的执行。")]

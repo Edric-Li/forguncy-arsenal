@@ -8,7 +8,7 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.GetUploadRootDirectoryCommand)]
 public class ListItemsCommand : ICommandExecutableInServerSideAsync
 {

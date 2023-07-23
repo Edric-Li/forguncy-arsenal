@@ -15,10 +15,10 @@
   "image": "Resources/images/image@100.png",
   "description": "支持大文件分块上传,以及自定义文件夹",
   "name": "Arsenal",
-  "name_cn": "文件上传",
+  "name_cn": "文件管理",
   "pluginType": "cellType,command",
   "guid": "8748d7dc-994d-45b8-80f9-f510cfcac6ac",
-  "version": "5.0.0.0",
+  "version": "6.0.0.0",
   "dependenceVersion": "9.0.0.0",
   "bundleJavaScript": false,
   "bundleCSS": false

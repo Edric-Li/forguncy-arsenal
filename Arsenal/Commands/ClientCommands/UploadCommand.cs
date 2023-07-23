@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [OrderWeight((int)ClientCommandOrderWeight.UploadCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload1.png")]
 

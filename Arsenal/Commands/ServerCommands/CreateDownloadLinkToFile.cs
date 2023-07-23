@@ -11,7 +11,7 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.CreateDownloadLinkToFileCommand)]
 [Description("可为服务器端文件创建一个临时下载链接, 该链接可以在指定的时间内被使用。")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/create-download-link.png")]

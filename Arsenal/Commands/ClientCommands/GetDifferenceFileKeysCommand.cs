@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [OrderWeight((int)ClientCommandOrderWeight.GetDifferenceFileKeysCommand)]
 [Description("多用于删除附件时，获取新旧附件值的差集，然后删除差集中的附件。")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/calculation-of-differences.png")]

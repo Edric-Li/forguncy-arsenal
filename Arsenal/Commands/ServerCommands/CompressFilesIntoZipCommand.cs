@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace Arsenal;
 
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.CompressFilesIntoZipCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/zip.png")]
 public class CompressFilesIntoZipCommand : Command, ICommandExecutableInServerSideAsync

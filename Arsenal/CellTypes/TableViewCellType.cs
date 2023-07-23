@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Arsenal;
 
 [OrderWeight(4)]
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [SupportUsingScope(PageScope.None, ListViewScope.None)]
 public class TableViewCellType : CellType
 {

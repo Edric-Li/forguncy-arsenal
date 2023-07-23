@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 namespace Arsenal;
 
 [OrderWeight(1)]
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
 public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly

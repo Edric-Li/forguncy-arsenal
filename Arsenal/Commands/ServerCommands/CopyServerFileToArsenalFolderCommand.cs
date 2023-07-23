@@ -14,7 +14,7 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("文件管理 Plus")]
+[Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.CopyServerFileToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
 public class CopyServerFileToArsenalFolderCommand : Command, ICommandExecutableInServerSideAsync,
