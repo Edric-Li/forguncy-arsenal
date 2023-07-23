@@ -695,6 +695,11 @@ public static class FileUploadService
         {
             var fileEntity = await databaseContext.Files.FirstOrDefaultAsync(item => item.Key == fileKey);
 
+            if (fileEntity == null)
+            {
+                return;
+            }
+
             var fileFullPath = await GetFileFullPathByFileKeyAsync(fileKey);
 
             databaseContext.Files.Remove(fileEntity);
