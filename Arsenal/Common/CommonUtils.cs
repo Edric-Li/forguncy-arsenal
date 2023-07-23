@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
 
@@ -155,34 +156,19 @@ public abstract class CommonUtils
     /// <returns></returns>
     public static string GetWatermarkEditorIndexHtmlPath(string uploadFilesFolderPath)
     {
-        if (!string.IsNullOrWhiteSpace(_watermarkEditorIndexHtmlPath))
+        if (string.IsNullOrWhiteSpace(_watermarkEditorIndexHtmlPath))
         {
-            return _watermarkEditorIndexHtmlPath;
+            _watermarkEditorIndexHtmlPath =
+                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    "Resources\\dist\\watermark-editor\\index.html");
         }
 
-        var pluginFolderPath = Path.Combine(GetFolderSpecifyParent(uploadFilesFolderPath, 2).FullName, "Plugin");
-
-        var directories = Directory.GetDirectories(pluginFolderPath, "*", SearchOption.TopDirectoryOnly);
-
-        foreach (var directory in directories)
+        if (!File.Exists(_watermarkEditorIndexHtmlPath))
         {
-            var pluginJsonPath = Path.Combine(directory, "PluginConfig.json");
-
-            if (!File.Exists(pluginJsonPath))
-            {
-                continue;
-            }
-
-            var pluginConfig = JsonConvert.DeserializeObject<PluginConfig>(File.ReadAllText(pluginJsonPath));
-
-            if (pluginConfig.Guid == "8748d7dc-994d-45b8-80f9-f510cfcac6ac")
-            {
-                _watermarkEditorIndexHtmlPath =
-                    Path.Combine(directory, "Resources\\dist\\watermark-editor\\index.html");
-                return _watermarkEditorIndexHtmlPath;
-            }
+            MessageBox.Show("找不到插件目录，请联系管理员。（QQ群：879694503）", "发生错误");
+            return null;
         }
 
-        return null;
+        return _watermarkEditorIndexHtmlPath;
     }
 }
