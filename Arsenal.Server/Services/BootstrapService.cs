@@ -2,8 +2,14 @@
 
 namespace Arsenal.Server.Services;
 
-public abstract class BootstrapServices
+/// <summary>
+/// 引导服务
+/// </summary>
+public abstract class BootstrapService
 {
+    /// <summary>
+    /// 确保初始化
+    /// </summary>
     public static void EnsureInitialization()
     {
         try

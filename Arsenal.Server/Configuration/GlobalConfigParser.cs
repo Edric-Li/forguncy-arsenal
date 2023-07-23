@@ -4,17 +4,35 @@ using Newtonsoft.Json.Linq;
 
 namespace Arsenal.Server.Configuration;
 
-public abstract class GlobalConfiguration
+/// <summary>
+/// 全局配置解析器
+/// </summary>
+public abstract class GlobalConfigParser
 {
+    /// <summary>
+    /// Xml根节点
+    /// </summary>
     private static XmlElement _xmlElement;
 
+    /// <summary>
+    /// 获取ForguncyServer的根目录
+    /// </summary>
+    /// <returns></returns>
     private static string GetForguncyServerFolder()
     {
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "ForguncyServer");
     }
 
+    /// <summary>
+    /// 获取GlobalConfig.xml的路径
+    /// </summary>
     private static string GetGlobalConfigXmlPath => Path.Combine(GetForguncyServerFolder(), "GlobalConfig.xml");
 
+    /// <summary>
+    /// 通过xpath获取xml文档中的值
+    /// </summary>
+    /// <param name="xPath"></param>
+    /// <returns></returns>
     private static string GetGlobalValueByXPath(string xPath)
     {
         var xmlNodeList = _xmlElement?.SelectNodes("/GlobalConfiguration/" + xPath);
@@ -27,32 +45,58 @@ public abstract class GlobalConfiguration
         return xmlNodeList[0]?.InnerText ?? string.Empty;
     }
 
+    /// <summary>
+    /// 获取全局存储类型
+    /// </summary>
+    /// <returns></returns>
     private static string GetGlobalStorageType()
     {
         return GetGlobalValueByXPath("StorageType");
     }
 
+    /// <summary>
+    /// 获取全局存储路径
+    /// </summary>
+    /// <returns></returns>
     private static string GetGlobalUploadFolderPath()
     {
         return GetGlobalValueByXPath("UploadRootPath");
     }
 
+    /// <summary>
+    /// 获取全局是否使用公开的URL
+    /// </summary>
+    /// <returns></returns>
     private static string GetGlobalUsePublicUrl()
     {
         return GetGlobalValueByXPath("UsePublicUrl");
     }
 
-    private static string GetGlobalAppRootPath()
+    /// <summary>
+    /// 根据AppName获取App的根目录
+    /// </summary>
+    /// <returns></returns>
+    private static string GetAppRootPath(string appName)
     {
         var value = GetGlobalValueByXPath("AppRootPath");
-        return string.IsNullOrWhiteSpace(value) ? null : value;
+        var parent = string.IsNullOrWhiteSpace(value) ? GetForguncyServerFolder() : value;
+        return Path.Combine(parent, appName);
     }
 
+    /// <summary>
+    /// 获取节点获取AppName
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
     private static string GetAppNameByXmlNode(XmlNode node)
     {
         return node.Attributes?.GetNamedItem("AppName")?.Value;
     }
 
+    /// <summary>
+    /// 获取是否启用用户服务SSL
+    /// </summary>
+    /// <returns></returns>
     private static bool GetEnableUserServiceSsl()
     {
         var xmlNodeList = _xmlElement?.SelectNodes("/GlobalConfiguration/UserService/EnableUserServiceSSL");
@@ -65,6 +109,12 @@ public abstract class GlobalConfiguration
         return xmlNodeList[0]?.InnerText == "true";
     }
 
+    /// <summary>
+    /// 根据AppName获取App的存储信息（全局配置中存储的原始存储信息，并没计算继承关系）
+    /// </summary>
+    /// <param name="appName"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     private static AppStorageInfo GetAppAppStorageInfoByAppName(string appName)
     {
         var appStorageInfo = new AppStorageInfo();
@@ -122,20 +172,36 @@ public abstract class GlobalConfiguration
         return appStorageInfo;
     }
 
+    /// <summary>
+    /// 获取UserService的URL 
+    /// </summary>
+    /// <param name="appRootPath"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <returns></returns>
     private static string GetUserServiceUrl(string appRootPath)
     {
         var serverInfosFilePath = Path.Combine(appRootPath, "Files", "Forguncy_ServerInfos");
         var jsonContent = File.ReadAllText(serverInfosFilePath);
         var jsonObject = JObject.Parse(jsonContent);
 
-        var userServiceURL = (string)jsonObject["UserServiceURL"] ?? Configuration.DefaultUserServiceUrl;
-        var enableUserServiceSSL = GetEnableUserServiceSsl();
+        var userServiceUrl = (string)jsonObject["UserServiceURL"] ?? Configuration.DefaultUserServiceUrl;
+        if (userServiceUrl == null)
+        {
+            throw new ArgumentNullException(nameof(userServiceUrl));
+        }
 
-        return enableUserServiceSSL
-            ? userServiceURL.Replace("http://", "https://")
-            : userServiceURL.Replace("https://", "http://");
+        var enableUserServiceSsl = GetEnableUserServiceSsl();
+
+        return enableUserServiceSsl
+            ? userServiceUrl.Replace("http://", "https://")
+            : userServiceUrl.Replace("https://", "http://");
     }
 
+    /// <summary>
+    /// 根据AppName获取App的配置信息
+    /// </summary>
+    /// <param name="appName"></param>
+    /// <returns></returns>
     public static AppConfig GetAppConfig(string appName)
     {
         var appConfig = new AppConfig();
@@ -154,8 +220,7 @@ public abstract class GlobalConfiguration
 
         var appStorageInfo = GetAppAppStorageInfoByAppName(appName);
 
-        appConfig.RootPath = appConfig.RootPath =
-            Path.Combine(GetGlobalAppRootPath() ?? GetForguncyServerFolder(), appName);
+        appConfig.RootPath = GetAppRootPath(appName);
 
         var defaultLocalUploadFolderPath = Path.Combine(appConfig.RootPath, "Upload");
 
@@ -171,8 +236,8 @@ public abstract class GlobalConfiguration
             appStorageInfo.StorageType = null;
         }
 
-        if (appStorageInfo.UploadFolderPath == string.Empty &&
-            (globalUploadFolderPath != string.Empty || appStorageInfo.StorageType != null))
+        if (string.IsNullOrWhiteSpace(appStorageInfo.UploadFolderPath) &&
+            (!string.IsNullOrWhiteSpace(globalUploadFolderPath) || appStorageInfo.StorageType != null))
         {
             appStorageInfo.UploadFolderPath = $"{globalUploadFolderPath}/{appName}/";
         }

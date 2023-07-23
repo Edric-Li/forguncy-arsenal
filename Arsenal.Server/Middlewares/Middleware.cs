@@ -15,7 +15,7 @@ internal class Middleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        BootstrapServices.EnsureInitialization();
+        BootstrapService.EnsureInitialization();
 
         if (context.Request.Path.Value.StartsWith("/Upload/"))
         {

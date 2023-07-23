@@ -28,6 +28,10 @@
 
         static initListviewPaginationInfo(runTimePageName: string, listviewName: string, pageSize: number);
 
+        static commandExecutor: {
+            executeCommand: (commandName: string, commandParam: any) => void
+        };
+
         static userInfo: {
             InheritedPermissionRoles: string
             Role: string

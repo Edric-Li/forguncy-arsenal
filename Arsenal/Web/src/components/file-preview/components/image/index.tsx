@@ -1,7 +1,8 @@
-import React, { CSSProperties, useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { Image as AntdImage } from 'antd';
 import getImageSize from '../../../../common/get-image-size';
 import adjustImageSize from '../../../../common/adjust-image-size';
+import preventDefaultEvent from '../../../../common/prevent-default-event';
 
 const style: CSSProperties = {
   width: '100%',
@@ -26,7 +27,7 @@ const ImagePreview = (props: IPreviewComponentProps) => {
       const containerHeight = ref.current!.offsetHeight;
       let [imageWidth, imageHeight] = await getImageSize(props.url);
 
-      if (imageWidth > containerWidth && imageHeight > containerHeight) {
+      if (imageWidth > containerWidth || imageHeight > containerHeight) {
         const size = adjustImageSize(imageWidth, imageHeight, containerWidth, containerHeight);
         imageWidth = size.width;
         imageHeight = size.height;
@@ -39,9 +40,29 @@ const ImagePreview = (props: IPreviewComponentProps) => {
     })();
   }, [props]);
 
+  const preview = useMemo(() => {
+    return {
+      onVisibleChange: (value: boolean) => {
+        const jq = $('.arsenal-file-preview-image');
+        if (value) {
+          jq.bind('contextmenu', preventDefaultEvent);
+        } else {
+          jq.unbind('contextmenu', preventDefaultEvent);
+        }
+      },
+    };
+  }, []);
+
   return (
     <div style={style} ref={ref}>
-      <AntdImage alt='' src={props.url} width={imageSize.width} height={imageSize.height} />
+      <AntdImage
+        alt=''
+        src={props.url}
+        width={imageSize.width}
+        height={imageSize.height}
+        rootClassName='arsenal-file-preview-image'
+        preview={preview}
+      />
     </div>
   );
 };

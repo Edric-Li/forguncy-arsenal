@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Arsenal.Common;
 using Arsenal.Server.Common;
 using Arsenal.Server.Configuration;
 using Arsenal.Server.Model.Params;
@@ -14,10 +15,11 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
-[OrderWeight((int)ServerCommandOrderWeight.UploadServerFolderCommand)]
+[Category("文件管理")]
+[OrderWeight((int)ServerCommandOrderWeight.CopyServerFolderToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
-public class UploadServerFolderCommand : Command, ICommandExecutableInServerSideAsync, IServerCommandParamGenerator
+public class CopyServerFolderToArsenalFolderCommand : Command, ICommandExecutableInServerSideAsync,
+    IServerCommandParamGenerator, INeedUploadFileByUser
 {
     [DisplayName("服务器文件夹路径")]
     [FormulaProperty]
@@ -169,11 +171,6 @@ public class UploadServerFolderCommand : Command, ICommandExecutableInServerSide
     {
         return CommandScope.ExecutableInServer;
     }
-    
-    public override string ToString()
-    {
-        return "迁移服务器文件夹到附件文件夹";
-    }
 
     public IEnumerable<GenerateParam> GetGenerateParams()
     {
@@ -191,6 +188,22 @@ public class UploadServerFolderCommand : Command, ICommandExecutableInServerSide
                 "大小（字节）"
             },
         };
+    }
+
+    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
+    {
+        return new List<FileCopyInfo>(0);
+    }
+
+    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
+    {
+        CommonUtils.CopyWebSiteFilesToDesigner(context);
+        return null;
+    }
+
+    public override string ToString()
+    {
+        return "复制服务器文件夹到附件文件夹";
     }
 }
 

@@ -44,7 +44,6 @@
 			<HintPath>C:\Program Files\Forguncy 9\Website\bin\Newtonsoft.Json.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<PackageReference Include="LevelDB.Standard" Version="2.1.7-beta1" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0">
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>

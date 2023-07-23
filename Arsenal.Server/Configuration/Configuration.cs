@@ -1,38 +1,72 @@
-﻿using Arsenal.Server.Model;
+﻿using System.Diagnostics;
+using Arsenal.Server.Model;
 
 namespace Arsenal.Server.Configuration;
 
+/// <summary>
+/// 配置类
+/// </summary>
 public class Configuration
 {
+    /// <summary>
+    /// 该插件在存储目录下的文件夹路径
+    /// </summary>
     public static string RootFolderPath => Path.Combine(AppConfig?.LocalUploadFolderPath ?? string.Empty, "arsenal");
 
-    private static readonly Lazy<Configuration> LazyInstance = new(() => new Configuration());
-
+    /// <summary>
+    /// 上传文件夹路径
+    /// </summary>
     public static string UploadFolderPath => Path.Combine(RootFolderPath, "files");
 
+    /// <summary>
+    /// 临时下载文件夹路径
+    /// </summary>
     public static string TemporaryDownloadFolderPath => Path.Combine(RootFolderPath, "temporary_download_files");
 
+    /// <summary>
+    /// 临时文件夹路径
+    /// </summary>
     public static string TempFolderPath => Path.Combine(RootFolderPath, "temp");
 
+    /// <summary>
+    /// 数据文件夹路径
+    /// </summary>
     public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
 
+    /// <summary>
+    /// 当前插件根目录
+    /// </summary>
     public static string CurrentPluginRootPath => Instance.GetCurrentPluginRoot();
-
-    public static readonly Configuration Instance = LazyInstance.Value;
 
     /// <summary>
     /// 数据库链接串
     /// </summary>
     public static string DatabaseConnectionString { get; set; } = string.Empty;
 
+    /// <summary>
+    /// 应用相关配置
+    /// </summary>
     public static AppConfig AppConfig { get; private set; }
+
+    /// <summary>
+    /// 懒加载实例
+    /// </summary>
+    public static Configuration Instance => LazyInstance.Value;
 
     /// <summary>
     /// 是否运行在本地
     /// </summary>
     public static bool RunAtLocal { get; private set; }
 
+    /// <summary>
+    /// 默认的用户服务地址
+    /// </summary>
     public const string DefaultUserServiceUrl = "http://127.0.0.1:22345/UserService";
+
+    /// <summary>
+    /// 懒加载实例
+    /// </summary>
+    private static readonly Lazy<Configuration> LazyInstance = new(() => new Configuration());
 
     /// <summary>
     /// 运行的是否是绿版
@@ -120,14 +154,26 @@ public class Configuration
         {
             return;
         }
-        
+
         var designerFiles = Directory.GetFiles(designerFolder, "*", SearchOption.AllDirectories);
-        
+
         foreach (var designerFile in designerFiles)
         {
+            if (designerFile.Contains("sqlite3-shm") || designerFile.Contains("sqlite3-wal"))
+            {
+                continue;
+            }
+
             var webSiteFile = designerFile.Replace(designerFolder, string.Empty);
 
-            File.Copy(designerFile, Path.Combine(RootFolderPath, webSiteFile), true);
+            try
+            {
+                File.Copy(designerFile, Path.Combine(RootFolderPath, webSiteFile), true);
+            }
+            catch (Exception e)
+            {
+                Trace.Write(e.Message);
+            }
         }
     }
 
@@ -155,7 +201,7 @@ public class Configuration
         }
         else
         {
-            AppConfig = GlobalConfiguration.GetAppConfig(GetAppName());
+            AppConfig = GlobalConfigParser.GetAppConfig(GetAppName());
         }
 
         CreateFolders();

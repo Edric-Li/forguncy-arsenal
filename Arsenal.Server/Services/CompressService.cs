@@ -2,13 +2,16 @@
 
 namespace Arsenal.Server.Services;
 
+/// <summary>
+/// 压缩服务
+/// </summary>
 public abstract class CompressService
 {
     /// <summary>
     /// 将文件压缩成Zip
     /// </summary>
-    /// <param name="zipFilePath"></param>
-    /// <param name="filesToCompress"></param>
+    /// <param name="zipFilePath">压缩文件路径</param>
+    /// <param name="filesToCompress">需要压缩的文件</param>
     /// <param name="needKeepFolderStructure"></param>
     public static async Task CompressFilesToZipAsync(string zipFilePath, IEnumerable<string> filesToCompress,
         bool needKeepFolderStructure)
@@ -86,8 +89,8 @@ public abstract class CompressService
     /// <summary>
     /// 解压Zip文件
     /// </summary>
-    /// <param name="zipFilePath"></param>
-    /// <param name="extractPath"></param>
+    /// <param name="zipFilePath">zip文件路径</param>
+    /// <param name="extractPath">目标文件夹</param>
     public static void ExtractToDirectory(string zipFilePath, string extractPath)
     {
         ZipFile.ExtractToDirectory(zipFilePath, extractPath);

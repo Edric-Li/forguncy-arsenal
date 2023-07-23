@@ -7,8 +7,57 @@ interface IPreviewComponentProps extends IPreviewOptions {
   suffix: string;
 }
 
+interface IPreviewWatermarkSettings {
+  gap: string;
+  height: number;
+  rotate: number;
+  width: number;
+  zIndex: number;
+  content: string;
+  font: {
+    color: string;
+    fontFamily: string;
+    fontSize: string;
+    fontStyle: 'none' | 'normal' | 'italic' | 'oblique';
+    fontWeight: 'normal' | 'light' | 'weight' | number;
+  };
+  offset: string;
+}
+
+enum IVideoSize {
+  Fill,
+  Original,
+}
+
 interface IPreviewOptions {
   hideTabsWhenOnlyOneFile: boolean;
+  enableWatermark?: boolean;
+  watermarkSettings?: IPreviewWatermarkSettings;
+  videoSettings: {
+    autoPlay: boolean;
+    controls: boolean;
+    disableDownload: boolean;
+    disablePictureInPicture: boolean;
+    loop: boolean;
+    muted: boolean;
+    size: IVideoSize;
+  };
+  audioSettings: {
+    autoPlay: boolean;
+    controls: boolean;
+    disableDownload: boolean;
+    loop: boolean;
+  };
+  disableContextMenu?: boolean;
+  pdfSettings?: {
+    hideSaveButton: boolean;
+    hidePrintButton: boolean;
+  };
+}
+
+interface CustomFile extends File {
+  uid: string;
+  relativePath?: string;
 }
 
 enum ComponentName {
@@ -21,12 +70,11 @@ enum CommandName {
 }
 
 interface Window {
-  __reactCellTypes: {
-    [key: string]: CellType;
+  Arsenal: {
+    createReactComponent: (cellType: CellType, componentName: ComponentName) => void;
+    createReactCommand: (commandBase: Forguncy.Plugin.CommandBase, commandName: CommandName) => void;
+    canceledTokenSet: Set<string>;
   };
-
-  createReactComponent: (cellType: CellType, componentName: ComponentName) => void;
-  createReactCommand: (commandBase: Forguncy.Plugin.CommandBase, commandName: CommandName) => void;
 
   $: JQueryStatic;
 

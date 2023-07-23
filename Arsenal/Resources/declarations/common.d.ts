@@ -10,10 +10,14 @@ type IReactCellTypeRef = Partial<{
     setDisable(isDisabled: boolean);
 
     runtimeMethod: { [key: string]: (...args: any) => void }
+
+    onDependenceCellValueChanged: () => void;
 }>
 
 
 declare class CellType extends CellTypeBase {
+    runTimePageName: string;
+
     onReactComponentLoaded();
 
     __reactComponent: IReactCellTypeRef;

@@ -3,21 +3,34 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Arsenal.Common;
 using GrapeCity.Forguncy.CellTypes;
+using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
 
 namespace Arsenal;
 
 [OrderWeight(1)]
-[Category("Arsenal")]
+[Category("文件")]
 [SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
 public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly
 {
+    private ListType _listType = ListType.Text;
+    
     [DisplayName("权限设置")]
     [JsonProperty("permissionSettings")]
     [ObjectProperty(ObjType = typeof(PermissionSettings))]
     public PermissionSettings PermissionSettings { get; set; } = new();
+
+    [DisplayName("事件设置")]
+    [JsonProperty("eventSettings")]
+    [ObjectProperty(ObjType = typeof(EventSettings))]
+    public EventSettings EventSettings { get; set; } = new();
+
+    [DisplayName("预览设置")]
+    [JsonProperty("previewSetting")]
+    [ObjectProperty(ObjType = typeof(PreviewSetting))]
+    public PreviewSetting PreviewSetting { get; set; } = new();
 
     [DisplayName("上传设置")]
     [JsonProperty("uploadSettings")]
@@ -26,7 +39,15 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
 
     [DisplayName("文件列表类型")]
     [JsonProperty("listType")]
-    public ListType ListType { get; set; } = ListType.Text;
+    public ListType ListType
+    {
+        get => _listType;
+        set
+        {
+            _listType = value;
+            TempValueStoreInstance.ListType = value;
+        }
+    }
 
     [CategoryHeader("其他")]
     [DisplayName("禁用")]
@@ -36,6 +57,18 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     [DisplayName("只读")]
     [DefaultValue(false)]
     public bool ReadOnly { get; set; } = false;
+
+    [RunTimeMethod]
+    [DisplayName("上传文件")]
+    public void Upload()
+    {
+    }
+
+    [RunTimeMethod]
+    [DisplayName("上传文件夹")]
+    public void UploadFolder()
+    {
+    }
 
     [RunTimeMethod]
     [DisplayName("设置元素显示状态")]
@@ -57,10 +90,26 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
         return null;
     }
 
+    public override bool GetRunTimeMethodVisible(string name)
+    {
+        if (name == nameof(UploadFolder))
+        {
+            return UploadSettings.AllowFolderSelection;
+        }
+
+        return base.GetRunTimeMethodVisible(name);
+    }
+
     public override string ToString()
     {
         return "文件上传";
     }
+}
+
+public enum FileSelectionType
+{
+    [Description("文件")] File,
+    [Description("文件夹")] Folder,
 }
 
 public enum ListType
@@ -264,13 +313,30 @@ public class UploadSettings : ObjectPropertyBase
     [ObjectProperty(ObjType = typeof(ImgCropSettings))]
     public ImgCropSettings ImgCropSettings { get; set; } = new();
 
+    [DisplayName("允许选择文件夹")]
+    [JsonProperty("allowFolderSelection")]
+    public bool AllowFolderSelection { get; set; }
+
+    [DisplayName("默认选择文件类型")]
+    [JsonProperty("defaultSelectionOfFileType")]
+    public FileSelectionType DefaultSelectionOfFileType { get; set; }
+
+    [DisplayName("显示拖拽区域")]
+    [JsonProperty("allowDragAndDrop")]
+    public bool AllowDragAndDrop { get; set; }
+
+    [DisplayName("拖拽区域设置")]
+    [JsonProperty("dragAndDropSettings")]
+    [ObjectProperty(ObjType = typeof(DragAndDropSettings))]
+    public DragAndDropSettings DragAndDropSettings { get; set; } = new();
+
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
         if (propertyName == nameof(ConflictStrategy))
         {
             return !string.IsNullOrWhiteSpace(Folder?.ToString());
         }
-        
+
         if (propertyName == nameof(Multiple))
         {
             return MaxCount is null or > 1;
@@ -291,6 +357,99 @@ public class UploadSettings : ObjectPropertyBase
             return EnableCrop && GetDesignerPropertyVisible(nameof(EnableCrop));
         }
 
+        if (propertyName == nameof(DragAndDropSettings))
+        {
+            return AllowDragAndDrop;
+        }
+
+        if (propertyName == nameof(AllowFolderSelection))
+        {
+            return TempValueStoreInstance.ListType is ListType.Text or ListType.Picture;
+        }
+
+        if (propertyName == nameof(DefaultSelectionOfFileType))
+        {
+            return AllowFolderSelection && GetDesignerPropertyVisible(nameof(AllowFolderSelection));
+        }
+
         return base.GetDesignerPropertyVisible(propertyName);
     }
+}
+
+public class DragAndDropSettings : ObjectPropertyBase
+{
+    [UserControlPageProperty]
+    [DisplayName("拖拽区域对应组件")]
+    [JsonProperty("dragUserControlPage")]
+    public string DragUserControlPage { get; set; }
+
+    [DisplayName("拖拽区域对应组件高度")]
+    [JsonProperty("height")]
+    public int Height { get; set; } = 300;
+}
+
+public class EventSettings : ObjectPropertyBase
+{
+    [DisplayName("上传前")]
+    [JsonProperty("beforeUpload")]
+    [CustomCommandObject(InitParamProperties = "name|ext|size|cancellationToken",
+        InitParamValues = "文件名称|扩展名|大小|取消令牌")]
+    public CustomCommandObject BeforeUpload { get; set; }
+
+    [DisplayName("上传后")]
+    [JsonProperty("afterUpload")]
+    [CustomCommandObject(InitParamProperties = "name|ext|size|fileKey",
+        InitParamValues = "文件名称|扩展名|大小|附件值")]
+    public CustomCommandObject AfterUpload { get; set; }
+
+    [DisplayName("预览前")]
+    [JsonProperty("beforePreview")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
+        InitParamValues = "文件名称|附件值|取消令牌")]
+    public CustomCommandObject BeforePreview { get; set; }
+    
+    [DisplayName("下载前")]
+    [JsonProperty("beforeDownload")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
+        InitParamValues = "文件名称|附件值|取消令牌")]
+    public CustomCommandObject BeforeDownload { get; set; }
+
+    [DisplayName("删除前")]
+    [JsonProperty("beforeDelete")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
+        InitParamValues = "文件名称|附件值|取消令牌")]
+    public CustomCommandObject BeforeDelete { get; set; }
+}
+
+public class PreviewSetting : ObjectPropertyBase
+{
+    [DisplayName("水印设置")]
+    [JsonProperty("watermarkSettings")]
+    [ObjectProperty(ObjType = typeof(PreviewWatermarkSettings))]
+    public PreviewWatermarkSettings WatermarkSettings { get; set; } = new();
+
+    [DisplayName("PDF设置")]
+    [JsonProperty("pdfSettings")]
+    [ObjectProperty(ObjType = typeof(PdfSettings))]
+    public PdfSettings PdfSettings { get; set; } = new();
+
+    [DisplayName("视频设置")]
+    [JsonProperty("videoSettings")]
+    [ObjectProperty(ObjType = typeof(VideoSettings))]
+    public VideoSettings VideoSettings { get; set; } = new();
+
+    [DisplayName("音频设置")]
+    [JsonProperty("audioSettings")]
+    [ObjectProperty(ObjType = typeof(AudioSettings))]
+    public AudioSettings AudioSettings { get; set; } = new();
+
+    [DisplayName("当只有一个文件时隐藏标签页")]
+    [JsonProperty("hideTabsWhenOnlyOneFile")]
+    [DefaultValue(true)]
+    [Browsable(false)]
+    public bool HideTabsWhenOnlyOneFile { get; set; } = true;
+
+    [DisplayName("禁用右键菜单")]
+    [JsonProperty("disableContextMenu")]
+    public bool DisableContextMenu { get; set; }
 }

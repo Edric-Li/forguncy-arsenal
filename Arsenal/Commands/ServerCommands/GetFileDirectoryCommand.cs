@@ -8,7 +8,7 @@ using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
+[Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.GetFileDirectoryCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/get-file-folder.png")]
 

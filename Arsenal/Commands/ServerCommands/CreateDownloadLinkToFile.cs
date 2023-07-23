@@ -1,20 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
+using Arsenal.Common;
 using Arsenal.Server.Model.Params;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 
 namespace Arsenal;
 
-[Category("Arsenal")]
+[Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.CreateDownloadLinkToFileCommand)]
 [Description("可为服务器端文件创建一个临时下载链接, 该链接可以在指定的时间内被使用。")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/create-download-link.png")]
-
-public class CreateDownloadLinkToFileCommand : Command, ICommandExecutableInServerSideAsync
+public class CreateDownloadLinkToFileCommand : Command, ICommandExecutableInServerSideAsync, INeedUploadFileByUser
 {
     [DisplayName("服务器文件路径")]
     [FormulaProperty]
@@ -35,11 +36,14 @@ public class CreateDownloadLinkToFileCommand : Command, ICommandExecutableInServ
     [DisplayName("创建副本")]
     [Description("创建副本后，即使原始文件被删除或移动，您仍然可以使用该下载链接下载文件。")]
     public bool CreateCopy { get; set; }
-
+    
     [DisplayName("保存下载链接到")]
     [ResultToProperty]
-    [Required]
-    public string Result { get; set; }
+    public string FileLinkResult { get; set; }
+
+    [DisplayName("保存文件值到")]
+    [ResultToProperty]
+    public string FileKeyResult { get; set; }
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
@@ -70,7 +74,16 @@ public class CreateDownloadLinkToFileCommand : Command, ICommandExecutableInServ
             CreateCopy = CreateCopy
         });
 
-        dataContext.Parameters[Result] = dataContext.AppBaseUrl + "FileDownloadUpload/Download?file=" + result;
+        if (!string.IsNullOrWhiteSpace(FileKeyResult))
+        {
+            dataContext.Parameters[FileKeyResult] = result;
+        }
+
+        if (!string.IsNullOrWhiteSpace(FileLinkResult))
+        {
+            dataContext.Parameters[FileLinkResult] =
+                dataContext.AppBaseUrl + "FileDownloadUpload/Download?file=" + result;
+        }
 
         return new ExecuteResult();
     }
@@ -78,6 +91,17 @@ public class CreateDownloadLinkToFileCommand : Command, ICommandExecutableInServ
     public override CommandScope GetCommandScope()
     {
         return CommandScope.ExecutableInServer;
+    }
+
+    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
+    {
+        return new List<FileCopyInfo>(0);
+    }
+
+    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
+    {
+        CommonUtils.CopyWebSiteFilesToDesigner(context);
+        return null;
     }
 
     public override string ToString()

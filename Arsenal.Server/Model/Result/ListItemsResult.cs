@@ -5,14 +5,38 @@ namespace Arsenal.Server.Model.Result;
 public class ListItemsResult
 {
     /// <summary>
-    /// 文件信息
+    /// 名称
     /// </summary>
-    [JsonProperty("files")]
-    public List<ListFileItemModel> Files { get; init; } = new();
+    [JsonProperty("name")]
+    public string Name { get; init; }
 
     /// <summary>
-    /// 文件夹信息
+    /// 文件夹或文件大小
     /// </summary>
-    [JsonProperty("folders")]
-    public List<ListFolderItemModel> Folders { get; init; } = new();
+    [JsonProperty("size")]
+    public long? Size { get; set; }
+
+    /// <summary>
+    /// 是否是文件夹
+    /// </summary>
+    [JsonProperty("isFolder")]
+    public bool IsFolder { get; set; }
+
+    /// <summary>
+    /// 文件类型
+    /// </summary>
+    [JsonProperty("contentType")]
+    public string ContentType { get; init; }
+
+    /// <summary>
+    /// 创建者
+    /// </summary>
+    [JsonProperty("uploader")]
+    public string Uploader { get; init; }
+
+    /// <summary>
+    /// 创建时间
+    /// </summary>
+    [JsonProperty("createdAt")]
+    public long CreatedAt { get; init; }
 }
