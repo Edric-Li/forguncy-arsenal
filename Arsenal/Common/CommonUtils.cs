@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using GrapeCity.Forguncy.Plugin;
+using Newtonsoft.Json;
 
 namespace Arsenal.Common;
 
@@ -11,7 +16,9 @@ public abstract class CommonUtils
     private static bool _isCopyingWebSiteFilesToDesigner;
 
     private static readonly object CopyWebSiteFilesToDesignerLock = new();
-    
+
+    private static ConcurrentDictionary<Type, Dictionary<string, string>> _jsonMetaDataCache = new();
+
     /// <summary>
     /// 获取指定层级的父级目录
     /// </summary>
@@ -94,5 +101,48 @@ public abstract class CommonUtils
         }
 
         _isCopyingWebSiteFilesToDesigner = false;
+    }
+
+    public static Dictionary<string, string> GetPropertyPaths(Type type, string parentKeyPath = "",
+        string parentPath = "")
+    {
+        if (_jsonMetaDataCache.TryGetValue(type, out var value))
+        {
+            return value;
+        }
+
+        var propertyPaths = new Dictionary<string, string>();
+
+        foreach (var property in type.GetProperties())
+        {
+            var displayName = property.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
+
+            displayName = string.IsNullOrEmpty(parentKeyPath) ? displayName : $"{parentKeyPath}.{displayName}";
+
+            if (!string.IsNullOrEmpty(displayName))
+            {
+                var propertyName1 = property.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName;
+
+                var propertyName = string.IsNullOrEmpty(parentPath)
+                    ? propertyName1
+                    : $"{parentPath}.{propertyName1}";
+
+                if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+                {
+                    var nestedProperties = GetPropertyPaths(property.PropertyType, displayName, propertyName);
+                    foreach (var nestedProperty in nestedProperties)
+                    {
+                        propertyPaths.Add(nestedProperty.Key, nestedProperty.Value);
+                    }
+                }
+                else
+                {
+                    propertyPaths.Add(displayName, propertyName);
+                }
+            }
+        }
+
+        _jsonMetaDataCache.TryAdd(type, propertyPaths);
+        return propertyPaths;
     }
 }

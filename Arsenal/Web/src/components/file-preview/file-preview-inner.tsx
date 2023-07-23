@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import IframeView from './components/iframe';
 import ImagePreview from './components/image';
 import ExcelPreview from './components/excel';
@@ -38,7 +38,18 @@ export const isImage = (fileUrl: string) => {
   return /jpg|jpeg|png|gif|bmp|webp/.test(fileUrl.split('.').pop() || '');
 };
 
-const FilePreviewInner = (props: { url: string | null | undefined; options: IPreviewOptions }) => {
+interface IProps {
+  url: string | null | undefined;
+  evaluateFormula: (value: string) => unknown;
+  options: IPreviewOptions;
+}
+
+export interface IPreviewRef {
+  refreshWatermarkSettings: () => void;
+}
+
+const FilePreviewInner = React.forwardRef<IPreviewRef, IProps>((props: IProps, ref) => {
+  const [refreshKey, setRefreshKey] = React.useState(0);
   const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
   const [exists, setExists] = React.useState<boolean | null>(null);
   const [size, setSize] = React.useState<{ width: number; height: number } | null>(null);
@@ -46,12 +57,11 @@ const FilePreviewInner = (props: { url: string | null | undefined; options: IPre
   const rootRef = useRef<HTMLDivElement>(null);
   const watermarkRootRef = useRef<HTMLDivElement>(null);
 
-  const watermarkSettings = useMemo(() => {
-    if (props.options.watermarkSettings) {
-      return convertPreviewWatermarkSettings(props.options.watermarkSettings);
-    }
-    return null;
-  }, []);
+  useImperativeHandle(ref, () => ({
+    refreshWatermarkSettings() {
+      setRefreshKey((key) => key + 1);
+    },
+  }));
 
   useEffect(() => {
     if (props.options.disableContextMenu && rootRef.current) {
@@ -82,7 +92,18 @@ const FilePreviewInner = (props: { url: string | null | undefined; options: IPre
       .css('width', size.width)
       .css('height', size.height)
       .css('top', dom.parent().parent().parent().parent().height() - size.height);
-  }, [size]);
+  }, [size, refreshKey]);
+
+  const watermarkSettings = useMemo(() => {
+    const content = props.evaluateFormula(props.options.watermarkSettings?.content || '');
+    if (props.options.watermarkSettings && content) {
+      return convertPreviewWatermarkSettings({
+        ...props.options.watermarkSettings,
+        content: content as string,
+      });
+    }
+    return null;
+  }, [refreshKey]);
 
   let Component: React.ComponentType<IPreviewComponentProps> | null =
     _.find(viewMap, (m) => m.type.test(fileExtension))?.Component ?? null;
@@ -119,13 +140,13 @@ const FilePreviewInner = (props: { url: string | null | undefined; options: IPre
         <Component url={props.url} suffix={fileExtension} {...props.options} />
       </ResizeObserver>
 
-      {props.options.enableWatermark && watermarkSettings && (
+      {watermarkSettings && (
         <div ref={watermarkRootRef}>
           <Watermark className='arsenal-watermark' {...watermarkSettings} />
         </div>
       )}
     </div>
   );
-};
+});
 
 export default FilePreviewInner;

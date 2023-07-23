@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using GrapeCity.Forguncy.CellTypes;
 using GrapeCity.Forguncy.Plugin;
 using Newtonsoft.Json;
@@ -11,38 +12,25 @@ namespace Arsenal;
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/preview.png")]
 public class PreviewCellType : CellType
 {
+    [DisplayName("水印设置")]
+    [JsonProperty("watermarkSettings")]
+    [ObjectProperty(ObjType = typeof(PreviewWatermarkSettings))]
+    public PreviewWatermarkSettings WatermarkSettings { get; set; } = new();
+    
     [DisplayName("PDF 预览设置")]
     [JsonProperty("pdfSettings")]
     [ObjectProperty(ObjType = typeof(PdfSettings))]
     public PdfSettings PdfSettings { get; set; } = new();
-    
+
+    [CategoryHeader("其他")]
     [DisplayName("当只有一个文件时隐藏标签页")]
     [JsonProperty("hideTabsWhenOnlyOneFile")]
     [DefaultValue(true)]
     public bool HideTabsWhenOnlyOneFile { get; set; } = true;
 
-    [DisplayName("是否启用水印")]
-    [JsonProperty("enableWatermark")]
-    public bool EnableWatermark { get; set; }
-
-    [DisplayName("水印设置")]
-    [JsonProperty("watermarkSettings")]
-    [ObjectProperty(ObjType = typeof(PreviewWatermarkSettings), IndentLevel = 2)]
-    public PreviewWatermarkSettings WatermarkSettings { get; set; } = new();
-
     [DisplayName("是否禁用右键菜单")]
     [JsonProperty("disableContextMenu")]
     public bool DisableContextMenu { get; set; }
-
-    public override bool GetDesignerPropertyVisible(string propertyName)
-    {
-        if (propertyName == nameof(WatermarkSettings))
-        {
-            return EnableWatermark;
-        }
-
-        return base.GetDesignerPropertyVisible(propertyName);
-    }
 
     public override string ToString()
     {

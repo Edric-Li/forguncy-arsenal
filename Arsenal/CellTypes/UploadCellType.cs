@@ -27,6 +27,11 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
     [ObjectProperty(ObjType = typeof(EventSettings))]
     public EventSettings EventSettings { get; set; } = new();
 
+    [DisplayName("预览设置")]
+    [JsonProperty("previewSetting")]
+    [ObjectProperty(ObjType = typeof(PreviewSetting))]
+    public PreviewSetting PreviewSetting { get; set; } = new();
+
     [DisplayName("上传设置")]
     [JsonProperty("uploadSettings")]
     [ObjectProperty(ObjType = typeof(UploadSettings))]
@@ -414,4 +419,28 @@ public class EventSettings : ObjectPropertyBase
     [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
         InitParamValues = "文件名称|附件值|取消令牌")]
     public CustomCommandObject BeforeDelete { get; set; }
+}
+
+public class PreviewSetting : ObjectPropertyBase
+{
+    [DisplayName("水印设置")]
+    [JsonProperty("watermarkSettings")]
+    [ObjectProperty(ObjType = typeof(PreviewWatermarkSettings))]
+    public PreviewWatermarkSettings WatermarkSettings { get; set; } = new();
+
+    [DisplayName("PDF 预览设置")]
+    [JsonProperty("pdfSettings")]
+    [ObjectProperty(ObjType = typeof(PdfSettings))]
+    public PdfSettings PdfSettings { get; set; } = new();
+
+    [DisplayName("当只有一个文件时隐藏标签页")]
+    [JsonProperty("hideTabsWhenOnlyOneFile")]
+    [DefaultValue(true)]
+    [Browsable(false)]
+    public bool HideTabsWhenOnlyOneFile { get; set; } = true;
+
+
+    [DisplayName("是否禁用右键菜单")]
+    [JsonProperty("disableContextMenu")]
+    public bool DisableContextMenu { get; set; }
 }

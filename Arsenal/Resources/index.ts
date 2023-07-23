@@ -51,6 +51,10 @@ namespace Arsenal {
                     }
                 }
             });
+
+            this.onDependenceCellValueChanged(() => {
+                this.__reactComponent?.onDependenceCellValueChanged?.();
+            })
         }
 
         public getValueFromElement(): any {

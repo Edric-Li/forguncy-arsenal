@@ -73,6 +73,7 @@ export interface IOptions {
     beforeDownload: Forguncy.Plugin.ICustomCommandObject;
     beforePreview: Forguncy.Plugin.ICustomCommandObject;
   };
+  previewSetting: IPreviewOptions;
   uploadSettings: {
     enableWatermark: boolean;
     watermarkSettings: WatermarkSettings;
@@ -671,9 +672,13 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     return (
-      <Modal open title={previewTitle} footer={null} onCancel={handleCancel} centered width={maxDialogWidth}>
-        <div style={{ width: '100%', height: maxDialogHeight }}>
-          <FilePreviewInner url={previewImage} options={{ hideTabsWhenOnlyOneFile: true }} />
+      <Modal open title={previewTitle} footer={null} onCancel={handleCancel} centered width={document.body.clientWidth}>
+        <div style={{ width: '100%', height: document.body.clientHeight - 105 }}>
+          <FilePreviewInner
+            url={previewImage}
+            evaluateFormula={props.evaluateFormula}
+            options={props.options.previewSetting}
+          />
         </div>
       </Modal>
     );

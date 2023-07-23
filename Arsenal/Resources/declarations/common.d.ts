@@ -10,6 +10,8 @@ type IReactCellTypeRef = Partial<{
     setDisable(isDisabled: boolean);
 
     runtimeMethod: { [key: string]: (...args: any) => void }
+
+    onDependenceCellValueChanged: () => void;
 }>
 
 

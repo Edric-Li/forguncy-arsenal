@@ -1,6 +1,6 @@
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import FileUploadEngine from '../../common/file-upload-engine';
-import FilePreviewInner from './file-preview-inner';
+import FilePreviewInner, { IPreviewRef } from './file-preview-inner';
 import { Tabs, TabsProps } from 'antd';
 import isInternalFile from '../../common/is-internal-file';
 
@@ -25,8 +25,10 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [items, setItems] = useState<TabsProps['items']>([]);
   const filesMap = useRef<Map<string, string>>(new Map<string, string>());
   const options = props.cellType.CellElement.CellType as IPreviewOptions;
-  useEffect(() => {
-    props.cellType.setValueToElement = (jelement, value) => {
+  const filePreviewInnerRef = useRef<IPreviewRef>(null);
+
+  useImperativeHandle(ref, () => ({
+    setValue(value: any) {
       if (typeof value !== 'string') {
         return;
       }
@@ -51,8 +53,11 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       });
       setItems(tabItems);
       setUrl(filesMap.current.get(tabItems[0].key) ?? '');
-    };
-  }, []);
+    },
+    onDependenceCellValueChanged() {
+      filePreviewInnerRef.current?.refreshWatermarkSettings();
+    },
+  }));
 
   const handleChange = (key: string) => {
     setUrl(filesMap.current.get(key) ?? '');
@@ -67,7 +72,12 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       )}
 
       <div style={previewStyle}>
-        <FilePreviewInner url={url} options={options} />
+        <FilePreviewInner
+          ref={filePreviewInnerRef}
+          url={url}
+          options={options}
+          evaluateFormula={props.cellType.evaluateFormula.bind(props.cellType)}
+        />
       </div>
     </div>
   );
