@@ -428,10 +428,20 @@ public class PreviewSetting : ObjectPropertyBase
     [ObjectProperty(ObjType = typeof(PreviewWatermarkSettings))]
     public PreviewWatermarkSettings WatermarkSettings { get; set; } = new();
 
-    [DisplayName("PDF 预览设置")]
+    [DisplayName("PDF设置")]
     [JsonProperty("pdfSettings")]
     [ObjectProperty(ObjType = typeof(PdfSettings))]
     public PdfSettings PdfSettings { get; set; } = new();
+
+    [DisplayName("视频设置")]
+    [JsonProperty("videoSettings")]
+    [ObjectProperty(ObjType = typeof(VideoSettings))]
+    public VideoSettings VideoSettings { get; set; } = new();
+
+    [DisplayName("音频设置")]
+    [JsonProperty("audioSettings")]
+    [ObjectProperty(ObjType = typeof(AudioSettings))]
+    public AudioSettings AudioSettings { get; set; } = new();
 
     [DisplayName("当只有一个文件时隐藏标签页")]
     [JsonProperty("hideTabsWhenOnlyOneFile")]
@@ -439,8 +449,7 @@ public class PreviewSetting : ObjectPropertyBase
     [Browsable(false)]
     public bool HideTabsWhenOnlyOneFile { get; set; } = true;
 
-
-    [DisplayName("是否禁用右键菜单")]
+    [DisplayName("禁用右键菜单")]
     [JsonProperty("disableContextMenu")]
     public bool DisableContextMenu { get; set; }
 }

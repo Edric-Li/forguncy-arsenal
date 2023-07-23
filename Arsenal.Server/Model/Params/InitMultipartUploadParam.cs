@@ -26,7 +26,7 @@ public class InitMultipartUploadParam
     /// 文件大小
     /// </summary>
     [JsonProperty("size")]
-    public int Size { get; set; }
+    public long Size { get; set; }
 
     /// <summary>
     /// 文件夹路径

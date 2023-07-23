@@ -24,10 +24,30 @@ interface IPreviewWatermarkSettings {
   offset: string;
 }
 
+enum IVideoSize {
+  Fill,
+  Original,
+}
+
 interface IPreviewOptions {
   hideTabsWhenOnlyOneFile: boolean;
   enableWatermark?: boolean;
   watermarkSettings?: IPreviewWatermarkSettings;
+  videoSettings: {
+    autoPlay: boolean;
+    controls: boolean;
+    disableDownload: boolean;
+    disablePictureInPicture: boolean;
+    loop: boolean;
+    muted: boolean;
+    size: IVideoSize;
+  };
+  audioSettings: {
+    autoPlay: boolean;
+    controls: boolean;
+    disableDownload: boolean;
+    loop: boolean;
+  };
   disableContextMenu?: boolean;
   pdfSettings?: {
     hideSaveButton: boolean;

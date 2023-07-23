@@ -15,11 +15,21 @@ public class PreviewCellType : CellType
     [JsonProperty("watermarkSettings")]
     [ObjectProperty(ObjType = typeof(PreviewWatermarkSettings))]
     public PreviewWatermarkSettings WatermarkSettings { get; set; } = new();
-    
-    [DisplayName("PDF 预览设置")]
+
+    [DisplayName("PDF设置")]
     [JsonProperty("pdfSettings")]
     [ObjectProperty(ObjType = typeof(PdfSettings))]
     public PdfSettings PdfSettings { get; set; } = new();
+
+    [DisplayName("视频设置")]
+    [JsonProperty("videoSettings")]
+    [ObjectProperty(ObjType = typeof(VideoSettings))]
+    public VideoSettings VideoSettings { get; set; } = new();
+
+    [DisplayName("音频设置")]
+    [JsonProperty("audioSettings")]
+    [ObjectProperty(ObjType = typeof(AudioSettings))]
+    public AudioSettings AudioSettings { get; set; } = new();
 
     [CategoryHeader("其他")]
     [DisplayName("当只有一个文件时隐藏标签页")]
@@ -27,7 +37,7 @@ public class PreviewCellType : CellType
     [DefaultValue(true)]
     public bool HideTabsWhenOnlyOneFile { get; set; } = true;
 
-    [DisplayName("是否禁用右键菜单")]
+    [DisplayName("禁用右键菜单")]
     [JsonProperty("disableContextMenu")]
     public bool DisableContextMenu { get; set; }
 
@@ -107,11 +117,91 @@ public class PreviewFontSettings : ObjectPropertyBase
 
 public class PdfSettings : ObjectPropertyBase
 {
-    [DisplayName("隐藏保存按钮")]
+    [DisplayName("禁止保存")]
     [JsonProperty("hideSaveButton")]
     public bool HideSaveButton { get; set; }
 
-    [DisplayName("隐藏打印按钮")]
+    [DisplayName("禁止打印")]
     [JsonProperty("hidePrintButton")]
     public bool HidePrintButton { get; set; }
+}
+
+public class VideoSettings : ObjectPropertyBase
+{
+    [DisplayName("自动播放")]
+    [JsonProperty("autoPlay")]
+    [DefaultValue(true)]
+    public bool AutoPlay { get; set; } = true;
+
+    [DisplayName("显示控制条")]
+    [JsonProperty("controls")]
+    [DefaultValue(true)]
+    public bool Controls { get; set; } = true;
+
+    [DisplayName("禁止下载")]
+    [JsonProperty("disableDownload")]
+    public bool DisableDownload { get; set; }
+
+    [DisplayName("禁止画中画")]
+    [JsonProperty("disablePictureInPicture")]
+    public bool DisablePictureInPicture { get; set; }
+
+    [DisplayName("循环播放")]
+    [JsonProperty("loop")]
+    public bool Loop { get; set; }
+
+    [DisplayName("静音")]
+    [JsonProperty("muted")]
+    public bool Muted { get; set; }
+
+    [DisplayName("大小设置")]
+    [JsonProperty("size")]
+    public VideoSize Size { get; set; } = VideoSize.Fill;
+
+    public override bool GetDesignerPropertyVisible(string propertyName)
+    {
+        if (propertyName is nameof(DisableDownload) or nameof(DisablePictureInPicture))
+        {
+            return Controls;
+        }
+
+        return base.GetDesignerPropertyVisible(propertyName);
+    }
+}
+
+public class AudioSettings : ObjectPropertyBase
+{
+    [DisplayName("自动播放")]
+    [JsonProperty("autoPlay")]
+    [DefaultValue(true)]
+    public bool AutoPlay { get; set; } = true;
+
+    [DisplayName("显示控制条")]
+    [JsonProperty("controls")]
+    [DefaultValue(true)]
+    public bool Controls { get; set; } = true;
+
+    [DisplayName("禁止下载")]
+    [JsonProperty("disableDownload")]
+    public bool DisableDownload { get; set; }
+
+    [DisplayName("循环播放")]
+    [JsonProperty("loop")]
+    public bool Loop { get; set; }
+
+    public override bool GetDesignerPropertyVisible(string propertyName)
+    {
+        if (propertyName is nameof(DisableDownload))
+        {
+            return Controls;
+        }
+
+        return base.GetDesignerPropertyVisible(propertyName);
+    }
+}
+
+public enum VideoSize
+{
+    [Description("填充")] Fill,
+    [Description("原始")] Original
 }

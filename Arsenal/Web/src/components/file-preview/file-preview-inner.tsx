@@ -1,5 +1,4 @@
 import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react';
-import IframeView from './components/iframe';
 import ImagePreview from './components/image';
 import ExcelPreview from './components/excel';
 import DocxPreview from './components/docx';
@@ -13,6 +12,8 @@ import convertPreviewWatermarkSettings from '../../common/convert-preview-waterm
 import PDFViewer from './components/pdf';
 import ResizeObserver from 'rc-resize-observer';
 import preventDefaultEvent from '../../common/prevent-default-event';
+import VideoViewer from './components/video';
+import AudioViewer from './components/audio';
 
 const notSupportedStyle = {
   display: 'flex',
@@ -26,7 +27,8 @@ const viewMap: {
   type: RegExp;
   Component: React.ComponentType<IPreviewComponentProps>;
 }[] = [
-  { type: /mp4|webm|ogg|avi|wmv|mp3|aac|wav/, Component: IframeView },
+  { type: /mp3|wav|ogg|aac|flac|audio/, Component: AudioViewer },
+  { type: /mp4|webm|ogg|video/, Component: VideoViewer },
   { type: /pdf/, Component: PDFViewer },
   { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
   { type: /svg/, Component: SVGPreview },

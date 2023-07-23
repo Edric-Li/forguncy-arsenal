@@ -32,7 +32,7 @@ public class FileMetaData
     /// <summary>
     /// 文件大小
     /// </summary>
-    public int Size { get; set; }
+    public long Size { get; set; }
 
     /// <summary>
     /// 上传者
