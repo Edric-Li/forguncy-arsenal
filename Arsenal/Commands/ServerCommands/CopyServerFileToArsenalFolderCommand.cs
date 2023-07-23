@@ -17,7 +17,7 @@ namespace Arsenal;
 [Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.CopyServerFileToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
-public class CopyServerFileToArsenalFolderCommand : Command, ICommandExecutableInServerSideAsync,
+public class CopyServerFileToArsenalFolderCommand : ICommandExecutableInServerSideAsync,
     IServerCommandParamGenerator, INeedUploadFileByUser
 {
     [DisplayName("服务器文件路径")]
@@ -106,10 +106,10 @@ public class CopyServerFileToArsenalFolderCommand : Command, ICommandExecutableI
         return new ExecuteResult();
     }
 
-    public override CommandScope GetCommandScope()
+    /*public override CommandScope GetCommandScope()
     {
         return CommandScope.ExecutableInServer;
-    }
+    }*/
 
     public IEnumerable<GenerateParam> GetGenerateParams()
     {
