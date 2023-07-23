@@ -67,7 +67,7 @@ public abstract class CommonUtils
 
                     foreach (var iFilePath in allUsedUploadFilePaths)
                     {
-                        if (iFilePath.Contains("sqlite3--shm") || iFilePath.Contains("sqlite3--wal"))
+                        if (iFilePath.Contains("sqlite3-shm") || iFilePath.Contains("sqlite3-wal"))
                         {
                             continue;
                         }

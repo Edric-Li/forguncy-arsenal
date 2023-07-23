@@ -1,4 +1,5 @@
-﻿using Arsenal.Server.Model;
+﻿using System.Diagnostics;
+using Arsenal.Server.Model;
 
 namespace Arsenal.Server.Configuration;
 
@@ -153,14 +154,26 @@ public class Configuration
         {
             return;
         }
-        
+
         var designerFiles = Directory.GetFiles(designerFolder, "*", SearchOption.AllDirectories);
-        
+
         foreach (var designerFile in designerFiles)
         {
+            if (designerFile.Contains("sqlite3-shm") || designerFile.Contains("sqlite3-wal"))
+            {
+                continue;
+            }
+
             var webSiteFile = designerFile.Replace(designerFolder, string.Empty);
 
-            File.Copy(designerFile, Path.Combine(RootFolderPath, webSiteFile), true);
+            try
+            {
+                File.Copy(designerFile, Path.Combine(RootFolderPath, webSiteFile), true);
+            }
+            catch (Exception e)
+            {
+                Trace.Write(e.Message);
+            }
         }
     }
 
