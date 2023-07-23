@@ -189,10 +189,9 @@ public static class FileUploadService
                     throw new Exception($"文件夹{metadata.FolderPath}下存在同名文件{metadata.Name}。");
             }
         }
-        catch (Exception e)
+        finally
         {
             _ = dbContext.DisposeAsync();
-            Trace.WriteLine(e.Message);
         }
 
         return null;
