@@ -236,8 +236,8 @@ public abstract class GlobalConfigParser
             appStorageInfo.StorageType = null;
         }
 
-        if (appStorageInfo.UploadFolderPath == string.Empty &&
-            (globalUploadFolderPath != string.Empty || appStorageInfo.StorageType != null))
+        if (string.IsNullOrWhiteSpace(appStorageInfo.UploadFolderPath) &&
+            (!string.IsNullOrWhiteSpace(globalUploadFolderPath) || appStorageInfo.StorageType != null))
         {
             appStorageInfo.UploadFolderPath = $"{globalUploadFolderPath}/{appName}/";
         }
