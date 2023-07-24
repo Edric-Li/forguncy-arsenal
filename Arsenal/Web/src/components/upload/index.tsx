@@ -104,9 +104,6 @@ export interface IProps {
   runTimePageName: string;
 }
 
-const maxDialogWidth = ~~document.body.clientWidth;
-const maxDialogHeight = ~~document.body.clientHeight - 105;
-
 const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const dragContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -468,7 +465,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         return;
       }
     }
-    FileUploadEngine.download(FileUploadEngine.extractFileNameFromUrl(file.url! + '1'));
+    FileUploadEngine.download(FileUploadEngine.extractFileNameFromUrl(file.url!));
   };
 
   const handleBeforeCrop: ImgCropProps['beforeCrop'] = (file, fileList) => {
@@ -525,11 +522,13 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
     const el = props.container[0];
 
-    el.addEventListener('mouseover', mouseoverHandler);
-    el.addEventListener('mouseout', mouseoutHandler);
-    el.addEventListener('dragover', dragoverHandler);
-    el.addEventListener('dragleave', dragleaveHandler);
-    el.addEventListener('drop', dropHandler);
+    if (!props.options.uploadSettings.allowDragAndDrop) {
+      el.addEventListener('mouseover', mouseoverHandler);
+      el.addEventListener('mouseout', mouseoutHandler);
+      el.addEventListener('dragover', dragoverHandler);
+      el.addEventListener('dragleave', dragleaveHandler);
+      el.addEventListener('drop', dropHandler);
+    }
     document.addEventListener('paste', handleDocumentPaste);
 
     return () => {
