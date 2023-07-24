@@ -51,7 +51,8 @@ public abstract class GlobalConfigParser
     /// <returns></returns>
     private static string GetGlobalStorageType()
     {
-        return GetGlobalValueByXPath("StorageType");
+        var value = GetGlobalValueByXPath("StorageType");
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     /// <summary>
@@ -147,18 +148,20 @@ public abstract class GlobalConfigParser
                     continue;
                 }
 
+                var value = string.IsNullOrWhiteSpace(childNode.InnerText) ? null : childNode.InnerText;
+
                 switch (childNode.Name)
                 {
                     case "StorageType":
-                        appStorageInfo.StorageType = childNode.InnerText;
+                        appStorageInfo.StorageType = value;
                         continue;
 
                     case "UploadFolderPath":
-                        appStorageInfo.UploadFolderPath = childNode.InnerText;
+                        appStorageInfo.UploadFolderPath = value;
                         continue;
 
                     case "UsePubicUrl":
-                        if (!string.IsNullOrWhiteSpace(childNode.InnerText))
+                        if (value != null)
                         {
                             appStorageInfo.UsePubicUrl = childNode.InnerText == "true";
                         }
@@ -225,10 +228,7 @@ public abstract class GlobalConfigParser
         var defaultLocalUploadFolderPath = Path.Combine(appConfig.RootPath, "Upload");
 
         // 如果应用的存储类型为空，则使用全局的存储类型
-        if (appStorageInfo.StorageType == string.Empty)
-        {
-            appStorageInfo.StorageType = globalStorageType;
-        }
+        appStorageInfo.StorageType ??= globalStorageType;
 
         // 如果存储类型为LOCAL-STORAGE，则使用本地存储
         if (appStorageInfo.StorageType == "LOCAL-STORAGE")
@@ -236,14 +236,14 @@ public abstract class GlobalConfigParser
             appStorageInfo.StorageType = null;
         }
 
-        if (string.IsNullOrWhiteSpace(appStorageInfo.UploadFolderPath) &&
-            (!string.IsNullOrWhiteSpace(globalUploadFolderPath) || appStorageInfo.StorageType != null))
+        if (appStorageInfo.UploadFolderPath is null &&
+            (globalUploadFolderPath is not null || appStorageInfo.StorageType is not null))
         {
             appStorageInfo.UploadFolderPath = $"{globalUploadFolderPath}/{appName}/";
         }
 
         // 是云存储,那么LocalUploadFolderPath的值就是默认值
-        if (appStorageInfo.StorageType != null)
+        if (appStorageInfo.StorageType is not null)
         {
             appConfig.UseCloudStorage = true;
             appConfig.LocalUploadFolderPath = defaultLocalUploadFolderPath;
