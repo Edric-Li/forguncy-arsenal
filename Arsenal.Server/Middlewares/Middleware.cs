@@ -1,4 +1,5 @@
-﻿using Arsenal.Server.Common;
+﻿using System.Text;
+using Arsenal.Server.Common;
 using Arsenal.Server.Services;
 using Microsoft.AspNetCore.Http;
 
@@ -13,14 +14,36 @@ internal class Middleware
         _next = next;
     }
 
+    private static bool IsValidFileKey(string input)
+    {
+        if (input.Length > 37 && input[36] != '_')
+        {
+            return false;
+        }
+
+        if (!Guid.TryParse(input[..36], out _))
+        {
+            return false;
+        }
+
+        return !string.IsNullOrEmpty(input[37..]);
+    }
+
     public async Task InvokeAsync(HttpContext context)
     {
         BootstrapService.EnsureInitialization();
 
-        if (context.Request.Path.Value.StartsWith("/Upload/"))
+        if (context.Request.Path.Value.Contains("/Upload/"))
         {
-            var fileId = context.Request.Path.Value?.Replace("/Upload/", "");
-            var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileId);
+            var fileKey = context.Request.Path.Value.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
+
+            if (!IsValidFileKey(fileKey))
+            {
+                await _next(context);
+                return;
+            }
+
+            var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
 
             if (diskFilePath != null)
             {
@@ -41,10 +64,17 @@ internal class Middleware
                 }
             }
         }
-        else if (context.Request.Path.Value.StartsWith("/FileDownloadUpload/Download"))
+        else if (context.Request.Path.Value.Contains("/FileDownloadUpload/Download"))
         {
-            var fileId = context.Request.Query["file"];
-            var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileId);
+            var fileKey = context.Request.Query["file"];
+
+            if (!IsValidFileKey(fileKey))
+            {
+                await _next(context);
+                return;
+            }
+
+            var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
 
             if (diskFilePath != null)
             {
@@ -52,9 +82,14 @@ internal class Middleware
 
                 if (stream != null)
                 {
+                    var fileName = fileKey.ToString()[37..];
+
+                    var bytes = Encoding.UTF8.GetBytes(fileName);
+                    var encodedFileName = Uri.EscapeDataString(Encoding.UTF8.GetString(bytes));
+
                     context.Response.Headers.Add("Content-Type", "application/octet-stream");
                     context.Response.Headers.Add("content-disposition",
-                        "attachment;filename=" + fileId.ToString()[37..]);
+                        $"attachment;filename*=UTF-8''{encodedFileName}");
 
                     await stream.CopyToAsync(context.Response.Body);
                     await stream.DisposeAsync();

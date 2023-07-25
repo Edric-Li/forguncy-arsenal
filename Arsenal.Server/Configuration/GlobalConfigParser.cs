@@ -1,5 +1,8 @@
-﻿using System.Xml;
+﻿using System.Runtime.InteropServices;
+using System.Xml;
+using Arsenal.Server.Common;
 using Arsenal.Server.Model;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Arsenal.Server.Configuration;
@@ -15,12 +18,52 @@ public abstract class GlobalConfigParser
     private static XmlElement _xmlElement;
 
     /// <summary>
+    /// 是否是活字格云
+    /// </summary>
+    /// <returns></returns>
+    private static bool IsForguncyCloud()
+    {
+        return File.Exists(Path.Combine(Environment.CurrentDirectory, "iscloudserver.data"));
+    }
+
+    /// <summary>
+    /// 获取常用文档目录
+    /// </summary>
+    /// <returns></returns>
+    private static string GetCommonDocuments()
+    {
+        // 活字格云
+        if (IsForguncyCloud())
+        {
+            return $"/opt/ForguncySites";
+        }
+
+        // Windows
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments);
+        }
+
+        // Linux
+        var dir =
+            new DirectoryInfo(Environment.CurrentDirectory).Parent?.Parent?.Parent?.FullName?.TrimEnd(
+                Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar + "ForguncySites";
+
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
+        return dir;
+    }
+
+    /// <summary>
     /// 获取ForguncyServer的根目录
     /// </summary>
     /// <returns></returns>
     private static string GetForguncyServerFolder()
     {
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "ForguncyServer");
+        return Path.Combine(GetCommonDocuments(), "ForguncyServer");
     }
 
     /// <summary>
@@ -61,7 +104,8 @@ public abstract class GlobalConfigParser
     /// <returns></returns>
     private static string GetGlobalUploadFolderPath()
     {
-        return GetGlobalValueByXPath("UploadRootPath");
+        var value = GetGlobalValueByXPath("UploadRootPath");
+        return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     /// <summary>
@@ -260,6 +304,8 @@ public abstract class GlobalConfigParser
 
         appConfig.StorageType = appStorageInfo.StorageType;
         appConfig.UserServiceUrl = GetUserServiceUrl(appConfig.RootPath);
+
+        Logger.Log(LogLevel.INFO, $"AppConfig: {JsonConvert.SerializeObject(appConfig)}");
 
         return appConfig;
     }
