@@ -74,6 +74,7 @@ interface Window {
     createReactComponent: (cellType: CellType, componentName: ComponentName) => void;
     createReactCommand: (commandBase: Forguncy.Plugin.CommandBase, commandName: CommandName) => void;
     canceledTokenSet: Set<string>;
+    __originalWindowMethods: { [key: string]: Function };
   };
 
   $: JQueryStatic;

@@ -5,5 +5,8 @@ interface Window {
         createReactComponent: (cellType: CellType, componentName: string) => void;
         createReactCommand: (cellType: CommandBase, commandName: string) => () => void;
         canceledTokenSet: Set<string>;
+        __originalWindowMethods: {
+            [key: string]: Function
+        }
     }
 }

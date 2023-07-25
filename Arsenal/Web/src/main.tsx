@@ -22,10 +22,14 @@ if (!window.Arsenal) {
     createReactCommand,
     createReactComponent,
     canceledTokenSet: new Set(),
+    __originalWindowMethods: {},
   };
 } else {
   window.Arsenal.createReactCommand = createReactCommand;
   window.Arsenal.createReactComponent = createReactComponent;
 }
 
-window.$ = window.jQuery;
+for (const arrayKey in window.Arsenal.__originalWindowMethods) {
+  // @ts-ignore
+  window[arrayKey] = window.Arsenal.__originalWindowMethods[arrayKey];
+}
