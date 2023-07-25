@@ -18,7 +18,7 @@
   "name_cn": "文件管理",
   "pluginType": "cellType,command",
   "guid": "8748d7dc-994d-45b8-80f9-f510cfcac6ac",
-  "version": "6.0.0.1",
+  "version": "6.0.0.2",
   "dependenceVersion": "9.0.0.0",
   "bundleJavaScript": false,
   "bundleCSS": false
