@@ -1,4 +1,4 @@
-﻿using System.Data.SQLite;
+﻿using Microsoft.Data.Sqlite;
 using System.Diagnostics;
 
 namespace Arsenal.Server.DataBase;
@@ -22,7 +22,7 @@ public class SqLiteUtility
     {
         try
         {
-            await using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SqliteConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -53,7 +53,7 @@ public class SqLiteUtility
     /// <param name="connection"></param>
     /// <param name="tableName"></param>
     /// <returns></returns>
-    private static async Task<bool> TableExistsAsync(SQLiteConnection connection, string tableName)
+    private static async Task<bool> TableExistsAsync(SqliteConnection connection, string tableName)
     {
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=@TableName";
@@ -97,7 +97,7 @@ public class SqLiteUtility
     {
         try
         {
-            await using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SqliteConnection(ConnectionString))
             {
                 connection.Open();
 
@@ -129,7 +129,7 @@ public class SqLiteUtility
     /// <param name="connection"></param>
     /// <param name="indexName"></param>
     /// <returns></returns>
-    private static bool IndexExists(SQLiteConnection connection, string indexName)
+    private static bool IndexExists(SqliteConnection connection, string indexName)
     {
         using var command = connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name=@IndexName";

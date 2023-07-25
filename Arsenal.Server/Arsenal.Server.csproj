@@ -5,7 +5,7 @@
 	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	<OutputPath>bin\</OutputPath>
 	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>disable</Nullable>
+	  <Nullable>disable</Nullable>
   </PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0">
@@ -14,6 +14,10 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0">
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.14"/>
+		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="6.0.14"/>
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="Forguncy.Commands" Exclude="runtime">
@@ -53,8 +57,5 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3">
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
-		<Reference Include="System.Data.SQLite">
-		  <HintPath>..\Arsenal\ReferenceDll\System.Data.SQLite.dll</HintPath>
-		</Reference>
 	</ItemGroup>
 </Project>
