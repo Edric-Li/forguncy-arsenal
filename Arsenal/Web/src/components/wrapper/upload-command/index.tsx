@@ -8,6 +8,7 @@ import useFileUploadEngine from '../../../hooks/useFileUploadEngine';
 import addWatermarkToFile from '../../../common/add-watermark-to-file';
 import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../../declarations/types';
 import FileUploadEngine from '../../../common/file-upload-engine';
+import parseAccept from '../../../common/parse-accept';
 
 interface ICommandParam {
   folder: string;
@@ -86,7 +87,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
       percent: 0,
     };
 
-    await fileUploadEngine.addTask(newFile, (callbackInfo) => {
+    await fileUploadEngine.addTask(newFile as RcFile, (callbackInfo) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
         CacheService.set(callbackInfo.url!, newFile);
@@ -111,18 +112,20 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
             [param.uploadSuccessCommand.ParamProperties['fileKey']]: fileKey,
             [param.uploadSuccessCommand.ParamProperties['fileName']]: fileName,
           },
-          new Date().getTime().toString() + '-' + Math.ceil(Math.random() * 1000000000),
+            new Date().getTime().toString() + '-' + Math.ceil(Math.random() * 1000000000),
         );
       }
     });
     return false;
   };
 
+  const accept = useMemo(() => parseAccept(param.allowedExtensions), [param]);
+
   const renderUploadContent = () => {
     return (
-      <Upload beforeUpload={handleBeforeUpload} multiple={multiple} accept={param.allowedExtensions}>
-        <div ref={uploadContainerRef}></div>
-      </Upload>
+        <Upload beforeUpload={handleBeforeUpload} multiple={multiple} accept={accept}>
+          <div ref={uploadContainerRef}></div>
+        </Upload>
     );
   };
 

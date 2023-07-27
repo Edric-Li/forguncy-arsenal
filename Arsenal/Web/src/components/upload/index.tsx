@@ -31,6 +31,7 @@ import { MenuProps } from 'antd/es/menu';
 import executeCommand from '../../common/execute-command';
 import getExtname from '../../common/get-extname';
 import parseDataTransferItemList from '../../common/parse-data-transfer-iten-list';
+import parseAccept from '../../common/parse-accept';
 
 enum ListType {
   text,
@@ -555,7 +556,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       beforeUpload: handleBeforeUpload,
       onPreview: handlePreview,
       multiple: multiple,
-      accept: uploadSettings.allowedExtensions,
+      accept: parseAccept(uploadSettings.allowedExtensions),
       maxCount: uploadSettings.maxCount,
       disabled: disabled,
       openFileDialogOnClick: !disabled && showUploadButton,
