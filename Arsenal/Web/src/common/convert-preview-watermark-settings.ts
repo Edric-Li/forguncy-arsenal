@@ -1,6 +1,8 @@
 import { WatermarkProps } from 'antd/es/watermark';
 
-const convertPreviewWatermarkSettings = (settings: IPreviewWatermarkSettings): WatermarkProps => {
+type SettingsType = { content?: string | string[] } & Omit<IPreviewWatermarkSettings, 'content'>;
+
+const convertPreviewWatermarkSettings = (settings: SettingsType): WatermarkProps => {
   const gap: [number, number] = [100, 100];
   let offset: [number, number] | undefined;
 

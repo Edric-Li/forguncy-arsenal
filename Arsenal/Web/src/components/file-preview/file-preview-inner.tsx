@@ -14,6 +14,7 @@ import ResizeObserver from 'rc-resize-observer';
 import preventDefaultEvent from '../../common/prevent-default-event';
 import VideoViewer from './components/video';
 import AudioViewer from './components/audio';
+import { WatermarkProps } from 'antd/es/watermark';
 
 const notSupportedStyle = {
   display: 'flex',
@@ -96,12 +97,12 @@ const FilePreviewInner = React.forwardRef<IPreviewRef, IProps>((props: IProps, r
       .css('top', dom.parent().parent().parent().parent().height() - size.height);
   }, [size, refreshKey]);
 
-  const watermarkSettings = useMemo(() => {
-    const content = props.evaluateFormula(props.options.watermarkSettings?.content || '');
+  const watermarkSettings: WatermarkProps | null = useMemo(() => {
+    const content = props.evaluateFormula(props.options.watermarkSettings?.content || '')?.toString();
     if (props.options.watermarkSettings && content) {
       return convertPreviewWatermarkSettings({
         ...props.options.watermarkSettings,
-        content: content as string,
+        content: content.replace(/\r\n/g, '\n').split('\n'),
       });
     }
     return null;
