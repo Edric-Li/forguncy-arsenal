@@ -64,6 +64,11 @@ public class Configuration
     public const string DefaultUserServiceUrl = "http://127.0.0.1:22345/UserService";
 
     /// <summary>
+    /// 临时链接的前缀
+    /// </summary>
+    public const string TemporaryLinkPrefix = "aaa";
+
+    /// <summary>
     /// 懒加载实例
     /// </summary>
     private static readonly Lazy<Configuration> LazyInstance = new(() => new Configuration());

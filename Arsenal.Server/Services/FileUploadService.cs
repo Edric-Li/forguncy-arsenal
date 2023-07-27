@@ -531,8 +531,7 @@ public static class FileUploadService
             ? param.DownloadFileName
             : Path.GetFileName(param.FilePath);
 
-        // 截取3个字符，使用固定前缀，提升查询效率
-        var fileKey = "tdf" + Guid.NewGuid().ToString()[3..] + "_" + fileName;
+        var fileKey = Configuration.Configuration.TemporaryLinkPrefix + Guid.NewGuid().ToString()[3..] + "_" + fileName;
 
         if (param.CreateCopy)
         {
@@ -614,7 +613,7 @@ public static class FileUploadService
         try
         {
             // 可能是临时下载文件
-            if (fileKey.StartsWith("tdf"))
+            if (fileKey.StartsWith(Configuration.Configuration.TemporaryLinkPrefix))
             {
                 var temporaryDownloadFile =
                     await dbContext.TemporaryDownloadFiles.FirstOrDefaultAsync(item => item.Key == fileKey);
