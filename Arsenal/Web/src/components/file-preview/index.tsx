@@ -33,7 +33,7 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         return;
       }
 
-      const parts = value?.split('|');
+      const parts = value?.split('|').filter((i) => i.length);
       const tabItems = parts.map((item: string) => {
         let name;
         let url = item;
