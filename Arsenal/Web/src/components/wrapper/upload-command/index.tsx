@@ -112,7 +112,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
             [param.uploadSuccessCommand.ParamProperties['fileKey']]: fileKey,
             [param.uploadSuccessCommand.ParamProperties['fileName']]: fileName,
           },
-            new Date().getTime().toString() + '-' + Math.ceil(Math.random() * 1000000000),
+          new Date().getTime().toString() + '-' + Math.ceil(Math.random() * 1000000000),
         );
       }
     });
@@ -123,9 +123,9 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
 
   const renderUploadContent = () => {
     return (
-        <Upload beforeUpload={handleBeforeUpload} multiple={multiple} accept={accept}>
-          <div ref={uploadContainerRef}></div>
-        </Upload>
+      <Upload beforeUpload={handleBeforeUpload} multiple={multiple} accept={accept}>
+        <div ref={uploadContainerRef}></div>
+      </Upload>
     );
   };
 

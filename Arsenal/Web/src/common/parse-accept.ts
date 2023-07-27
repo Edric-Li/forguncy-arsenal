@@ -3,6 +3,9 @@
  * @param str
  */
 const parseAccept = (str: string): string => {
+  if (str === '*') {
+    return str;
+  }
   return str
     .replace(/，/g, ',')
     .split(',')
