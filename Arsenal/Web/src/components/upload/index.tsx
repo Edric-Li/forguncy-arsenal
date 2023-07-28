@@ -350,7 +350,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       fileListRef.current[index] = mergedInfo;
 
       if (mergedInfo.status === 'success') {
-        CacheService.set(callbackInfo.url!, newFile);
+        CacheService.trySet(callbackInfo.url!, newFile);
         uploadedFilesRef.current.push(mergedInfo);
         // 必须要在这里设置为done，否则会导致上传完成后，下载按钮不可用（Antd.Design源码中是这样判断的）
         mergedInfo.status = 'done';

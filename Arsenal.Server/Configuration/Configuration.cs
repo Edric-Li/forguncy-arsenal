@@ -24,6 +24,11 @@ public class Configuration
     public static string TemporaryDownloadFolderPath => Path.Combine(RootFolderPath, "temporary_download_files");
 
     /// <summary>
+    /// 转换后的文件夹路径
+    /// </summary>
+    public static string ConvertedFolderPath => Path.Combine(RootFolderPath, "converted_files");
+
+    /// <summary>
     /// 临时文件夹路径
     /// </summary>
     public static string TempFolderPath => Path.Combine(RootFolderPath, "temp");

@@ -3,6 +3,27 @@
 
   private _cache: Map<string, any> = new Map<string, any>();
 
+  private static cachedFileExtensions: Set<string> = new Set<string>([
+    '.mp3',
+    '.wav',
+    '.ogg',
+    '.aac',
+    '.flac',
+    '.audio',
+    '.mp4',
+    '.webm',
+    '.video',
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.bmp',
+    '.webp',
+    '.svg',
+    '.xlsx',
+    '.docx',
+  ]);
+
   public static get instance() {
     return (CacheService._instance ??= new CacheService());
   }
@@ -15,7 +36,7 @@
     }
 
     const value = await cb(key);
-    CacheService.instance.set(key, value);
+    CacheService.instance.trySet(key, value);
     return value;
   }
 
@@ -23,8 +44,15 @@
     return this._cache.get(key);
   }
 
-  set(key: string, value: any) {
-    return this._cache.set(key, value);
+  trySet(key: string, value: any): boolean {
+    const ext = key.split('.').pop() || '';
+
+    if (!CacheService.cachedFileExtensions.has(ext)) {
+      return false;
+    }
+
+    this._cache.set(key, value);
+    return true;
   }
 }
 

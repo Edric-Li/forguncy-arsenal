@@ -29,12 +29,12 @@ const viewMap: {
   Component: React.ComponentType<IPreviewComponentProps>;
 }[] = [
   { type: /mp3|wav|ogg|aac|flac|audio/, Component: AudioViewer },
-  { type: /mp4|webm|ogg|video/, Component: VideoViewer },
-  { type: /pdf/, Component: PDFViewer },
+  { type: /mp4|webm|video/, Component: VideoViewer },
+  { type: /pdf|pptx|ppt|doc/, Component: PDFViewer },
   { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
   { type: /svg/, Component: SVGPreview },
   { type: /xlsx|xls/, Component: ExcelPreview },
-  { type: /doc|docx/, Component: DocxPreview },
+  { type: /docx/, Component: DocxPreview },
 ];
 
 export const isImage = (fileUrl: string) => {
@@ -109,7 +109,7 @@ const FilePreviewInner = React.forwardRef<IPreviewRef, IProps>((props: IProps, r
   }, [refreshKey]);
 
   let Component: React.ComponentType<IPreviewComponentProps> | null =
-    _.find(viewMap, (m) => m.type.test(fileExtension))?.Component ?? null;
+    _.find(viewMap, (m) => m.type.test(fileExtension.toLowerCase()))?.Component ?? null;
 
   if (Component === null) {
     if (isSuffixInLanguageMap(fileExtension)) {

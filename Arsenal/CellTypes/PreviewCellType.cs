@@ -7,7 +7,6 @@ namespace Arsenal;
 
 [OrderWeight(2)]
 [Category("文件")]
-[SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/preview.png")]
 public class PreviewCellType : CellType
 {

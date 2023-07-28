@@ -11,7 +11,6 @@ namespace Arsenal;
 
 [OrderWeight(1)]
 [Category("文件")]
-[SupportUsingScope(PageScope.AllPage, ListViewScope.None)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
 public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly
 {

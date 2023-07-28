@@ -45,6 +45,14 @@ internal class Middleware
 
             var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
 
+            if (context.Request.Query["ac"] == "1")
+            {
+                if (new FileConvertService(fileKey, diskFilePath).TryConvertFileAsync(out var newFilePath))
+                {
+                    diskFilePath = newFilePath;
+                }
+            }
+
             if (diskFilePath != null)
             {
                 var stream = FileUploadService.GetFileStreamByFilePath(diskFilePath);

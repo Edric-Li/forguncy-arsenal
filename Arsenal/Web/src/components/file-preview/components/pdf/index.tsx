@@ -8,7 +8,7 @@ const PDFViewer = (props: IPreviewComponentProps) => {
     () =>
       Forguncy.Helper.SpecialPath.getPluginRootPath('8748d7dc-994d-45b8-80f9-f510cfcac6ac') +
       'Resources/dist/pdfjs-3.8.162/web/viewer.html?file=' +
-      encodeURIComponent(props.url),
+      encodeURIComponent(props.url + '?ac=1'),
     [props.url],
   );
 

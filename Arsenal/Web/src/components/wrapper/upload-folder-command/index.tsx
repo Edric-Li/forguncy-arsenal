@@ -55,10 +55,10 @@ const UploadFolderCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase })
       percent: 0,
     };
 
-    await fileUploadEngine.addTask(newFile, (callbackInfo) => {
+    await fileUploadEngine.addTask(newFile as RcFile, (callbackInfo) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
-        CacheService.set(callbackInfo.url!, newFile);
+        CacheService.trySet(callbackInfo.url!, newFile);
 
         uploadedFilesRef.current.push(uploadFile);
 

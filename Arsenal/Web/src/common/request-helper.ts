@@ -55,12 +55,6 @@ export interface ICompressFilesIntoZip {
   needKeepFolderStructure: boolean;
 }
 
-const excelFileTypeMap: { [key: string]: string } = {
-  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  xls: 'application/vnd.ms-excel',
-  unknown: 'unknown',
-};
-
 const checkFileInfo = (uploadId: string): HttpHandlerResult<{ exist: boolean; parts: number[] }> => {
   return axios.get('/checkFileInfo', {
     params: {
@@ -105,12 +99,13 @@ const getText = async (url: string): Promise<string> => {
   return file.text();
 };
 
-// 后续可能会弃用掉
 const getSpreadFile = async (url: string): Promise<File> => {
   return await cacheService.getValueAndSet<File>(url, async () => {
-    const fileExt = url?.split('.').pop() ?? 'xlsx';
+    if (url.endsWith('.xls')) {
+      url += '?ac=1';
+    }
     const blob = await requestHelper.getBlob(url);
-    return new File([blob], 'file.' + fileExt, { type: blob.type || excelFileTypeMap[fileExt] });
+    return new File([blob], 'file.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   });
 };
 
