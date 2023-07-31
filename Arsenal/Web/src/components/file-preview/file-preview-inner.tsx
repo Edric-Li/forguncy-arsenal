@@ -30,7 +30,7 @@ const viewMap: {
 }[] = [
   { type: /mp3|wav|ogg|aac|flac|audio/, Component: AudioViewer },
   { type: /mp4|webm|video/, Component: VideoViewer },
-  { type: /pdf|pptx|ppt|doc/, Component: PDFViewer },
+  { type: /pdf|pptx|ppt|doc|dwg/, Component: PDFViewer },
   { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
   { type: /svg/, Component: SVGPreview },
   { type: /xlsx|xls/, Component: ExcelPreview },

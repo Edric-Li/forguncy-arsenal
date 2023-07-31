@@ -50,6 +50,9 @@
 		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="6.0.14" />
 	</ItemGroup>
 	<ItemGroup>
+		<Reference Include="Aspose.CAD">
+		  <HintPath>..\Arsenal\ReferenceDll\Aspose.CAD.dll</HintPath>
+		</Reference>
 		<Reference Include="Forguncy.Commands" Exclude="runtime">
 			<HintPath>C:\Program Files\Forguncy 9\Website\bin\Forguncy.Commands.dll</HintPath>
 			<Private>False</Private>
@@ -63,16 +66,16 @@
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Microsoft.EntityFrameworkCore">
-		  <HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.dll</HintPath>
+			<HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.dll</HintPath>
 		</Reference>
 		<Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
-		  <HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
+			<HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
 		</Reference>
 		<Reference Include="Microsoft.EntityFrameworkCore.Relational">
-		  <HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
+			<HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
 		</Reference>
 		<Reference Include="Microsoft.EntityFrameworkCore.Sqlite">
-		  <HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Sqlite.dll</HintPath>
+			<HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Sqlite.dll</HintPath>
 		</Reference>
 		<Reference Include="Newtonsoft.Json" Exclude="runtime">
 			<HintPath>C:\Program Files\Forguncy 9\Website\bin\Newtonsoft.Json.dll</HintPath>
