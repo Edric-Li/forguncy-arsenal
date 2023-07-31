@@ -203,6 +203,7 @@ namespace Arsenal {
     // 打包出来以后的产物把window上的confirm方法冲掉了，临时的一个解决方案
     window.Arsenal.__originalWindowMethods = {
         $: window.$,
-        confirm: window.confirm
+        confirm: window.confirm,
+        open: window.open,
     }
 }
