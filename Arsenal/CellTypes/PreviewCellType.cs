@@ -79,7 +79,7 @@ public class PreviewWatermarkSettings : ObjectPropertyBase
     [DisplayName("内容")]
     [JsonProperty("content")]
     [FormulaProperty]
-    public object Content { get; set; } = "假装这是水印";
+    public object Content { get; set; } = "";
 
     [DisplayName("字体样式")]
     [JsonProperty("font")]
