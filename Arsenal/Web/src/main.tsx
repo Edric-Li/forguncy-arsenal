@@ -28,8 +28,3 @@ if (!window.Arsenal) {
   window.Arsenal.createReactCommand = createReactCommand;
   window.Arsenal.createReactComponent = createReactComponent;
 }
-
-for (const arrayKey in window.Arsenal.__originalWindowMethods) {
-  // @ts-ignore
-  window[arrayKey] = window.Arsenal.__originalWindowMethods[arrayKey];
-}

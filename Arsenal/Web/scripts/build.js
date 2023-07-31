@@ -1,15 +1,15 @@
-﻿import * as path from 'path';
+﻿import path from 'path';
 import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
 import shelljs from 'shelljs';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function main() {
   shelljs.exec('vite build');
 
-  const distDir = path.resolve(__dirname, '../dist/assets');
-  const targetDir = path.resolve(__dirname, '../../Resources/dist');
+  const distDir = path.resolve(dirname, '../dist/assets');
+  const targetDir = path.resolve(dirname, '../../Resources/dist');
   const files = fs.readdirSync(distDir);
 
   fs.copySync(
@@ -18,13 +18,6 @@ function main() {
       files.find((item) => item.endsWith('.js')),
     ),
     path.resolve(targetDir, 'arsenal.core.js'),
-  );
-  fs.copySync(
-    path.resolve(
-      distDir,
-      files.find((item) => item.endsWith('.css')),
-    ),
-    path.resolve(targetDir, 'arsenal.core.css'),
   );
 }
 

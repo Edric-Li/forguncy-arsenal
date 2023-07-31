@@ -174,15 +174,21 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     const newUploadList = {
       showDownloadIcon: hasDownloadPermission || !hiddenElements.has(Element.Download),
       showPreviewIcon: hasPreviewPermission || !hiddenElements.has(Element.Preview),
-      showRemoveIcon: (!props.options.ReadOnly && hasDeletePermission) || !hiddenElements.has(Element.Delete),
+      showRemoveIcon: !isReadOnly && hasDeletePermission && !hiddenElements.has(Element.Delete),
       downloadIcon: <DownloadOutlined />,
       previewIcon: <EyeOutlined />,
       removeIcon: <DeleteOutlined />,
     };
 
-    setShowUploadButton(hasUploadPermission && !props.options.ReadOnly && !hiddenElements.has(Element.Upload));
+    setShowUploadButton(hasUploadPermission && !isReadOnly && !hiddenElements.has(Element.Upload));
     setShowUploadList(newUploadList);
   }, [hiddenElements, isReadOnly]);
+
+  useEffect(() => {
+    if (props.options.listType === ListType['picture-card'] || props.options.listType === ListType['picture-circle']) {
+      $('.ant-upload-select', props.container).css('display', showUploadButton ? 'inline-block' : 'none');
+    }
+  }, [showUploadButton]);
 
   const hasDragComponent = useMemo(
     () => !!props.options.uploadSettings.dragAndDropSettings.dragUserControlPage,
@@ -197,6 +203,9 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   });
 
   const handleUpload = (isDirectory: boolean = defaultIsFolder) => {
+    if (disabled) {
+      return;
+    }
     const el = $('.ant-upload input', props.container);
     if (isDirectory) {
       el.attr('directory', 'directory').attr('webkitdirectory', 'webkitdirectory');
@@ -380,7 +389,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   const handleRemove: UploadProps['onRemove'] = async (file) => {
-    if (!hasDeletePermission || props.options.ReadOnly) {
+    if (!hasDeletePermission || isReadOnly) {
       return false;
     }
 

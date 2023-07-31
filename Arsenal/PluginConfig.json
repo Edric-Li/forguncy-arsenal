@@ -2,12 +2,10 @@
   "assembly": [
     "Arsenal.dll"
   ],
-  "css": [
-    "Resources/dist/arsenal.core.css"
-  ],
+  "css": [],
   "javascript": [
-    "Resources/dist/index.js",
-    "Resources/dist/arsenal.core.js"
+    "Resources/dist/dev-loader.js",
+    "Resources/dist/index.js"
   ],
   "serverApiAssembly": [
     "Arsenal.Server.dll"
