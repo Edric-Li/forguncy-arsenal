@@ -51,7 +51,8 @@ public class PptConverter
 
         try
         {
-            var presentation = processes.Instance.Presentations.Open(_filePath, WithWindow: MsoTriState.msoFalse);
+            var presentation = processes.Instance.Presentations.Open(_filePath, WithWindow: MsoTriState.msoFalse,
+                ReadOnly: MsoTriState.msoTrue);
             presentation.SaveAs(_savePath, PpSaveAsFileType.ppSaveAsPDF, MsoTriState.msoTrue);
             presentation.Close();
 

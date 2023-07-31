@@ -43,7 +43,7 @@ public class WordConverter
 
         try
         {
-            var document = processes.Instance.Documents.Open(_filePath);
+            var document = processes.Instance.Documents.Open(_filePath, ReadOnly: true);
             document.SaveAs(_savePath, WdSaveFormat.wdFormatPDF);
             document.Close();
 
