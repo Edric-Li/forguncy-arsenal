@@ -3,8 +3,8 @@
  * @param str
  */
 const parseAccept = (str: string): string => {
-  if (str === '*') {
-    return str;
+  if (!str?.length || str === '*') {
+    return '*';
   }
   return str
     .replace(/，/g, ',')
