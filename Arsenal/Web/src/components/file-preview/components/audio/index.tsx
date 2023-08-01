@@ -24,7 +24,7 @@ const AudioViewer = (props: IPreviewComponentProps) => {
     return () => {
       video.removeEventListener('contextmenu', preventDefaultEvent);
     };
-  }, [rootRef]);
+  }, [rootRef, props]);
 
   return (
     <audio

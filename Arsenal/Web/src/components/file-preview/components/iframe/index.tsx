@@ -36,7 +36,7 @@ const IframeView = (props: IPreviewComponentProps) => {
     return () => {
       getIframeDocument()?.removeEventListener('contextmenu', preventDefaultEvent);
     };
-  }, [rootRef]);
+  }, [rootRef, props]);
 
   return (
     <iframe

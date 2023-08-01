@@ -148,6 +148,22 @@ namespace Arsenal {
 
     export class FilePreview extends ReactCellType {
         ComponentName = 'FilePreview';
+
+        UpdatePdfSetting(...args) {
+            this.__reactComponent.runtimeMethod["updatePdfSetting"](...args);
+        }
+
+        UpdateVideoSetting(...args) {
+            this.__reactComponent.runtimeMethod["updateVideoSetting"](...args);
+        }
+
+        UpdateAudioSetting(...args) {
+            this.__reactComponent.runtimeMethod["updateAudioSetting"](...args);
+        }
+
+        UpdateContextMenuSetting(...args) {
+            this.__reactComponent.runtimeMethod["updateContextMenuSetting"](...args);
+        }
     }
 
     export class TableView extends ReactCellType {

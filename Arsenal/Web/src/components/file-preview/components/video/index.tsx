@@ -5,6 +5,7 @@ const style: CSSProperties = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
+  backgroundColor: '#000',
 };
 
 enum VideoSize {
@@ -37,7 +38,7 @@ const VideoViewer = (props: IPreviewComponentProps) => {
     return () => {
       video.removeEventListener('contextmenu', preventDefaultEvent);
     };
-  }, [rootRef]);
+  }, [rootRef, props]);
 
   return (
     <video

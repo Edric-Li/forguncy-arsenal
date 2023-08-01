@@ -1,8 +1,9 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import FileUploadEngine from '../../common/file-upload-engine';
-import FilePreviewInner, { IPreviewRef } from './file-preview-inner';
+import FilePreviewInner from './file-preview-inner';
 import { Tabs, TabsProps } from 'antd';
 import isInternalFile from '../../common/is-internal-file';
+import { clone } from 'lodash';
 
 const rootStyle: React.CSSProperties = {
   height: '100%',
@@ -24,8 +25,7 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   const [url, setUrl] = useState<string | null>(null);
   const [items, setItems] = useState<TabsProps['items']>([]);
   const filesMap = useRef<Map<string, string>>(new Map<string, string>());
-  const options = props.cellType.CellElement.CellType as IPreviewOptions;
-  const filePreviewInnerRef = useRef<IPreviewRef>(null);
+  const [options, setOptions] = useState(props.cellType.CellElement.CellType as IPreviewOptions);
 
   useImperativeHandle(ref, () => ({
     setValue(value: any) {
@@ -55,7 +55,90 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       setUrl(filesMap.current.get(tabItems[0].key) ?? '');
     },
     onDependenceCellValueChanged() {
-      filePreviewInnerRef.current?.refreshWatermarkSettings();
+      options.watermarkSettings.content = (
+        props.cellType.CellElement.CellType as IPreviewOptions
+      ).watermarkSettings.content;
+      setOptions(clone(options));
+    },
+    runtimeMethod: {
+      updatePdfSetting(hideSaveButton: boolean | null, hidePrintButton: boolean) {
+        if (hideSaveButton !== null) {
+          options.pdfSettings.hideSaveButton = hideSaveButton;
+        }
+
+        if (hidePrintButton !== null) {
+          options.pdfSettings.hidePrintButton = hidePrintButton;
+        }
+
+        setOptions(clone(options));
+      },
+      updateVideoSetting(
+        autoPlay: boolean | null,
+        controls: boolean | null,
+        disableDownload: boolean | null,
+        disablePictureInPicture: boolean | null,
+        loop: boolean | null,
+        muted: boolean | null,
+        size: IVideoSize,
+      ) {
+        if (autoPlay !== null) {
+          options.videoSettings.autoPlay = autoPlay;
+        }
+
+        if (controls !== null) {
+          options.videoSettings.controls = controls;
+        }
+
+        if (disableDownload !== null) {
+          options.videoSettings.disableDownload = disableDownload;
+        }
+
+        if (disablePictureInPicture !== null) {
+          options.videoSettings.disablePictureInPicture = disablePictureInPicture;
+        }
+
+        if (loop !== null) {
+          options.videoSettings.loop = loop;
+        }
+
+        if (muted !== null) {
+          options.videoSettings.muted = muted;
+        }
+
+        options.videoSettings.size = size;
+
+        setOptions(clone(options));
+      },
+
+      updateAudioSetting(
+        autoPlay: boolean | null,
+        controls: boolean | null,
+        disableDownload: boolean | null,
+        loop: boolean | null,
+      ) {
+        if (autoPlay !== null) {
+          options.audioSettings.autoPlay = autoPlay;
+        }
+
+        if (controls !== null) {
+          options.audioSettings.controls = controls;
+        }
+
+        if (disableDownload !== null) {
+          options.audioSettings.disableDownload = disableDownload;
+        }
+
+        if (loop !== null) {
+          options.audioSettings.loop = loop;
+        }
+
+        setOptions(clone(options));
+      },
+
+      updateContextMenuSetting(status: ContextMenuStatus) {
+        options.disableContextMenu = status === ContextMenuStatus.Disable;
+        setOptions(clone(options));
+      },
     },
   }));
 
@@ -73,7 +156,6 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
       <div style={previewStyle}>
         <FilePreviewInner
-          ref={filePreviewInnerRef}
           url={url}
           options={options}
           evaluateFormula={props.cellType.evaluateFormula.bind(props.cellType)}

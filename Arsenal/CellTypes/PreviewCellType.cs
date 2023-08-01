@@ -40,6 +40,48 @@ public class PreviewCellType : CellType
     [JsonProperty("disableContextMenu")]
     public bool DisableContextMenu { get; set; }
 
+    [DisplayName("更改PDF设置")]
+    [RunTimeMethod]
+    public void UpdatePdfSetting(
+        [ItemDisplayName("禁止保存")] bool hideSaveButton,
+        [ItemDisplayName("禁止打印")] bool hidePrintButton
+    )
+    {
+    }
+
+    [DisplayName("更改视频设置")]
+    [RunTimeMethod]
+    public void UpdateVideoSetting(
+        [ItemDisplayName("自动播放")] bool autoPlay,
+        [ItemDisplayName("显示控制条")] bool controls,
+        [ItemDisplayName("禁止下载")] bool disableDownload,
+        [ItemDisplayName("禁止画中画")] bool disablePictureInPicture,
+        [ItemDisplayName("循环播放")] bool loop,
+        [ItemDisplayName("静音")] bool muted,
+        [ItemDisplayName("大小设置")] VideoSize size = VideoSize.Fill
+    )
+    {
+    }
+
+    [DisplayName("更改音频设置")]
+    [RunTimeMethod]
+    public void UpdateAudioSetting(
+        [ItemDisplayName("自动播放")] bool autoPlay,
+        [ItemDisplayName("显示控制条")] bool controls,
+        [ItemDisplayName("禁止下载")] bool disableDownload,
+        [ItemDisplayName("循环播放")] bool loop
+    )
+    {
+    }
+
+    [DisplayName("更改右键菜单状态")]
+    [RunTimeMethod]
+    public void UpdateContextMenuSetting(
+        [ItemDisplayName("状态")] ContextMenuStatus status
+    )
+    {
+    }
+
     public override string ToString()
     {
         return "文件预览";
@@ -203,4 +245,10 @@ public enum VideoSize
 {
     [Description("填充")] Fill,
     [Description("原始")] Original
+}
+
+public enum ContextMenuStatus
+{
+    [Description("启用")] Enable,
+    [Description("禁用")] Disable
 }

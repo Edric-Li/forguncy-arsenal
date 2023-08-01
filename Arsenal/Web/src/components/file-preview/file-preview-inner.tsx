@@ -54,20 +54,13 @@ export interface IPreviewRef {
   refreshWatermarkSettings: () => void;
 }
 
-const FilePreviewInner = React.forwardRef<IPreviewRef, IProps>((props: IProps, ref) => {
-  const [refreshKey, setRefreshKey] = React.useState(0);
+const FilePreviewInner = (props: IProps) => {
   const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
   const [exists, setExists] = React.useState<boolean | null>(null);
   const [size, setSize] = React.useState<{ width: number; height: number } | null>(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const watermarkRootRef = useRef<HTMLDivElement>(null);
-
-  useImperativeHandle(ref, () => ({
-    refreshWatermarkSettings() {
-      setRefreshKey((key) => key + 1);
-    },
-  }));
 
   useEffect(() => {
     if (props.options.disableContextMenu && rootRef.current) {
@@ -98,7 +91,7 @@ const FilePreviewInner = React.forwardRef<IPreviewRef, IProps>((props: IProps, r
       .css('width', size.width)
       .css('height', size.height)
       .css('top', dom.parent().parent().parent().parent().height() - size.height);
-  }, [size, refreshKey]);
+  }, [size, props.options]);
 
   const watermarkSettings: WatermarkProps | null = useMemo(() => {
     const content = props.evaluateFormula(props.options.watermarkSettings?.content || '')?.toString();
@@ -109,7 +102,7 @@ const FilePreviewInner = React.forwardRef<IPreviewRef, IProps>((props: IProps, r
       });
     }
     return null;
-  }, [refreshKey]);
+  }, [props.options]);
 
   let Component: React.ComponentType<IPreviewComponentProps> | null =
     _.find(viewMap, (m) => m.type.test(fileExtension.toLowerCase()))?.Component ?? null;
@@ -153,6 +146,6 @@ const FilePreviewInner = React.forwardRef<IPreviewRef, IProps>((props: IProps, r
       )}
     </div>
   );
-});
+};
 
 export default FilePreviewInner;

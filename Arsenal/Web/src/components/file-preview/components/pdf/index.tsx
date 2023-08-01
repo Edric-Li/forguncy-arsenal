@@ -3,6 +3,7 @@ import preventDefaultEvent from '../../../../common/prevent-default-event';
 
 const PDFViewer = (props: IPreviewComponentProps) => {
   const rootRef = useRef<HTMLIFrameElement>(null);
+  const loaded = useRef(false);
 
   const src = useMemo(
     () =>
@@ -19,32 +20,40 @@ const PDFViewer = (props: IPreviewComponentProps) => {
       return;
     }
 
-    const getIframeDocument = () => iframe.contentDocument || iframe.contentWindow?.document;
-
-    iframe.addEventListener('load', () => {
-      const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
+    const handleElements = () => {
+      loaded.current = true;
 
       if (!getIframeDocument()) {
         return;
       }
 
-      if (props.pdfSettings?.hidePrintButton) {
-        getIframeDocument()?.getElementById('print')?.remove();
-      }
+      $(getIframeDocument()?.getElementById('print')!).css(
+        'display',
+        props.pdfSettings?.hidePrintButton ? 'none' : 'block',
+      );
 
-      if (props.pdfSettings?.hideSaveButton) {
-        getIframeDocument()?.getElementById('download')?.remove();
-      }
+      $(getIframeDocument()?.getElementById('download')!).css(
+        'display',
+        props.pdfSettings?.hideSaveButton ? 'none' : 'block',
+      );
 
       if (props.disableContextMenu) {
         getIframeDocument()?.addEventListener('contextmenu', preventDefaultEvent);
       }
-    });
+    };
+
+    const getIframeDocument = () => iframe.contentDocument || iframe.contentWindow?.document;
+
+    if (loaded.current) {
+      handleElements();
+    } else {
+      iframe.addEventListener('load', handleElements);
+    }
 
     return () => {
       getIframeDocument()?.removeEventListener('contextmenu', preventDefaultEvent);
     };
-  }, [rootRef]);
+  }, [rootRef, props]);
 
   return <iframe ref={rootRef} height={'100%'} width={'100%'} frameBorder='0' src={src} />;
 };

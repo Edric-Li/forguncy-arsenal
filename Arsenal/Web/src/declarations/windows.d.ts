@@ -32,7 +32,7 @@ enum IVideoSize {
 interface IPreviewOptions {
   hideTabsWhenOnlyOneFile: boolean;
   enableWatermark?: boolean;
-  watermarkSettings?: IPreviewWatermarkSettings;
+  watermarkSettings: IPreviewWatermarkSettings;
   videoSettings: {
     autoPlay: boolean;
     controls: boolean;
@@ -49,10 +49,15 @@ interface IPreviewOptions {
     loop: boolean;
   };
   disableContextMenu?: boolean;
-  pdfSettings?: {
+  pdfSettings: {
     hideSaveButton: boolean;
     hidePrintButton: boolean;
   };
+}
+
+enum ContextMenuStatus {
+  Enable,
+  Disable,
 }
 
 interface CustomFile extends File {
