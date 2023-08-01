@@ -1,4 +1,4 @@
-import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import ImagePreview from './components/image';
 import ExcelPreview from './components/excel';
 import DocxPreview from './components/docx';
@@ -23,6 +23,31 @@ const notSupportedStyle = {
   height: '100%',
   width: '100%',
 };
+
+const convertibleFileTypes = new Set([
+  'doc',
+  'docx',
+  'ppt',
+  'pptx',
+  'xls',
+  'dxf',
+  'dwg',
+  'dgn',
+  'dwf',
+  'dwfx',
+  'dxb',
+  'dwt',
+  'plt',
+  'cf2',
+  'obj',
+  'fbx',
+  'collada',
+  'stl',
+  'stp',
+  'ifc',
+  'iges',
+  '3ds',
+]);
 
 const viewMap: {
   type: RegExp;
@@ -57,6 +82,7 @@ export interface IPreviewRef {
 const FilePreviewInner = (props: IProps) => {
   const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
   const [exists, setExists] = React.useState<boolean | null>(null);
+  const [canConvert, setCanConvert] = React.useState<boolean | null>(null);
   const [size, setSize] = React.useState<{ width: number; height: number } | null>(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -74,8 +100,9 @@ const FilePreviewInner = (props: IProps) => {
 
   useEffect(() => {
     if (props.url) {
-      FileUploadEngine.checkFileExists(props.url).then((exists) => {
-        setExists(exists);
+      FileUploadEngine.getFileMetadata(props.url).then((data) => {
+        setExists(data.exists);
+        setCanConvert(data.canConvert);
       });
     }
   }, [props.url]);
@@ -117,7 +144,8 @@ const FilePreviewInner = (props: IProps) => {
     return null;
   }
 
-  if (!Component) {
+  // 如果找不到对应的组件，或者是可转换的文件类型，但是不支持转换，就显示暂不支持
+  if (!Component || (convertibleFileTypes.has(fileExtension) && !canConvert)) {
     return <div style={notSupportedStyle}>暂不支持该文件类型</div>;
   }
 

@@ -45,10 +45,21 @@ internal class Middleware
 
             var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
 
+            if (context.Request.Method == "HEAD")
+            {
+                var canConvertFile = new FileConvertService(fileKey, diskFilePath).CanConvertFile();
+                if (canConvertFile)
+                {
+                    context.Response.Headers.Add("Can-Convert", "1");
+                }
+            }
+
+            // ac is auto convert
             if (context.Request.Query["ac"] == "1")
             {
                 if (new FileConvertService(fileKey, diskFilePath).TryConvertFileAsync(out var newFilePath))
                 {
+                    context.Response.Headers.Add("Converted", "1");
                     diskFilePath = newFilePath;
                 }
             }

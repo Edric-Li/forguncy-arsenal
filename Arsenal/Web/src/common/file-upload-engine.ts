@@ -83,7 +83,10 @@ class FileUploadEngine {
     );
   }
 
-  static checkFileExists(url: string): Promise<boolean> {
+  static getFileMetadata(url: string): Promise<{
+    exists: boolean;
+    canConvert: boolean;
+  }> {
     return new Promise(async (resolve) => {
       try {
         if (CacheService.get(url)) {
@@ -91,9 +94,16 @@ class FileUploadEngine {
         }
 
         const response = await fetch(url, { method: 'HEAD' });
-        resolve(response.ok);
+
+        resolve({
+          exists: response.ok,
+          canConvert: response.headers.get('Can-Convert') === '1',
+        });
       } catch (e) {
-        resolve(true);
+        resolve({
+          exists: true,
+          canConvert: false,
+        });
       }
     });
   }
@@ -101,7 +111,7 @@ class FileUploadEngine {
   public static download(uidOrUrl: string) {
     const href = uidOrUrl?.includes(':/') ? uidOrUrl : this.getDownloadUrl(uidOrUrl);
 
-    this.checkFileExists(href).then((exists) => {
+    this.getFileMetadata(href).then(({ exists }) => {
       if (exists) {
         const a = document.createElement('a');
         a.href = href;

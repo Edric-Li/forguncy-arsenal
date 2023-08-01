@@ -135,4 +135,35 @@ public class FileConvertService
 
         return false;
     }
+
+    /// <summary>
+    /// 是否可以转换文件
+    /// </summary>
+    /// <returns></returns>
+    public bool CanConvertFile()
+    {
+        var extension = Path.GetExtension(_filePath).ToLower().TrimStart('.');
+
+        if (!SupportedNormalFileExtensions.Contains(extension) && !SupportedCadFileExtensions.Contains(extension))
+        {
+            return false;
+        }
+
+        if (extension.StartsWith("ppt"))
+        {
+            return PptConverter.IsInstalled;
+        }
+
+        if (extension == "xls")
+        {
+            return ExcelConverter.IsInstalled;
+        }
+
+        if (extension.StartsWith("doc"))
+        {
+            return WordConverter.IsInstalled;
+        }
+
+        return true;
+    }
 }
