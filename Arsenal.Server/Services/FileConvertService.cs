@@ -65,6 +65,8 @@ public class FileConvertService
             return false;
         }
 
+        var fileName = Path.GetFileNameWithoutExtension(_filePath);
+
         if (extension.StartsWith("ppt"))
         {
             if (!PptConverter.IsInstalled)
@@ -72,7 +74,7 @@ public class FileConvertService
                 return false;
             }
 
-            var savePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, _fileKey + ".pdf");
+            var savePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, fileName + ".pdf");
 
             if (!File.Exists(savePath))
             {
@@ -90,7 +92,7 @@ public class FileConvertService
                 return false;
             }
 
-            var savePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, _fileKey + ".xlsx");
+            var savePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, fileName + ".xlsx");
 
             if (!File.Exists(savePath))
             {
@@ -108,7 +110,7 @@ public class FileConvertService
                 return false;
             }
 
-            var savePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, _fileKey + ".pdf");
+            var savePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, fileName + ".pdf");
 
             if (!File.Exists(savePath))
             {
@@ -122,7 +124,7 @@ public class FileConvertService
         // todo 目前只支持转换为pdf
         if (SupportedCadFileExtensions.Contains(extension))
         {
-            var savePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, _fileKey + ".pdf");
+            var savePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, fileName + ".pdf");
 
             if (!File.Exists(savePath))
             {

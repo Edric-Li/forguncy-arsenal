@@ -15,6 +15,7 @@ internal abstract class Logger
             logMessage += Environment.NewLine + $"Exception: {exception}";
         }
 
+        Console.WriteLine(logMessage);
         Trace.WriteLine(logMessage);
     }
 }

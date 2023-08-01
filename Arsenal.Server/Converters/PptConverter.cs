@@ -19,18 +19,22 @@ public class PptConverter
 
     static PptConverter()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return;
+            var appType = Type.GetTypeFromProgID("KWPP.Application") ??
+                          Type.GetTypeFromProgID("PowerPoint.Application");
+
+            IsInstalled = appType != null;
+
+            if (IsInstalled)
+            {
+                ProcessPoolManager = new ProcessPoolManager(appType);
+            }
         }
 
-        var appType = Type.GetTypeFromProgID("KWPP.Application") ?? Type.GetTypeFromProgID("PowerPoint.Application");
-
-        IsInstalled = appType != null;
-
-        if (IsInstalled)
+        if (!IsInstalled)
         {
-            ProcessPoolManager = new ProcessPoolManager(appType);
+            IsInstalled = LibreOfficeConverter.IsInstalled;
         }
     }
 
@@ -42,31 +46,33 @@ public class PptConverter
 
     public void ConvertToPdf()
     {
-        ConvertPptToPdfWithOffice();
-    }
-
-    private void ConvertPptToPdfWithOffice()
-    {
-        var processes = ProcessPoolManager.GetAvailableProcesses();
-
-        try
+        if (ProcessPoolManager == null)
         {
-            var presentation = processes.Instance.Presentations.Open(_filePath, WithWindow: MsoTriState.msoFalse,
-                ReadOnly: MsoTriState.msoTrue);
-            presentation.SaveAs(_savePath, PpSaveAsFileType.ppSaveAsPDF, MsoTriState.msoTrue);
-            presentation.Close();
-
-            Marshal.ReleaseComObject(presentation);
+            new LibreOfficeConverter(_filePath, _savePath).ConvertToPdf();
         }
-        catch (Exception e)
+        else
         {
-            Logger.Log(LogLevel.ERROR, "PPT转换失败," + e.Message);
-            throw;
-        }
-        finally
-        {
-            processes.Release();
-            ProcessPoolManager.RemoveProcess(processes);
+            var processes = ProcessPoolManager.GetAvailableProcesses();
+
+            try
+            {
+                var presentation = processes.Instance.Presentations.Open(_filePath, WithWindow: MsoTriState.msoFalse,
+                    ReadOnly: MsoTriState.msoTrue);
+                presentation.SaveAs(_savePath, PpSaveAsFileType.ppSaveAsPDF, MsoTriState.msoTrue);
+                presentation.Close();
+
+                Marshal.ReleaseComObject(presentation);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(LogLevel.ERROR, "PPT转换失败," + e.Message);
+                throw;
+            }
+            finally
+            {
+                processes.Release();
+                ProcessPoolManager.RemoveProcess(processes);
+            }
         }
     }
 }

@@ -16,18 +16,21 @@ public class ExcelConverter
 
     static ExcelConverter()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return;
+            var appType = Type.GetTypeFromProgID("KET.Application") ?? Type.GetTypeFromProgID("Excel.Application");
+
+            IsInstalled = appType != null;
+
+            if (IsInstalled)
+            {
+                ProcessPoolManager = new ProcessPoolManager(appType);
+            }
         }
 
-        var appType = Type.GetTypeFromProgID("KET.Application") ?? Type.GetTypeFromProgID("Excel.Application");
-
-        IsInstalled = appType != null;
-
-        if (IsInstalled)
+        if (!IsInstalled)
         {
-            ProcessPoolManager = new ProcessPoolManager(appType);
+            IsInstalled = LibreOfficeConverter.IsInstalled;
         }
     }
 
@@ -39,30 +42,32 @@ public class ExcelConverter
 
     public void ConvertToXlsx()
     {
-        ConvertXlsToXlsxWithOffice();
-    }
-
-    private void ConvertXlsToXlsxWithOffice()
-    {
-        var processes = ProcessPoolManager.GetAvailableProcesses();
-
-        try
+        if (ProcessPoolManager == null)
         {
-            var workbook = processes.Instance.Workbooks.Open(_filePath, ReadOnly: true);
-            workbook.SaveAs(_savePath, XlFileFormat.xlOpenXMLWorkbook);
-            workbook.Close();
-
-            Marshal.ReleaseComObject(workbook);
+            new LibreOfficeConverter(_filePath, _savePath).ConvertToXlsx();
         }
-        catch (Exception e)
+        else
         {
-            Logger.Log(LogLevel.ERROR, "Excel转换失败," + e.Message);
-            throw;
-        }
-        finally
-        {
-            processes.Release();
-            ProcessPoolManager.RemoveProcess(processes);
+            var processes = ProcessPoolManager.GetAvailableProcesses();
+
+            try
+            {
+                var workbook = processes.Instance.Workbooks.Open(_filePath, ReadOnly: true);
+                workbook.SaveAs(_savePath, XlFileFormat.xlOpenXMLWorkbook);
+                workbook.Close();
+
+                Marshal.ReleaseComObject(workbook);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(LogLevel.ERROR, "Excel转换失败," + e.Message);
+                throw;
+            }
+            finally
+            {
+                processes.Release();
+                ProcessPoolManager.RemoveProcess(processes);
+            }
         }
     }
 }

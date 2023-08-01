@@ -16,18 +16,21 @@ public class WordConverter
 
     static WordConverter()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return;
+            var appType = Type.GetTypeFromProgID("KWPS.Application") ?? Type.GetTypeFromProgID("Word.Application");
+
+            IsInstalled = appType != null;
+
+            if (IsInstalled)
+            {
+                ProcessPoolManager = new ProcessPoolManager(appType);
+            }
         }
 
-        var appType = Type.GetTypeFromProgID("KWPS.Application") ?? Type.GetTypeFromProgID("Word.Application");
-
-        IsInstalled = appType != null;
-
-        if (IsInstalled)
+        if (!IsInstalled)
         {
-            ProcessPoolManager = new ProcessPoolManager(appType);
+            IsInstalled = LibreOfficeConverter.IsInstalled;
         }
     }
 
@@ -39,25 +42,32 @@ public class WordConverter
 
     public void ConvertToPdf()
     {
-        var processes = ProcessPoolManager.GetAvailableProcesses();
-
-        try
+        if (ProcessPoolManager == null)
         {
-            var document = processes.Instance.Documents.Open(_filePath, ReadOnly: true);
-            document.SaveAs(_savePath, WdSaveFormat.wdFormatPDF);
-            document.Close();
-
-            Marshal.ReleaseComObject(document);
+            new LibreOfficeConverter(_filePath, _savePath).ConvertToPdf();
         }
-        catch (Exception e)
+        else
         {
-            Logger.Log(LogLevel.ERROR, "Word转换失败," + e.Message);
-            throw;
-        }
-        finally
-        {
-            processes.Release();
-            ProcessPoolManager.RemoveProcess(processes);
+            var processes = ProcessPoolManager.GetAvailableProcesses();
+
+            try
+            {
+                var document = processes.Instance.Documents.Open(_filePath, ReadOnly: true);
+                document.SaveAs(_savePath, WdSaveFormat.wdFormatPDF);
+                document.Close();
+
+                Marshal.ReleaseComObject(document);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(LogLevel.ERROR, "Word转换失败," + e.Message);
+                throw;
+            }
+            finally
+            {
+                processes.Release();
+                ProcessPoolManager.RemoveProcess(processes);
+            }
         }
     }
 }
