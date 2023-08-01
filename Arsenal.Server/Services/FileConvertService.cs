@@ -21,7 +21,6 @@ public class FileConvertService
         "cf2",
         "obj",
         "fbx",
-        "svg",
         "collada",
         "stl",
         "stp",
