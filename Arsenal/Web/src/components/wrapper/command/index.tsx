@@ -7,6 +7,7 @@ import getDownloadUrlCommand from '../../../commands/get-download-url';
 import zipFileAndDownload from '../../../commands/zip-file-and-download';
 import getDifferenceFileKeys from '../../../commands/get-difference-file-keys';
 import cancelCommand from '../../../commands/cancel';
+import videoOperationCommand from '../../../commands/video-operation';
 
 interface Props {
   commandName: string;
@@ -46,6 +47,10 @@ const commandWrapper = (props: Props): Function | null => {
 
   if (props.commandName === 'Cancel') {
     fn = cancelCommand;
+  }
+
+  if (props.commandName === 'VideoOperation') {
+    fn = videoOperationCommand;
   }
 
   return (fn || _.noop).bind(null, props.commandBase);

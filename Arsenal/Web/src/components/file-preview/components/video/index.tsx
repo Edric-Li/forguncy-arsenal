@@ -5,7 +5,6 @@ const style: CSSProperties = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  backgroundColor: '#000',
 };
 
 enum VideoSize {

@@ -202,6 +202,10 @@ namespace Arsenal {
         ComponentName = 'Cancel';
     }
 
+    export class VideoOperationCommand extends ReactCommand {
+        ComponentName = 'VideoOperation';
+    }
+
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.UploadCellType, Arsenal', PCUpload);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.PreviewCellType, Arsenal', FilePreview);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.TableViewCellType, Arsenal', TableView);
@@ -213,6 +217,7 @@ namespace Arsenal {
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.ZipFileAndDownloadCommand, Arsenal", ZipFileAndDownloadCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetDifferenceFileKeysCommand, Arsenal", GetDifferenceFileKeysCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.CancelCommand, Arsenal", CancelCommand);
+    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.VideoOperationCommand, Arsenal", VideoOperationCommand);
 
     window.Arsenal.canceledTokenSet = new Set<string>;
 }

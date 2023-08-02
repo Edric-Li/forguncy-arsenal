@@ -130,6 +130,8 @@
 		<Resource Include="Resources\images\calculation-of-differences.png" />
 		<None Remove="Resources\images\cancel.png" />
 		<Resource Include="Resources\images\cancel.png" />
+		<None Remove="Resources\images\video.png" />
+		<Resource Include="Resources\images\video.png" />
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="&quot;..\PackageTools\ForguncyPluginPackageTool.exe&quot; $(ProjectDir) &quot;C:\Program Files\Forguncy 9&quot; " />
