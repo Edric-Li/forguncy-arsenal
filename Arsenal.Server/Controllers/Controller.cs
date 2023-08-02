@@ -191,4 +191,13 @@ public class Arsenal : ForguncyApi
             Context.BuildResult(new HttpSuccessResult(newFileKey));
         });
     }
+
+    [Get]
+    public void GetConvertableFileExtensions()
+    {
+        Context.HandleError(() =>
+        {
+            Context.BuildResult(new HttpSuccessResult(FileConvertService.GetConvertableFileExtensions()));
+        });
+    }
 }

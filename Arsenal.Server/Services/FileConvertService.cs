@@ -138,34 +138,27 @@ public class FileConvertService
         return false;
     }
 
-    /// <summary>
-    /// 是否可以转换文件
-    /// </summary>
-    /// <returns></returns>
-    public bool CanConvertFile()
+    public static HashSet<string> GetConvertableFileExtensions()
     {
-        var extension = Path.GetExtension(_filePath).ToLower().TrimStart('.');
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        if (!SupportedNormalFileExtensions.Contains(extension) && !SupportedCadFileExtensions.Contains(extension))
+        if (PptConverter.IsInstalled)
         {
-            return false;
+            result.Add("ppt");
+            result.Add("pptx");
         }
 
-        if (extension.StartsWith("ppt"))
+        if (ExcelConverter.IsInstalled)
         {
-            return PptConverter.IsInstalled;
+            result.Add("xls");
         }
 
-        if (extension == "xls")
+        if (WordConverter.IsInstalled)
         {
-            return ExcelConverter.IsInstalled;
+            result.Add("doc");
+            result.Add("docx");
         }
 
-        if (extension.StartsWith("doc"))
-        {
-            return WordConverter.IsInstalled;
-        }
-
-        return true;
+        return result;
     }
 }

@@ -47,12 +47,6 @@ internal class Middleware
 
             if (context.Request.Method == "HEAD")
             {
-                var canConvertFile = new FileConvertService(fileKey, diskFilePath).CanConvertFile();
-                if (canConvertFile)
-                {
-                    context.Response.Headers.Add("Can-Convert", "1");
-                }
-
                 if (File.Exists(diskFilePath))
                 {
                     context.Response.StatusCode = 200;

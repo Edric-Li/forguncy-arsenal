@@ -128,6 +128,10 @@ const getZipEntries = async (fileKey: string): HttpHandlerResult<string[]> => {
   });
 };
 
+const getConvertableFileExtensions = async (): HttpHandlerResult<string[]> => {
+  return axios.get('/getConvertableFileExtensions');
+};
+
 const generateTemporaryAccessKeyForZipFile = async (
   fileKey: string,
   targetFilePath: string,
@@ -153,6 +157,7 @@ const requestHelper = {
   compressFilesIntoZip,
   getZipEntries,
   generateTemporaryAccessKeyForZipFile,
+  getConvertableFileExtensions,
 };
 
 export default requestHelper;

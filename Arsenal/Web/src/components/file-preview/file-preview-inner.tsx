@@ -16,6 +16,7 @@ import VideoViewer from './components/video';
 import AudioViewer from './components/audio';
 import { WatermarkProps } from 'antd/es/watermark';
 import ZipViewer from './components/zip';
+import requestHelper from '../../common/request-helper';
 
 const notSupportedStyle = {
   display: 'flex',
@@ -84,7 +85,6 @@ export interface IPreviewRef {
 const FilePreviewInner = (props: IProps) => {
   const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
   const [exists, setExists] = React.useState<boolean | null>(null);
-  const [canConvert, setCanConvert] = React.useState<boolean | null>(null);
   const [size, setSize] = React.useState<{ width: number; height: number } | null>(null);
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -101,12 +101,16 @@ const FilePreviewInner = (props: IProps) => {
   }, [rootRef, props]);
 
   useEffect(() => {
-    if (props.url) {
-      FileUploadEngine.getFileMetadata(props.url).then((data) => {
-        setExists(data.exists);
-        setCanConvert(data.canConvert);
-      });
-    }
+    (async () => {
+      if (props.url) {
+        if (!window.Arsenal.convertableFileExtensions) {
+          const res = await requestHelper.getConvertableFileExtensions();
+          window.Arsenal.convertableFileExtensions = new Set(res.data);
+        }
+        const exists = await FileUploadEngine.checkFileExists(props.url);
+        setExists(exists);
+      }
+    })();
   }, [props.url]);
 
   useEffect(() => {
@@ -151,7 +155,10 @@ const FilePreviewInner = (props: IProps) => {
   }
 
   // 如果找不到对应的组件，或者是可转换的文件类型，但是不支持转换，就显示暂不支持
-  if (!Component || (convertibleFileTypes.has(fileExtension) && !canConvert)) {
+  if (
+    !Component ||
+    (convertibleFileTypes.has(fileExtension) && !window.Arsenal.convertableFileExtensions?.has(fileExtension))
+  ) {
     return <div style={notSupportedStyle}>暂不支持该文件类型</div>;
   }
 
