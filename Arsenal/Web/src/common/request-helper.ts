@@ -120,6 +120,26 @@ const compressFilesIntoZip = (param: ICompressFilesIntoZip): HttpHandlerResult<s
   return axios.post('/compressFilesIntoZip', param);
 };
 
+const getZipEntries = async (fileKey: string): HttpHandlerResult<string[]> => {
+  return axios.get('/getZipEntries', {
+    params: {
+      fileKey,
+    },
+  });
+};
+
+const generateTemporaryAccessKeyForZipFile = async (
+  fileKey: string,
+  targetFilePath: string,
+): HttpHandlerResult<string> => {
+  return axios.get('/getTemporaryAccessKeyForZipFile', {
+    params: {
+      fileKey,
+      targetFilePath: targetFilePath,
+    },
+  });
+};
+
 const requestHelper = {
   checkFileInfo,
   initMultipartUpload,
@@ -131,6 +151,8 @@ const requestHelper = {
   getSpreadFile,
   getFile,
   compressFilesIntoZip,
+  getZipEntries,
+  generateTemporaryAccessKeyForZipFile,
 };
 
 export default requestHelper;

@@ -641,7 +641,17 @@ public static class FileUploadService
 
             if (file == null)
             {
-                return null;
+                var tempFilePath = Path.Combine(Configuration.Configuration.AppConfig.LocalUploadFolderPath, "Temp",
+                    fileKey);
+
+                if (File.Exists(tempFilePath))
+                {
+                    return tempFilePath;
+                }
+
+                var filePath = Path.Combine(Configuration.Configuration.AppConfig.LocalUploadFolderPath, fileKey);
+
+                return File.Exists(filePath) ? filePath : null;
             }
 
             if (!string.IsNullOrWhiteSpace(file.Hash))

@@ -15,6 +15,7 @@ import preventDefaultEvent from '../../common/prevent-default-event';
 import VideoViewer from './components/video';
 import AudioViewer from './components/audio';
 import { WatermarkProps } from 'antd/es/watermark';
+import ZipViewer from './components/zip';
 
 const notSupportedStyle = {
   display: 'flex',
@@ -63,6 +64,7 @@ const viewMap: {
   { type: /svg/, Component: SVGPreview },
   { type: /xlsx|xls/, Component: ExcelPreview },
   { type: /docx/, Component: DocxPreview },
+  { type: /zip|fgcc/, Component: ZipViewer },
 ];
 
 export const isImage = (fileUrl: string) => {
@@ -144,12 +146,16 @@ const FilePreviewInner = (props: IProps) => {
     return null;
   }
 
+  if (exists === null) {
+    return null;
+  }
+
   // 如果找不到对应的组件，或者是可转换的文件类型，但是不支持转换，就显示暂不支持
   if (!Component || (convertibleFileTypes.has(fileExtension) && !canConvert)) {
     return <div style={notSupportedStyle}>暂不支持该文件类型</div>;
   }
 
-  if (exists === false) {
+  if (!exists) {
     return (
       <div className='arsenal-filled-and-centered'>
         <Result status='404' title='404' subTitle='对不起，该文件无法预览。请联系管理员获取更多信息。' />
@@ -164,7 +170,7 @@ const FilePreviewInner = (props: IProps) => {
           setSize(size);
         }}
       >
-        <Component url={props.url} suffix={fileExtension} {...props.options} />
+        <Component url={props.url} suffix={fileExtension} evaluateFormula={props.evaluateFormula} {...props.options} />
       </ResizeObserver>
 
       {watermarkSettings && (

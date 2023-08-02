@@ -52,6 +52,12 @@ internal class Middleware
                 {
                     context.Response.Headers.Add("Can-Convert", "1");
                 }
+
+                if (File.Exists(diskFilePath))
+                {
+                    context.Response.StatusCode = 200;
+                    return;
+                }
             }
 
             // ac is auto convert
@@ -94,6 +100,15 @@ internal class Middleware
             }
 
             var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
+
+            if (context.Request.Method == "HEAD")
+            {
+                if (File.Exists(diskFilePath))
+                {
+                    context.Response.StatusCode = 200;
+                    return;
+                }
+            }
 
             if (diskFilePath != null)
             {

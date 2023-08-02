@@ -5,6 +5,7 @@ interface IProps {
 interface IPreviewComponentProps extends IPreviewOptions {
   url: string;
   suffix: string;
+  evaluateFormula: (formula: string) => unknown;
 }
 
 interface IPreviewWatermarkSettings {

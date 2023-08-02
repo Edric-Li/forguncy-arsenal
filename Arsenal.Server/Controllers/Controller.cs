@@ -150,4 +150,45 @@ public class Arsenal : ForguncyApi
             Context.BuildResult(new HttpSuccessResult(data));
         });
     }
+
+    [Get]
+    public async Task GetZipEntries()
+    {
+        await Context.HandleErrorAsync(async () =>
+        {
+            var fileKey = Context.Request.Query["fileKey"];
+
+            var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
+
+            var entries = ZipService.GetZipEntries(diskFilePath);
+
+            Context.BuildResult(new HttpSuccessResult(entries));
+        });
+    }
+
+    [Get]
+    public async Task GetTemporaryAccessKeyForZipFile()
+    {
+        await Context.HandleErrorAsync(async () =>
+        {
+            var fileKey = Context.Request.Query["fileKey"];
+            var targetFilePath = Context.Request.Query["targetFilePath"];
+            var zipFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
+
+            var savePath = Path.Combine(Configuration.Configuration.TempFolderPath,
+                Guid.NewGuid() + Path.GetExtension(targetFilePath));
+
+            ZipService.ExtractFileFromZip(zipFilePath, savePath, targetFilePath);
+
+            var newFileKey = await FileUploadService.CreateFileDownloadLink(new CreateFileDownloadLinkParam()
+            {
+                FilePath = savePath,
+                CreateCopy = false,
+                ExpirationDate = 3,
+                DownloadFileName = Path.GetFileName(targetFilePath)
+            });
+
+            Context.BuildResult(new HttpSuccessResult(newFileKey));
+        });
+    }
 }
