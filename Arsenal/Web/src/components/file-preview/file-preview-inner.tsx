@@ -28,7 +28,6 @@ const notSupportedStyle = {
 
 const convertibleFileTypes = new Set([
   'doc',
-  'docx',
   'ppt',
   'pptx',
   'xls',
@@ -144,6 +143,10 @@ const FilePreviewInner = (props: IProps) => {
     if (isSuffixInLanguageMap(fileExtension)) {
       Component = MonacoEditorView;
     }
+  }
+
+  if (fileExtension === 'docx' && !window.Arsenal.convertableFileExtensions?.has('docx')) {
+    Component = DocxPreview;
   }
 
   if (!props.url) {
