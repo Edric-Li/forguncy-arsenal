@@ -14,21 +14,6 @@ internal class Middleware
         _next = next;
     }
 
-    private static bool IsValidFileKey(string input)
-    {
-        if (input.Length > 37 && input[36] != '_')
-        {
-            return false;
-        }
-
-        if (!Guid.TryParse(input[..36], out _))
-        {
-            return false;
-        }
-
-        return !string.IsNullOrEmpty(input[37..]);
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         BootstrapService.EnsureInitialization();
@@ -37,7 +22,7 @@ internal class Middleware
         {
             var fileKey = context.Request.Path.Value.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
 
-            if (!IsValidFileKey(fileKey))
+            if (!FileUploadService.IsValidFileKey(fileKey))
             {
                 await _next(context);
                 return;
@@ -87,7 +72,7 @@ internal class Middleware
         {
             var fileKey = context.Request.Query["file"];
 
-            if (!IsValidFileKey(fileKey))
+            if (!FileUploadService.IsValidFileKey(fileKey))
             {
                 await _next(context);
                 return;

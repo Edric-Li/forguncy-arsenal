@@ -755,6 +755,21 @@ public static class FileUploadService
         }
     }
 
+    public static bool IsValidFileKey(string input)
+    {
+        if (input.Length > 37 && input[36] != '_')
+        {
+            return false;
+        }
+
+        if (!Guid.TryParse(input[..36], out _))
+        {
+            return false;
+        }
+
+        return !string.IsNullOrEmpty(input[37..]);
+    }
+
     private static long ConvertDateTimeToTimestamp(DateTime dateTime)
     {
         var unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
