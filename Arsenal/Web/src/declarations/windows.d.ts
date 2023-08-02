@@ -41,6 +41,7 @@ interface IPreviewOptions {
     loop: boolean;
     muted: boolean;
     size: IVideoSize;
+    backgroundColor: string;
   };
   audioSettings: {
     autoPlay: boolean;

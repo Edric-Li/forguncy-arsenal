@@ -199,6 +199,11 @@ public class VideoSettings : ObjectPropertyBase
     [JsonProperty("size")]
     public VideoSize Size { get; set; } = VideoSize.Fill;
 
+    [DisplayName("背景颜色")]
+    [JsonProperty("backgroundColor")]
+    [ColorProperty]
+    public string BackgroundColor { get; set; } = "#FFFFFF";
+
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
         if (propertyName is nameof(DisableDownload) or nameof(DisablePictureInPicture))

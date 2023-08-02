@@ -1,7 +1,7 @@
 import preventDefaultEvent from '../../../../common/prevent-default-event';
-import { CSSProperties, useEffect, useRef } from 'react';
+import { CSSProperties, useEffect, useMemo, useRef } from 'react';
 
-const style: CSSProperties = {
+const defaultStyle: CSSProperties = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -14,6 +14,13 @@ enum VideoSize {
 
 const VideoViewer = (props: IPreviewComponentProps) => {
   const rootRef = useRef<HTMLVideoElement>(null);
+
+  const style = useMemo(() => {
+    return {
+      ...defaultStyle,
+      backgroundColor: Forguncy.ConvertToCssColor(props.videoSettings.backgroundColor),
+    };
+  }, [props]);
 
   useEffect(() => {
     const video = rootRef.current;
