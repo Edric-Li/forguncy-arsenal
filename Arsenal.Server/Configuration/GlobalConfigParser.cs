@@ -61,7 +61,7 @@ public abstract class GlobalConfigParser
     /// 获取ForguncyServer的根目录
     /// </summary>
     /// <returns></returns>
-    private static string GetForguncyServerFolder()
+    public static string GetForguncyServerFolder()
     {
         return Path.Combine(GetCommonDocuments(), "ForguncyServer");
     }
@@ -69,7 +69,10 @@ public abstract class GlobalConfigParser
     /// <summary>
     /// 获取GlobalConfig.xml的路径
     /// </summary>
-    private static string GetGlobalConfigXmlPath => Path.Combine(GetForguncyServerFolder(), "GlobalConfig.xml");
+    private static string GetGlobalConfigXmlPath =>
+        LoadBalancingConfigParser.IsLoadBalancingEnabled()
+            ? LoadBalancingConfigParser.GetGlobalConfigFilePath()
+            : Path.Combine(GetForguncyServerFolder(), "GlobalConfig.xml");
 
     /// <summary>
     /// 通过xpath获取xml文档中的值
@@ -124,7 +127,15 @@ public abstract class GlobalConfigParser
     private static string GetAppRootPath(string appName)
     {
         var value = GetGlobalValueByXPath("AppRootPath");
-        var parent = string.IsNullOrWhiteSpace(value) ? GetForguncyServerFolder() : value;
+
+        var appRootFolder = LoadBalancingConfigParser.IsLoadBalancingEnabled()
+            ? LoadBalancingConfigParser.GetAppRootFolderPath()
+            : GetForguncyServerFolder();
+
+        var parent = (string.IsNullOrWhiteSpace(value) || LoadBalancingConfigParser.IsLoadBalancingEnabled())
+            ? appRootFolder
+            : value;
+        
         return Path.Combine(parent, appName);
     }
 

@@ -1,5 +1,5 @@
-﻿using System.Collections.Concurrent;
-using Arsenal.Server.Model;
+﻿using Arsenal.Server.Model;
+using GrapeCity.Forguncy.ServerApi;
 
 namespace Arsenal.Server.Services;
 
@@ -8,8 +8,8 @@ namespace Arsenal.Server.Services;
 /// </summary>
 public static class MetadataCacheService
 {
-    private static readonly ConcurrentDictionary<string,FileMetaData> FileMetaDataDic = new();
-
+    public static ICacheService CacheService { get; set; }
+    
     /// <summary>
     /// 设置元数据
     /// </summary>
@@ -17,7 +17,7 @@ public static class MetadataCacheService
     /// <param name="value"></param>
     public static void Set(string key, FileMetaData value)
     {
-        FileMetaDataDic[key] = value;
+        CacheService.Replace(key, value, TimeSpan.FromMinutes(30));
     }
 
     /// <summary>
@@ -28,7 +28,8 @@ public static class MetadataCacheService
     /// <exception cref="KeyNotFoundException"></exception>
     public static FileMetaData Get(string key)
     {
-        if (FileMetaDataDic.TryGetValue(key, out var value))
+        var value = CacheService.Get<FileMetaData>(key);
+        if (value != null)
         {
             return value;
         }

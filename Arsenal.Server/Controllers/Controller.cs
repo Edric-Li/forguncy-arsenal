@@ -9,9 +9,16 @@ namespace Arsenal.Server.Controllers;
 
 public class Arsenal : ForguncyApi
 {
+    void PreInit()
+    {
+        MetadataCacheService.CacheService = Context.RequestServices.GetService(typeof(ICacheService)) as ICacheService;
+    }
+    
     [Post]
     public async Task InitMultipartUpload()
     {
+        PreInit();
+        
         await Context.HandleErrorAsync(async () =>
         {
             var body = await Context.ParseBodyAsync<InitMultipartUploadParam>();
@@ -67,6 +74,8 @@ public class Arsenal : ForguncyApi
     [Get]
     public async Task CheckFileInfo()
     {
+        PreInit();
+
         await Context.HandleErrorAsync(async () =>
         {
             var uploadId = Context.Request.Query["uploadId"];
@@ -86,6 +95,8 @@ public class Arsenal : ForguncyApi
     [Post]
     public async Task UploadPart()
     {
+        PreInit();
+
         await Context.HandleErrorAsync(async () =>
         {
             var files = Context.Request.Form.Files;
@@ -101,6 +112,8 @@ public class Arsenal : ForguncyApi
     [Post]
     public async Task CompleteMultipartUpload()
     {
+        PreInit();
+
         await Context.HandleErrorAsync(async () =>
         {
             var body = await Context.ParseBodyAsync<CompleteMultipartUploadParam>();
@@ -118,6 +131,8 @@ public class Arsenal : ForguncyApi
     [Post]
     public async Task AddFileRecord()
     {
+        PreInit();
+
         await Context.HandleErrorAsync(async () =>
         {
             var body = await Context.ParseBodyAsync<AddFileRecordParam>();
@@ -131,6 +146,8 @@ public class Arsenal : ForguncyApi
     [Post]
     public async Task CompressFilesIntoZip()
     {
+        PreInit();
+
         await Context.HandleErrorAsync(async () =>
         {
             var body = await Context.ParseBodyAsync<CompressFilesIntoZipParam>();
@@ -154,6 +171,8 @@ public class Arsenal : ForguncyApi
     [Get]
     public async Task GetZipEntries()
     {
+        PreInit();
+        
         await Context.HandleErrorAsync(async () =>
         {
             var fileKey = Context.Request.Query["fileKey"];
@@ -169,6 +188,8 @@ public class Arsenal : ForguncyApi
     [Get]
     public async Task GetTemporaryAccessKeyForZipFile()
     {
+        PreInit();
+
         await Context.HandleErrorAsync(async () =>
         {
             var fileKey = Context.Request.Query["fileKey"];
@@ -195,6 +216,8 @@ public class Arsenal : ForguncyApi
     [Get]
     public void GetConvertableFileExtensions()
     {
+        PreInit();
+
         Context.HandleError(() =>
         {
             Context.BuildResult(new HttpSuccessResult(FileConvertService.GetConvertableFileExtensions()));
