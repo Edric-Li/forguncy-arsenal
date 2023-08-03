@@ -31,23 +31,6 @@ const convertibleFileTypes = new Set([
   'ppt',
   'pptx',
   'xls',
-  'dxf',
-  'dwg',
-  'dgn',
-  'dwf',
-  'dwfx',
-  'dxb',
-  'dwt',
-  'plt',
-  'cf2',
-  'obj',
-  'fbx',
-  'collada',
-  'stl',
-  'stp',
-  'ifc',
-  'iges',
-  '3ds',
 ]);
 
 const viewMap: {
