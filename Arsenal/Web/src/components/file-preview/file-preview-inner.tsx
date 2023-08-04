@@ -26,12 +26,7 @@ const notSupportedStyle = {
   width: '100%',
 };
 
-const convertibleFileTypes = new Set([
-  'doc',
-  'ppt',
-  'pptx',
-  'xls',
-]);
+const convertibleFileTypes = new Set(['doc', 'ppt', 'pptx', 'xls']);
 
 const viewMap: {
   type: RegExp;

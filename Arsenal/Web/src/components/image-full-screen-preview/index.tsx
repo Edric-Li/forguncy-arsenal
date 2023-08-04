@@ -1,16 +1,7 @@
-import React, { CSSProperties, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image } from 'antd';
 import convertFileToSrc from '../../common/convert-file-to-src';
 import requestHelper from '../../common/request-helper';
-
-const style: CSSProperties = {
-  width: '100%',
-  height: '100%',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  position: 'absolute',
-};
 
 interface IProps {
   url: string;
@@ -34,17 +25,15 @@ const ImageFullScreenPreview = (props: IProps) => {
   }, []);
 
   return (
-    <div style={style}>
-      <Image
-        src=''
-        style={{ display: 'none' }}
-        preview={{
-          visible: true,
-          src: src,
-          onVisibleChange: props.onClose,
-        }}
-      />
-    </div>
+    <Image
+      src=''
+      style={{ display: 'none' }}
+      preview={{
+        visible: true,
+        src: src,
+        onVisibleChange: props.onClose,
+      }}
+    />
   );
 };
 

@@ -124,6 +124,7 @@ const ZipViewer = (props: IPreviewComponentProps) => {
           rootClassName='arsenal-file-preview-zip-tree'
           multiple
           showLine
+          selectable={false}
           defaultExpandAll
           treeData={treeData}
           height={rootRef.current?.offsetHeight}
