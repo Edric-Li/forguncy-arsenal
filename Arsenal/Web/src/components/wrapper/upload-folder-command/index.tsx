@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { RcFile, UploadProps } from 'antd/es/upload';
 import { UploadFile } from 'antd/es/upload/interface';
 import { Upload } from 'antd';
-import CacheService from '../../../common/cache-service';
+import FileCacheService from '../../../common/file-cache-service';
 import useFileUploadEngine from '../../../hooks/useFileUploadEngine';
 import addWatermarkToFile from '../../../common/add-watermark-to-file';
 import { ConflictStrategy, WatermarkSettings } from '../../../declarations/types';
@@ -58,7 +58,7 @@ const UploadFolderCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase })
     await fileUploadEngine.addTask(newFile as RcFile, (callbackInfo) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
-        CacheService.trySet(callbackInfo.url!, newFile);
+        FileCacheService.tryPut(callbackInfo.url!, newFile);
 
         uploadedFilesRef.current.push(uploadFile);
 

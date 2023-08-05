@@ -18,6 +18,12 @@ internal class Middleware
     {
         BootstrapService.EnsureInitialization();
 
+        if (context.Request.Path.Value.Contains("/converted-file"))
+        {
+            await context.HandleErrorAsync(async () => { await FileConvertService.GetConvertedFileAsync(context); });
+            return;
+        }
+
         if (context.Request.Path.Value.Contains("/Upload/"))
         {
             var fileKey = context.Request.Path.Value.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
@@ -36,16 +42,6 @@ internal class Middleware
                 {
                     context.Response.StatusCode = 200;
                     return;
-                }
-            }
-
-            // ac is auto convert
-            if (context.Request.Query["ac"] == "1")
-            {
-                if (new FileConvertService(fileKey, diskFilePath).TryConvertFileAsync(out var newFilePath))
-                {
-                    context.Response.Headers.Add("Converted", "1");
-                    diskFilePath = newFilePath;
                 }
             }
 

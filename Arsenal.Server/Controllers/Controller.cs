@@ -63,7 +63,7 @@ public class Arsenal : ForguncyApi
                 Directory.CreateDirectory(tempFolderPath);
             }
 
-            Context.BuildResult(new HttpSuccessResult(new
+            await Context.BuildResultAsync(new HttpSuccessResult(new
             {
                 uploadId,
                 fileName
@@ -84,7 +84,7 @@ public class Arsenal : ForguncyApi
 
             var parts = FileUploadService.ListParts(uploadId);
 
-            Context.BuildResult(new HttpSuccessResult(new
+            await Context.BuildResultAsync(new HttpSuccessResult(new
             {
                 exist,
                 parts
@@ -105,7 +105,7 @@ public class Arsenal : ForguncyApi
             Context.Request.Form.TryGetValue("uploadId", out var uploadId);
 
             await FileUploadService.UploadPartAsync(uploadId, Convert.ToInt32(partNumber), files[0]);
-            Context.BuildResult(new HttpSuccessResult());
+            await Context.BuildResultAsync(new HttpSuccessResult());
         });
     }
 
@@ -120,7 +120,7 @@ public class Arsenal : ForguncyApi
 
             var fileEntity = await FileUploadService.CompleteMultipartUploadAsync(body.UploadId);
 
-            Context.BuildResult(new HttpSuccessResult(new
+            await Context.BuildResultAsync(new HttpSuccessResult(new
             {
                 fileKey = fileEntity.Key,
                 fileName = fileEntity.Name
@@ -139,7 +139,7 @@ public class Arsenal : ForguncyApi
 
             var fileEntity = await FileUploadService.AddFileRecordAsync(body.UploadId);
 
-            Context.BuildResult(new HttpSuccessResult(fileEntity.Key));
+            await Context.BuildResultAsync(new HttpSuccessResult(fileEntity.Key));
         });
     }
 
@@ -164,7 +164,7 @@ public class Arsenal : ForguncyApi
                 ExpirationDate = 3
             });
 
-            Context.BuildResult(new HttpSuccessResult(data));
+            await Context.BuildResultAsync(new HttpSuccessResult(data));
         });
     }
 
@@ -181,7 +181,7 @@ public class Arsenal : ForguncyApi
 
             var entries = ZipService.GetZipEntries(diskFilePath);
 
-            Context.BuildResult(new HttpSuccessResult(entries));
+            await Context.BuildResultAsync(new HttpSuccessResult(entries));
         });
     }
 
@@ -209,18 +209,28 @@ public class Arsenal : ForguncyApi
                 DownloadFileName = Path.GetFileName(targetFilePath)
             });
 
-            Context.BuildResult(new HttpSuccessResult(newFileKey));
+            await Context.BuildResultAsync(new HttpSuccessResult(newFileKey));
         });
     }
 
     [Get]
-    public void GetConvertableFileExtensions()
+    public async Task GetConvertableFileExtensions()
     {
         PreInit();
 
-        Context.HandleError(() =>
+        await Context.HandleErrorAsync(async () =>
         {
-            Context.BuildResult(new HttpSuccessResult(FileConvertService.GetConvertableFileExtensions()));
+            await Context.BuildResultAsync(new HttpSuccessResult(FileConvertService.GetConvertableFileExtensions()));
+        });
+    }
+
+    [Get]
+    public async Task CreateFileConversionTask()
+    {
+        await Context.HandleErrorAsync(async () =>
+        {
+            await FileConvertService.CreateFileConversionTask(Context);
+            await Context.BuildResultAsync(new HttpSuccessResult());
         });
     }
 }

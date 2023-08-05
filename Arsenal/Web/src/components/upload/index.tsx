@@ -16,7 +16,7 @@ import ImgCrop, { ImgCropProps } from 'antd-img-crop';
 import FilePreviewInner, { isImage } from '../file-preview/file-preview-inner';
 import { getBase64 } from '../../common/get-base64';
 import ImageFullScreenPreview from '../image-full-screen-preview';
-import CacheService from '../../common/cache-service';
+import FileCacheService from '../../common/file-cache-service';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
 import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../declarations/types';
 import useFileUploadEngine from '../../hooks/useFileUploadEngine';
@@ -359,7 +359,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       fileListRef.current[index] = mergedInfo;
 
       if (mergedInfo.status === 'success') {
-        CacheService.trySet(callbackInfo.url!, newFile);
+        FileCacheService.tryPut(callbackInfo.url!, newFile);
         uploadedFilesRef.current.push(mergedInfo);
         // 必须要在这里设置为done，否则会导致上传完成后，下载按钮不可用（Antd.Design源码中是这样判断的）
         mergedInfo.status = 'done';

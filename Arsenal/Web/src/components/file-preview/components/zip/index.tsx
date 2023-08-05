@@ -76,6 +76,7 @@ const ZipViewer = (props: IPreviewComponentProps) => {
   useEffect(() => {
     (async () => {
       const res = await requestHelper.getZipEntries(props.url.split('/').pop() as any);
+
       if (!res.result) {
         return;
       }

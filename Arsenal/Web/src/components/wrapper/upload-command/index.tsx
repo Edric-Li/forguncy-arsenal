@@ -3,7 +3,7 @@ import { RcFile, UploadProps } from 'antd/es/upload';
 import { UploadFile } from 'antd/es/upload/interface';
 import { message, Upload } from 'antd';
 import ImgCrop from 'antd-img-crop';
-import CacheService from '../../../common/cache-service';
+import FileCacheService from '../../../common/file-cache-service';
 import useFileUploadEngine from '../../../hooks/useFileUploadEngine';
 import addWatermarkToFile from '../../../common/add-watermark-to-file';
 import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../../declarations/types';
@@ -90,7 +90,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
     await fileUploadEngine.addTask(newFile as RcFile, (callbackInfo) => {
       Object.assign(uploadFile, callbackInfo);
       if (uploadFile.status === 'success') {
-        CacheService.trySet(callbackInfo.url!, newFile);
+        FileCacheService.tryPut(callbackInfo.url!, newFile);
 
         uploadedFilesRef.current.push(uploadFile);
 

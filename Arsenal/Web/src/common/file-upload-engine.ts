@@ -4,7 +4,6 @@ import requestHelper, { HttpHandlerResult, IInitMultipartUploadResult } from './
 import { ConflictStrategy } from '../declarations/types';
 import { UploadFile } from 'antd/es/upload/interface';
 import { message } from 'antd';
-import CacheService from './cache-service';
 import { RcFile } from 'antd/es/upload';
 
 export interface FileUploadOptions {
@@ -73,6 +72,31 @@ class FileUploadEngine {
     return Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/' + fileName;
   }
 
+  public static getAbsoluteUrl(url: string): string {
+    return this.isRelativeUrl(url) ? location.origin + url : url;
+  }
+
+  public static isRelativeUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return false;
+    } catch (error) {
+      return true;
+    }
+  }
+
+  public static getConvertedFileUrl(fileUrl: string, targetType: string, forceUpdated: boolean = false): string {
+    return (
+      Forguncy.Helper.SpecialPath.getBaseUrl() +
+      'converted-file?url=' +
+      encodeURI(this.getAbsoluteUrl(fileUrl)) +
+      '&target-type=' +
+      encodeURIComponent(targetType) +
+      '&force-updated=' +
+      forceUpdated
+    );
+  }
+
   public static extractFileNameFromUrl(url: string): string {
     return url.replace(Forguncy.Helper.SpecialPath.getBaseUrl() + 'Upload/', '');
   }
@@ -83,26 +107,10 @@ class FileUploadEngine {
     );
   }
 
-  static checkFileExists(url: string): Promise<boolean> {
-    return new Promise(async (resolve) => {
-      try {
-        if (CacheService.get(url)) {
-          return true;
-        }
-
-        const response = await fetch(url, { method: 'HEAD' });
-
-        resolve(response.ok);
-      } catch (e) {
-        resolve(true);
-      }
-    });
-  }
-
   public static download(uidOrUrl: string) {
     const href = uidOrUrl?.includes(':/') ? uidOrUrl : this.getDownloadUrl(uidOrUrl);
 
-    this.checkFileExists(href).then((exists) => {
+    requestHelper.checkFileExists(href).then((exists) => {
       if (exists) {
         const a = document.createElement('a');
         a.href = href;

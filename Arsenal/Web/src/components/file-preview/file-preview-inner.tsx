@@ -84,7 +84,7 @@ const FilePreviewInner = (props: IProps) => {
           const res = await requestHelper.getConvertableFileExtensions();
           window.Arsenal.convertableFileExtensions = new Set(res.data);
         }
-        const exists = await FileUploadEngine.checkFileExists(props.url);
+        const exists = await requestHelper.checkFileExists(props.url);
         setExists(exists);
       }
     })();

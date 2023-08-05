@@ -52,3 +52,9 @@
 .arsenal-file-preview-zip-tree {
   width: 100%;
 }
+
+.arsenal-spin-centered {
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 10px);
+}

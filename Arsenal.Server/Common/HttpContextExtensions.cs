@@ -15,10 +15,14 @@ public static class HttpContextExtensions
     /// </summary>
     /// <param name="context"></param>
     /// <param name="result"></param>
-    public static void BuildResult(this HttpContext context, HttpResult result)
+    public static async Task BuildResultAsync(this HttpContext context, HttpResult result)
     {
         context.Response.ContentType = "application/json";
-        context.Response.WriteAsync(JsonConvert.SerializeObject(result, Formatting.None));
+
+        if (context.Response.Body.CanWrite)
+        {
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(result, Formatting.None));
+        }
     }
 
     /// <summary>
@@ -51,26 +55,39 @@ public static class HttpContextExtensions
         }
         catch (Exception e)
         {
-            context.BuildResult(new HttpFailureResult(e.Message));
+            await context.BuildResultAsync(new HttpFailureResult(e.Message));
             Trace.WriteLine(e);
         }
     }
 
     /// <summary>
-    /// 处理异常
+    /// 写入流
     /// </summary>
     /// <param name="context"></param>
-    /// <param name="func"></param>
-    public static void HandleError(this HttpContext context, Action func)
+    /// <param name="stream"></param>
+    private static async Task ResponseStreamAsync(this HttpContext context, Stream stream)
     {
-        try
-        {
-            func.Invoke();
-        }
-        catch (Exception e)
-        {
-            context.BuildResult(new HttpFailureResult(e.Message));
-            Trace.WriteLine(e);
-        }
+        await stream.CopyToAsync(context.Response.Body);
+        _ = stream.DisposeAsync();
+    }
+
+    /// <summary>
+    /// 通过文件路径写入流
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="filePath"></param>
+    public static async Task ResponseStreamByFilePathAsync(this HttpContext context, string filePath)
+    {
+        await context.ResponseStreamAsync(GetStreamByFilePath(filePath));
+    }
+
+    /// <summary>
+    /// 通过文件路径获取流
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    private static Stream GetStreamByFilePath(string filePath)
+    {
+        return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, true);
     }
 }

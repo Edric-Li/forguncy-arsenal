@@ -90,6 +90,8 @@ public static class FileUploadService
     {
         var parts = ListParts(uploadId);
 
+        parts.Sort();
+
         var folderName = MetadataCacheService.Get(uploadId).Hash ?? uploadId;
 
         var tmpFile = Path.Combine(Configuration.Configuration.TempFolderPath, folderName, ".merge");

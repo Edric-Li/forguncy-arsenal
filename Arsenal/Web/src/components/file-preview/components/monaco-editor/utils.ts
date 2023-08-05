@@ -1,4 +1,6 @@
 const languageMap: { [key: string]: string } = {
+  '.editorconfig': 'plaintext',
+  '.gitignore': 'plaintext',
   '.txt': 'plaintext',
   '.abap': 'abap',
   '.cls': 'apex',
@@ -10,6 +12,8 @@ const languageMap: { [key: string]: string } = {
   '.coffee': 'coffeescript',
   '.c': 'c',
   '.cpp': 'cpp',
+  '.sln': 'csharp',
+  '.csproj': 'csharp',
   '.cs': 'csharp',
   '.csp': 'csp',
   '.css': 'css',
@@ -77,6 +81,7 @@ const languageMap: { [key: string]: string } = {
   '.tsx': 'typescript',
   '.vb': 'vb',
   '.wgsl': 'wgsl',
+  '.xaml': 'xml',
   '.xml': 'xml',
   '.yaml': 'yaml',
   '.json': 'json',

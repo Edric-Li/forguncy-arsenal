@@ -1,7 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
 import { ConflictStrategy } from '../declarations/types';
 import { message } from 'antd';
-import cacheService from './cache-service';
+import FileUploadEngine from './file-upload-engine';
+import FileCacheService from './file-cache-service';
 
 interface HttpResultData<T = { [name: string]: any }> {
   result: boolean;
@@ -10,25 +11,6 @@ interface HttpResultData<T = { [name: string]: any }> {
   requestDuration: number;
   originalResponse: AxiosResponse;
 }
-
-export type HttpHandlerResult<T = object> = Promise<HttpResultData<T>>;
-
-axios.defaults.baseURL = Forguncy.Helper.SpecialPath.getBaseUrl() + 'customapi/arsenal';
-
-axios.interceptors.response.use(
-  (response) => {
-    if (!response.data.result) {
-      message.error(response.data.message);
-    }
-    return {
-      originalResponse: response,
-      ...response.data,
-    };
-  },
-  async (error) => {
-    return { result: false, message: error.message };
-  },
-);
 
 interface IInitMultipartUploadParam {
   name: string;
@@ -54,6 +36,29 @@ export interface ICompressFilesIntoZip {
   fileIds: string[];
   needKeepFolderStructure: boolean;
 }
+
+export type HttpHandlerResult<T = object> = Promise<HttpResultData<T>>;
+
+const convertedFiles = new Set<string>();
+const zipEntries = new Map<string, string[]>();
+const fileExisted = new Set<string>();
+
+axios.defaults.baseURL = Forguncy.Helper.SpecialPath.getBaseUrl() + 'customapi/arsenal';
+
+axios.interceptors.response.use(
+  (response) => {
+    if (!response.data.result) {
+      message.error(response.data.message);
+    }
+    return {
+      originalResponse: response,
+      ...response.data,
+    };
+  },
+  async (error) => {
+    return { result: false, message: error.message };
+  },
+);
 
 const checkFileInfo = (uploadId: string): HttpHandlerResult<{ exist: boolean; parts: number[] }> => {
   return axios.get('/checkFileInfo', {
@@ -89,31 +94,36 @@ const completeMultipartUpload = (uploadId: string): HttpHandlerResult<ICompleteM
 };
 
 const getBlob = async (url: string): Promise<Blob> => {
-  return cacheService.getValueAndSet<Blob>(url, async () => {
-    return (await fetch(url)).blob();
-  });
+  return FileCacheService.getValueAndSet<Blob>(
+    url,
+    async () => {
+      return (await fetch(url)).blob();
+    },
+    true,
+  );
 };
 
 const getText = async (url: string): Promise<string> => {
-  const file = await cacheService.getValueAndSet<File>(url, async () => await getFile(url));
+  const file = await FileCacheService.getValueAndSet<File>(url, async () => await getFile(url));
   return file.text();
 };
 
 const getSpreadFile = async (url: string): Promise<File> => {
-  return await cacheService.getValueAndSet<File>(url, async () => {
-    if (url.endsWith('.xls')) {
-      url += '?ac=1';
-    }
+  return await FileCacheService.getValueAndSet<File>(url, async () => {
     const blob = await requestHelper.getBlob(url);
     return new File([blob], 'file.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   });
 };
 
 const getFile = async (url: string): Promise<File> => {
-  return await cacheService.getValueAndSet<File>(url, async () => {
-    const blob = await requestHelper.getBlob(url);
-    return new File([blob], 'file', { type: blob.type });
-  });
+  return await FileCacheService.getValueAndSet<File>(
+    url,
+    async () => {
+      const blob = await requestHelper.getBlob(url);
+      return new File([blob], 'file', { type: blob.type });
+    },
+    true,
+  );
 };
 
 const compressFilesIntoZip = (param: ICompressFilesIntoZip): HttpHandlerResult<string> => {
@@ -121,11 +131,26 @@ const compressFilesIntoZip = (param: ICompressFilesIntoZip): HttpHandlerResult<s
 };
 
 const getZipEntries = async (fileKey: string): HttpHandlerResult<string[]> => {
-  return axios.get('/getZipEntries', {
+  if (zipEntries.has(fileKey)) {
+    return {
+      result: true,
+      message: '',
+      data: zipEntries.get(fileKey)!,
+      requestDuration: 0,
+      originalResponse: null!,
+    };
+  }
+
+  const result = (await axios.get('/getZipEntries', {
     params: {
       fileKey,
     },
-  });
+  })) as HttpResultData<string[]>;
+
+  if (result.result) {
+    zipEntries.set(fileKey, result.data);
+  }
+  return result;
 };
 
 const getConvertableFileExtensions = async (): HttpHandlerResult<string[]> => {
@@ -144,6 +169,50 @@ const generateTemporaryAccessKeyForZipFile = async (
   });
 };
 
+const createFileConversionTask = async (
+  url: string,
+  targetType: string,
+  forceUpdated: boolean = false,
+): HttpHandlerResult<string> => {
+  if (convertedFiles.has(url) && !forceUpdated) {
+    return {
+      result: true,
+      message: 'The file has been converted.',
+      data: '',
+      requestDuration: 0,
+      originalResponse: null!,
+    };
+  }
+  const res = (await axios.get('/createFileConversionTask', {
+    params: {
+      url: FileUploadEngine.getAbsoluteUrl(url),
+      'target-type': targetType,
+      'force-updated': forceUpdated,
+    },
+  })) as HttpResultData<string>;
+
+  if (res.result) {
+    convertedFiles.add(url);
+  }
+  return res;
+};
+
+const checkFileExists = async (url: string): Promise<boolean> => {
+  try {
+    if (FileCacheService.get(url) || fileExisted.has(url)) {
+      return true;
+    }
+
+    const response = await fetch(url, { method: 'HEAD' });
+    if (response.ok) {
+      fileExisted.add(url);
+    }
+    return response.ok;
+  } catch (e) {
+    return true;
+  }
+};
+
 const requestHelper = {
   checkFileInfo,
   initMultipartUpload,
@@ -158,6 +227,8 @@ const requestHelper = {
   getZipEntries,
   generateTemporaryAccessKeyForZipFile,
   getConvertableFileExtensions,
+  createFileConversionTask,
+  checkFileExists,
 };
 
 export default requestHelper;
