@@ -1,7 +1,7 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import requestHelper from '../../../../common/request-helper';
 import type { DataNode } from 'antd/es/tree';
-import { Modal, Tree } from 'antd';
+import { Input, Modal, Tree } from 'antd';
 import FileUploadEngine from '../../../../common/file-upload-engine';
 import FilePreviewInner, { isImage } from '../../file-preview-inner';
 import ImageFullScreenPreview from '../../../image-full-screen-preview';
@@ -67,10 +67,11 @@ const buildTree = (paths: string[]): Node[] => {
 
 const ZipViewer = (props: IPreviewComponentProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
+  const originalPathRef = useRef<string[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewName, setPreviewName] = useState('');
-
+  const [showSearch, setShowSearch] = useState(false);
   const [treeData, setTreeData] = React.useState<DataNode[]>([]);
 
   useEffect(() => {
@@ -80,9 +81,27 @@ const ZipViewer = (props: IPreviewComponentProps) => {
       if (!res.result) {
         return;
       }
+      originalPathRef.current = res.data;
       setTreeData(buildTree(res.data));
     })();
   }, [props.url]);
+
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'f') {
+        event.preventDefault();
+        event.stopPropagation();
+
+        setShowSearch(true);
+      }
+    };
+
+    document.addEventListener('keydown', listener);
+
+    return () => {
+      document.removeEventListener('keydown', listener);
+    };
+  }, []);
 
   const handleClick = async (node: Node) => {
     if (!node.isLeaf) {
@@ -118,6 +137,53 @@ const ZipViewer = (props: IPreviewComponentProps) => {
     );
   };
 
+  const handleSearchChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const matchData = originalPathRef.current.filter((path) => path.includes(value));
+
+    const loop = (data: DataNode[]): DataNode[] =>
+      data.map((item, dataIndex) => {
+        const strTitle = item.title as string;
+        const index = strTitle.indexOf(value);
+        const beforeStr = strTitle.substring(0, index);
+        const afterStr = strTitle.slice(index + value.length);
+        const title =
+          index > -1 ? (
+            <span>
+              {beforeStr}
+              <span className='arsenal-file-preview-zip-tree-search-value'>{value}</span>
+              {afterStr}
+            </span>
+          ) : (
+            <span>{strTitle}</span>
+          );
+
+        if (item.children) {
+          return { title, key: item.key, children: loop(item.children) };
+        }
+
+        return {
+          title,
+          key: item.key,
+        };
+      });
+
+    setTreeData(loop(buildTree(matchData)));
+  };
+
+  const renderSearchContainer = () => {
+    return (
+      <div className='arsenal-file-preview-zip-search-box'>
+        <Input
+          placeholder='请输入搜索内容'
+          onChange={handleSearchChanged}
+          autoFocus
+          className='arsenal-file-preview-zip-search'
+        />
+      </div>
+    );
+  };
+
   return (
     <div style={style} ref={rootRef}>
       {treeData.length ? (
@@ -136,6 +202,7 @@ const ZipViewer = (props: IPreviewComponentProps) => {
       ) : null}
 
       {renderFilePreview()}
+      {showSearch && renderSearchContainer()}
     </div>
   );
 };

@@ -58,3 +58,18 @@
   top: 50%;
   left: calc(50% - 10px);
 }
+
+.arsenal-file-preview-zip-search-box {
+  width: 300px;
+  position: absolute;
+  top: 50px;
+  right: 40px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 100;
+}
+
+.arsenal-file-preview-zip-tree-search-value {
+  background-color: #ffff00;
+}
