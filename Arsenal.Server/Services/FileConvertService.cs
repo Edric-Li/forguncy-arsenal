@@ -129,7 +129,7 @@ public class FileConvertService
     /// 尝试转换文件
     /// </summary>
     /// <returns></returns>
-    private static bool ConvertFileAsync(string inputFile, string outputFile)
+    private static async Task<bool> ConvertFileAsync(string inputFile, string outputFile)
     {
         var extension = Path.GetExtension(inputFile).ToLower().TrimStart('.');
 
@@ -174,7 +174,15 @@ public class FileConvertService
 
         if (SupportedCadFileExtensions.Contains(extension))
         {
-            new CadConverter(inputFile, outputFile).ConvertToPdf();
+            if (ZWCADConverter.IsInstalled)
+            {
+                await new ZWCADConverter(inputFile, outputFile).ConvertToPdfAsync();
+            }
+            else
+            {
+                await new CadConverter(inputFile, outputFile).ConvertToPdfAsync();
+            }
+
             return true;
         }
 
@@ -207,7 +215,7 @@ public class FileConvertService
             fileName = ConvertToGuidByString(fileName) + "_" + fileName;
         }
 
-        var convertedFileName = Path.GetFileNameWithoutExtension(fileName) + "." + targetFileType;
+        var convertedFileName = fileName.Substring(0, 36) + "." + targetFileType;
 
         var convertedFilePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, convertedFileName);
 
@@ -252,7 +260,7 @@ public class FileConvertService
             throw new Exception("文件不存在");
         }
 
-        if (!ConvertFileAsync(inputFilePath, convertedFilePath))
+        if (!await ConvertFileAsync(inputFilePath, convertedFilePath))
         {
             throw new Exception("文件转换失败");
         }
@@ -319,12 +327,6 @@ public class FileConvertService
         var forceUpdate = context.Request.Query["force-updated"].ToString();
 
         var filePath = await CreateOrGetConvertingTaskAsync(url, targetFileType, forceUpdate == "true");
-
-        // 如果文件不存在，且强制更新为false，则重新创建任务
-        if (!File.Exists(filePath) && forceUpdate != "true")
-        {
-            filePath = await CreateOrGetConvertingTaskAsync(url, targetFileType, true);
-        }
 
         // 请求未取消，且需要返回文件流时才返回文件流
         if (!context.RequestAborted.IsCancellationRequested && needResponseFileStream)

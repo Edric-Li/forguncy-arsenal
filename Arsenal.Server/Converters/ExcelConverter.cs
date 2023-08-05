@@ -52,6 +52,7 @@ public class ExcelConverter
 
             try
             {
+                processes.Instance!.DisplayAlerts = false;
                 var workbook = processes.Instance.Workbooks.Open(_filePath, ReadOnly: true);
                 workbook.SaveAs(_savePath, XlFileFormat.xlOpenXMLWorkbook);
                 workbook.Close();

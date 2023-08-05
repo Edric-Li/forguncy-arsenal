@@ -15,7 +15,7 @@ public class CadConverter
         _savePath = savePath;
     }
 
-    public void ConvertToPdf()
+    public async Task ConvertToPdfAsync()
     {
         using var cadImage = Image.Load(_filePath);
         var rasterizationOptions = new CadRasterizationOptions();
@@ -25,6 +25,6 @@ public class CadConverter
             VectorRasterizationOptions = rasterizationOptions
         };
 
-        cadImage.Save(_savePath, pdfOptions);
+        await cadImage.SaveAsync(_savePath, pdfOptions);
     }
 }
