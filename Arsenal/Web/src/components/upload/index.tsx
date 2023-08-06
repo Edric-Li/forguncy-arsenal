@@ -233,8 +233,12 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     return {
       setValue: (value: string) => {
         if (!value) {
+          fileListRef.current = [];
+          uploadedFilesRef.current = [];
+          syncFileListRefDataToState();
           return;
         }
+
         const files = value.split('|').filter((i) => i);
 
         if (value === getValue()) {
