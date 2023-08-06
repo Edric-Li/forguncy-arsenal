@@ -8,7 +8,7 @@ namespace Arsenal.Server.Converters;
 /// <summary>
 /// 中望CAD转换器
 /// </summary>
-public class ZWCADConverter
+public class ZWCadConverter
 {
     /// <summary>
     /// 是否安装了ZWCAD
@@ -49,7 +49,7 @@ public class ZWCADConverter
     /// 静态构造函数
     /// 来判断是否安装了ZWCAD
     /// </summary>
-    static ZWCADConverter()
+    static ZWCadConverter()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -64,7 +64,7 @@ public class ZWCADConverter
     /// </summary>
     /// <param name="filePath"></param>
     /// <param name="savePath"></param>
-    public ZWCADConverter(string filePath, string savePath)
+    public ZWCadConverter(string filePath, string savePath)
     {
         _filePath = filePath;
         _savePath = savePath;

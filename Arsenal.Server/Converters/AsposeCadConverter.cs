@@ -3,22 +3,26 @@ using Aspose.CAD.ImageOptions;
 
 namespace Arsenal.Server.Converters;
 
-public class CadConverter
+public class AsposeCadConverter
 {
     private readonly string _filePath;
 
     private readonly string _savePath;
 
-    public CadConverter(string pptPath, string savePath)
+    public AsposeCadConverter(string filePath, string savePath)
     {
-        _filePath = pptPath;
+        _filePath = filePath;
         _savePath = savePath;
     }
 
     public async Task ConvertToPdfAsync()
     {
         using var cadImage = Image.Load(_filePath);
-        var rasterizationOptions = new CadRasterizationOptions();
+
+        var rasterizationOptions = new CadRasterizationOptions()
+        {
+            Layouts = new[] { "Model" }
+        };
 
         var pdfOptions = new PdfOptions
         {

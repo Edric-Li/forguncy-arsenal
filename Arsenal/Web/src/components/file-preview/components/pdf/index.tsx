@@ -31,7 +31,7 @@ const PDFViewer = (props: IPreviewComponentProps) => {
           encodeURIComponent(url),
       );
     })();
-  }, []);
+  }, [props.url]);
 
   useEffect(() => {
     const iframe = rootRef.current;

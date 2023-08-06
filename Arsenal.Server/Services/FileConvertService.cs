@@ -38,15 +38,30 @@ public class FileConvertService
     };
 
     /// <summary>
-    /// 支持Office文件的后缀名
+    /// 支持转换的Word文件的后缀名
     /// </summary>
-    private static readonly HashSet<string> SupportedOfficeFileExtensions = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> SupportedWordFileExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "doc",
+        "docx",
+    };
+
+    /// <summary>
+    /// 支持转换的PowerPoint文件的后缀名
+    /// </summary>
+    private static readonly HashSet<string> SupportedPowerPointFileExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         "ppt",
         "pptx",
+    };
+
+    /// <summary>
+    /// 支持转换的Excel文件的后缀名
+    /// </summary>
+    private static readonly HashSet<string> SupportedExcelFileExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
         "xls",
-        "doc",
-        "docx",
+        "csv",
     };
 
     /// <summary>
@@ -107,24 +122,22 @@ public class FileConvertService
 
         if (PptConverter.IsInstalled)
         {
-            result.Add("ppt");
-            result.Add("pptx");
+            result.UnionWith(SupportedPowerPointFileExtensions);
         }
 
         if (ExcelConverter.IsInstalled)
         {
-            result.Add("xls");
+            result.UnionWith(SupportedExcelFileExtensions);
         }
 
         if (WordConverter.IsInstalled)
         {
-            result.Add("doc");
-            result.Add("docx");
+            result.UnionWith(SupportedWordFileExtensions);
         }
 
         return result;
     }
-    
+
     /// <summary>
     /// 尝试转换文件
     /// </summary>
@@ -133,56 +146,34 @@ public class FileConvertService
     {
         var extension = Path.GetExtension(inputFile).ToLower().TrimStart('.');
 
-        if (!SupportedOfficeFileExtensions.Contains(extension) && !SupportedCadFileExtensions.Contains(extension))
+        if (SupportedPowerPointFileExtensions.Contains(extension))
         {
-            return false;
-        }
-
-        if (extension.StartsWith("ppt"))
-        {
-            if (!PptConverter.IsInstalled)
-            {
-                return false;
-            }
-
-            new PptConverter(inputFile, outputFile).ConvertToPdf();
-            
+            await new PptConverter(inputFile, outputFile).ConvertToPdfAsync();
             return true;
         }
 
-        if (extension == "xls")
+        if (SupportedExcelFileExtensions.Contains(extension))
         {
-            if (!ExcelConverter.IsInstalled)
-            {
-                return false;
-            }
-
-            new ExcelConverter(inputFile, outputFile).ConvertToXlsx();
+            await new ExcelConverter(inputFile, outputFile).ConvertToXlsxAsync();
             return true;
         }
 
-        if (extension.StartsWith("doc"))
+        if (SupportedWordFileExtensions.Contains(extension))
         {
-            if (!WordConverter.IsInstalled)
-            {
-                return false;
-            }
-
-            new WordConverter(inputFile, outputFile).ConvertToPdf();
+            await new WordConverter(inputFile, outputFile).ConvertToPdfAsync();
             return true;
         }
 
         if (SupportedCadFileExtensions.Contains(extension))
         {
-            if (ZWCADConverter.IsInstalled)
+            if (ZWCadConverter.IsInstalled)
             {
-                await new ZWCADConverter(inputFile, outputFile).ConvertToPdfAsync();
+                await new ZWCadConverter(inputFile, outputFile).ConvertToPdfAsync();
             }
             else
             {
-                await new CadConverter(inputFile, outputFile).ConvertToPdfAsync();
+                await new AsposeCadConverter(inputFile, outputFile).ConvertToPdfAsync();
             }
-
             return true;
         }
 

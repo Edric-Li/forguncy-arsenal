@@ -4,33 +4,69 @@ using Arsenal.Server.Common;
 
 namespace Arsenal.Server.Converters;
 
+/// <summary>
+/// LibreOffice转换器
+/// </summary>
 public class LibreOfficeConverter
 {
+    /// <summary>
+    /// 是否安装了LibreOffice
+    /// </summary>
     public static readonly bool IsInstalled;
 
+    /// <summary>
+    /// 程序名称
+    /// </summary>
     private static readonly Lazy<string> ProgramNameLazy = new(() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "soffice_safe.exe" : "./soffice");
 
+    /// <summary>
+    /// 程序路径
+    /// </summary>
     private static readonly Lazy<string> LibreOfficePathLazy = new(() =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? @"C:\Program Files\LibreOffice\program"
             : "/usr/lib/libreoffice/program");
 
+    /// <summary>
+    /// 创建信号量，限制LibreOffice的并发数
+    /// </summary>
+    private static readonly SemaphoreSlim Semaphore = new(1, 1);
+
+    /// <summary>
+    /// 文件路径
+    /// </summary>
     private readonly string _filePath;
 
+    /// <summary>
+    /// 保存路径
+    /// </summary>
     private readonly string _savePath;
 
+    /// <summary>
+    /// 静态构造函数，来判断是否安装了LibreOffice
+    /// </summary>
     static LibreOfficeConverter()
     {
         IsInstalled = File.Exists(Path.Combine(LibreOfficePathLazy.Value, ProgramNameLazy.Value));
     }
 
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="xlsPath"></param>
+    /// <param name="savePath"></param>
     public LibreOfficeConverter(string xlsPath, string savePath)
     {
         _filePath = xlsPath;
         _savePath = savePath;
     }
 
+    /// <summary>
+    /// 创建转换进程
+    /// </summary>
+    /// <param name="convertTo"></param>
+    /// <returns></returns>
     private ProcessStartInfo CreateProcessStartInfo(string convertTo)
     {
         var command =
@@ -49,8 +85,14 @@ public class LibreOfficeConverter
         return process;
     }
 
-    private void Convert(string convertTo)
+    /// <summary>
+    /// 转换
+    /// </summary>
+    /// <param name="convertTo"></param>
+    private async Task ConvertAsync(string convertTo)
     {
+        await Semaphore.WaitAsync();
+
         try
         {
             var processInfo = CreateProcessStartInfo(convertTo);
@@ -58,21 +100,31 @@ public class LibreOfficeConverter
             using var process = new Process();
             process.StartInfo = processInfo;
             process.Start();
-            process.WaitForExit();
+            await process.WaitForExitAsync();
         }
         catch (Exception ex)
         {
             Logger.Log(LogLevel.ERROR, "转换过程中发生异常: " + ex.Message);
         }
+        finally
+        {
+            Semaphore.Release();
+        }
     }
 
-    public void ConvertToXlsx()
+    /// <summary>
+    /// 转换为xlsx
+    /// </summary>
+    public async Task ConvertToXlsxAsync()
     {
-        Convert("xlsx");
+        await ConvertAsync("xlsx");
     }
 
-    public void ConvertToPdf()
+    /// <summary>
+    /// 转换为pdf
+    /// </summary>
+    public async Task ConvertToPdfAsync()
     {
-        Convert("pdf");
+        await ConvertAsync("pdf");
     }
 }

@@ -7,7 +7,6 @@ import { isSuffixInLanguageMap } from './components/monaco-editor/utils';
 import MonacoEditorView from './components/monaco-editor';
 import SVGPreview from './components/svg';
 import { Result, Watermark } from 'antd';
-import FileUploadEngine from '../../common/file-upload-engine';
 import convertPreviewWatermarkSettings from '../../common/convert-preview-watermark-settings';
 import PDFViewer from './components/pdf';
 import ResizeObserver from 'rc-resize-observer';
@@ -17,6 +16,7 @@ import AudioViewer from './components/audio';
 import { WatermarkProps } from 'antd/es/watermark';
 import ZipViewer from './components/zip';
 import requestHelper from '../../common/request-helper';
+import getExtname from '../../common/get-extname';
 
 const notSupportedStyle = {
   display: 'flex',
@@ -26,7 +26,7 @@ const notSupportedStyle = {
   width: '100%',
 };
 
-const convertibleFileTypes = new Set(['doc', 'ppt', 'pptx', 'xls']);
+const convertibleFileTypes = new Set(['doc', 'ppt', 'pptx', 'xls', 'csv']);
 
 const viewMap: {
   type: RegExp;
@@ -35,12 +35,16 @@ const viewMap: {
   { type: /mp3|wav|ogg|aac|flac|audio/, Component: AudioViewer },
   { type: /mp4|webm|video/, Component: VideoViewer },
   {
-    type: /pdf|pptx|ppt|doc|dxf|dwg|dgn|dwf|dwfx|dxb|dwt|plt|cf2|obj|fbx|collada|stl|stp|ifc|iges|3ds/,
+    type: /pdf|pptx|ppt|doc/,
+    Component: PDFViewer,
+  },
+  {
+    type: /dxf|dwg|dgn|dwf|dwfx|dxb|dwt|plt|cf2|obj|fbx|collada|stl|stp|ifc|iges|3ds/,
     Component: PDFViewer,
   },
   { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
   { type: /svg/, Component: SVGPreview },
-  { type: /xlsx|xls/, Component: ExcelPreview },
+  { type: /xlsx|xls|csv/, Component: ExcelPreview },
   { type: /docx/, Component: DocxPreview },
   { type: /zip|fgcc/, Component: ZipViewer },
 ];
@@ -55,12 +59,8 @@ interface IProps {
   options: IPreviewOptions;
 }
 
-export interface IPreviewRef {
-  refreshWatermarkSettings: () => void;
-}
-
 const FilePreviewInner = (props: IProps) => {
-  const fileExtension = useMemo(() => props.url?.split('.').pop(), [props.url]) || '';
+  const fileExtension = useMemo(() => getExtname(props.url || '', false), [props.url]) || '';
   const [exists, setExists] = React.useState<boolean | null>(null);
   const [size, setSize] = React.useState<{ width: number; height: number } | null>(null);
 

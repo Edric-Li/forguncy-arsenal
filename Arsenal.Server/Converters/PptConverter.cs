@@ -15,7 +15,7 @@ public class PptConverter
 
     private readonly string _savePath;
 
-    private static readonly ProcessPoolManager ProcessPoolManager;
+    private static readonly NormaOfficeAppManager NormaOfficeAppManager;
 
     static PptConverter()
     {
@@ -28,7 +28,7 @@ public class PptConverter
 
             if (IsInstalled)
             {
-                ProcessPoolManager = new ProcessPoolManager(appType);
+                NormaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
         }
 
@@ -44,35 +44,33 @@ public class PptConverter
         _savePath = savePath;
     }
 
-    public void ConvertToPdf()
+    public async Task ConvertToPdfAsync()
     {
-        if (ProcessPoolManager == null)
+        if (NormaOfficeAppManager == null)
         {
-            new LibreOfficeConverter(_filePath, _savePath).ConvertToPdf();
+            await new LibreOfficeConverter(_filePath, _savePath).ConvertToPdfAsync();
+            return;
         }
-        else
+
+        var app = await NormaOfficeAppManager.CreateOrGetAppAsync();
+
+        try
         {
-            var processes = ProcessPoolManager.GetAvailableProcesses();
+            var presentation = app.Presentations.Open(_filePath, WithWindow: MsoTriState.msoFalse,
+                ReadOnly: MsoTriState.msoTrue);
+            presentation.SaveAs(_savePath, PpSaveAsFileType.ppSaveAsPDF, MsoTriState.msoTrue);
+            presentation.Close();
 
-            try
-            {
-                var presentation = processes.Instance.Presentations.Open(_filePath, WithWindow: MsoTriState.msoFalse,
-                    ReadOnly: MsoTriState.msoTrue);
-                presentation.SaveAs(_savePath, PpSaveAsFileType.ppSaveAsPDF, MsoTriState.msoTrue);
-                presentation.Close();
-
-                Marshal.ReleaseComObject(presentation);
-            }
-            catch (Exception e)
-            {
-                Logger.Log(LogLevel.ERROR, "PPT转换失败," + e.Message);
-                throw;
-            }
-            finally
-            {
-                processes.Release();
-                ProcessPoolManager.RemoveProcess(processes);
-            }
+            Marshal.ReleaseComObject(presentation);
+        }
+        catch (Exception e)
+        {
+            Logger.Log(LogLevel.ERROR, "PPT转换失败," + e.Message);
+            throw;
+        }
+        finally
+        {
+            NormaOfficeAppManager.Release();
         }
     }
 }

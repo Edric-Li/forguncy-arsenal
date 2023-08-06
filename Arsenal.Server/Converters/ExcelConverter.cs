@@ -12,7 +12,7 @@ public class ExcelConverter
 
     private readonly string _savePath;
 
-    private static readonly ProcessPoolManager ProcessPoolManager;
+    private static readonly NormaOfficeAppManager NormaOfficeAppManager;
 
     static ExcelConverter()
     {
@@ -24,7 +24,7 @@ public class ExcelConverter
 
             if (IsInstalled)
             {
-                ProcessPoolManager = new ProcessPoolManager(appType);
+                NormaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
         }
 
@@ -40,35 +40,32 @@ public class ExcelConverter
         _savePath = savePath;
     }
 
-    public void ConvertToXlsx()
+    public async Task ConvertToXlsxAsync()
     {
-        if (ProcessPoolManager == null)
+        if (NormaOfficeAppManager == null)
         {
-            new LibreOfficeConverter(_filePath, _savePath).ConvertToXlsx();
+            await new LibreOfficeConverter(_filePath, _savePath).ConvertToXlsxAsync();
+            return;
         }
-        else
+
+        var app = await NormaOfficeAppManager.CreateOrGetAppAsync();
+
+        try
         {
-            var processes = ProcessPoolManager.GetAvailableProcesses();
+            var workbook = app.Workbooks.Open(_filePath, ReadOnly: true);
+            workbook.SaveAs(_savePath, XlFileFormat.xlOpenXMLWorkbook);
+            workbook.Close();
 
-            try
-            {
-                processes.Instance!.DisplayAlerts = false;
-                var workbook = processes.Instance.Workbooks.Open(_filePath, ReadOnly: true);
-                workbook.SaveAs(_savePath, XlFileFormat.xlOpenXMLWorkbook);
-                workbook.Close();
-
-                Marshal.ReleaseComObject(workbook);
-            }
-            catch (Exception e)
-            {
-                Logger.Log(LogLevel.ERROR, "Excel转换失败," + e.Message);
-                throw;
-            }
-            finally
-            {
-                processes.Release();
-                ProcessPoolManager.RemoveProcess(processes);
-            }
+            Marshal.ReleaseComObject(workbook);
+        }
+        catch (Exception e)
+        {
+            Logger.Log(LogLevel.ERROR, "Excel转换失败," + e.Message);
+            throw;
+        }
+        finally
+        {
+            NormaOfficeAppManager.Release();
         }
     }
 }

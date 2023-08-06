@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Arsenal.Server.Common;
 using Word;
+using Task = System.Threading.Tasks.Task;
 
 namespace Arsenal.Server.Converters;
 
@@ -12,7 +13,7 @@ public class WordConverter
 
     private readonly string _savePath;
 
-    private static readonly ProcessPoolManager ProcessPoolManager;
+    private static readonly NormaOfficeAppManager NormaOfficeAppManager;
 
     static WordConverter()
     {
@@ -24,7 +25,7 @@ public class WordConverter
 
             if (IsInstalled)
             {
-                ProcessPoolManager = new ProcessPoolManager(appType);
+                NormaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
         }
 
@@ -40,19 +41,19 @@ public class WordConverter
         _savePath = savePath;
     }
 
-    public void ConvertToPdf()
+    public async Task ConvertToPdfAsync()
     {
-        if (ProcessPoolManager == null)
+        if (NormaOfficeAppManager == null)
         {
-            new LibreOfficeConverter(_filePath, _savePath).ConvertToPdf();
+            await new LibreOfficeConverter(_filePath, _savePath).ConvertToPdfAsync();
         }
         else
         {
-            var processes = ProcessPoolManager.GetAvailableProcesses();
+            var app = await NormaOfficeAppManager.CreateOrGetAppAsync();
 
             try
             {
-                var document = processes.Instance.Documents.Open(_filePath, ReadOnly: true);
+                var document = app.Documents.Open(_filePath, ReadOnly: true);
                 document.SaveAs(_savePath, WdSaveFormat.wdFormatPDF);
                 document.Close();
 
@@ -65,8 +66,7 @@ public class WordConverter
             }
             finally
             {
-                processes.Release();
-                ProcessPoolManager.RemoveProcess(processes);
+                NormaOfficeAppManager.Release();
             }
         }
     }
