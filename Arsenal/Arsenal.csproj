@@ -78,6 +78,9 @@
 			<HintPath>C:\Program Files\Forguncy 9\Website\bin\GrapeCity.Forguncy.ServerApi.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="itextsharp">
+			<HintPath>ReferenceDll\itextsharp.dll</HintPath>
+		</Reference>
 		<Reference Include="Microsoft.Web.WebView2.Core">
 		  <HintPath>ReferenceDll\Microsoft.Web.WebView2.Core.dll</HintPath>
 		</Reference>
@@ -132,6 +135,8 @@
 		<Resource Include="Resources\images\cancel.png" />
 		<None Remove="Resources\images\video.png" />
 		<Resource Include="Resources\images\video.png" />
+		<None Remove="Resources\images\pdf.png"/>
+		<Resource Include="Resources\images\pdf.png"/>
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="&quot;..\PackageTools\ForguncyPluginPackageTool.exe&quot; $(ProjectDir) &quot;C:\Program Files\Forguncy 9&quot; " />

@@ -2,6 +2,7 @@
 
 public enum ServerCommandOrderWeight
 {
+    PdfOperationCommand,
     DeleteFileCommand,
     GetFileFullPathCommand,
     GetFileDirectoryCommand,

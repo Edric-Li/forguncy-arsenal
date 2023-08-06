@@ -759,7 +759,7 @@ public static class FileUploadService
 
     public static bool IsValidFileKey(string input)
     {
-        if (input.Length > 37 && input[36] != '_')
+        if (input.Length < 37 || input[36] != '_')
         {
             return false;
         }
