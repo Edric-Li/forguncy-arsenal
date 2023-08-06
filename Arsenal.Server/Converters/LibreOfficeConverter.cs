@@ -31,7 +31,7 @@ public class LibreOfficeConverter
     /// <summary>
     /// 创建信号量，限制LibreOffice的并发数
     /// </summary>
-    private static readonly SemaphoreSlim Semaphore = new(1, 1);
+    private static readonly SemaphoreSlim Semaphore = new(1, Math.Max(Environment.ProcessorCount / 2, 1));
 
     /// <summary>
     /// 文件路径
