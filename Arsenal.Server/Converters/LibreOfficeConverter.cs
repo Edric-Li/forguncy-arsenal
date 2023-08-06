@@ -66,11 +66,12 @@ public class LibreOfficeConverter
     /// 创建转换进程
     /// </summary>
     /// <param name="convertTo"></param>
+    /// <param name="outputDirectory"></param>
     /// <returns></returns>
-    private ProcessStartInfo CreateProcessStartInfo(string convertTo)
+    private ProcessStartInfo CreateProcessStartInfo(string convertTo, string outputDirectory)
     {
         var command =
-            $"{ProgramNameLazy.Value} --headless --convert-to {convertTo} \"{_filePath}\" --outdir \"{Path.GetDirectoryName(_savePath)}\"";
+            $"{ProgramNameLazy.Value} --headless --convert-to {convertTo} \"{_filePath}\" --outdir \"{outputDirectory}\"";
 
         var process = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? new ProcessStartInfo("cmd.exe", "/c " + command)
@@ -95,12 +96,15 @@ public class LibreOfficeConverter
 
         try
         {
-            var processInfo = CreateProcessStartInfo(convertTo);
+            var tempDirectory = Path.Combine(Configuration.Configuration.TempFolderPath, Guid.NewGuid().ToString());
+            var processInfo = CreateProcessStartInfo(convertTo, tempDirectory);
 
             using var process = new Process();
             process.StartInfo = processInfo;
             process.Start();
             await process.WaitForExitAsync();
+            var destFileName = Path.GetFileNameWithoutExtension(_filePath) + "." + convertTo;
+            File.Move(Path.Combine(tempDirectory, destFileName), _savePath);
         }
         catch (Exception ex)
         {

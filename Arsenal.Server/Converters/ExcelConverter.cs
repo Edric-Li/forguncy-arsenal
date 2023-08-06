@@ -16,7 +16,9 @@ public class ExcelConverter
 
     static ExcelConverter()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        IsInstalled = LibreOfficeConverter.IsInstalled;
+
+        if (!IsInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var appType = Type.GetTypeFromProgID("KET.Application") ?? Type.GetTypeFromProgID("Excel.Application");
 
@@ -26,11 +28,6 @@ public class ExcelConverter
             {
                 NormaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
-        }
-
-        if (!IsInstalled)
-        {
-            IsInstalled = LibreOfficeConverter.IsInstalled;
         }
     }
 

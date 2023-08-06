@@ -17,7 +17,9 @@ public class WordConverter
 
     static WordConverter()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        IsInstalled = LibreOfficeConverter.IsInstalled;
+
+        if (!IsInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var appType = Type.GetTypeFromProgID("KWPS.Application") ?? Type.GetTypeFromProgID("Word.Application");
 
@@ -27,11 +29,6 @@ public class WordConverter
             {
                 NormaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
-        }
-
-        if (!IsInstalled)
-        {
-            IsInstalled = LibreOfficeConverter.IsInstalled;
         }
     }
 

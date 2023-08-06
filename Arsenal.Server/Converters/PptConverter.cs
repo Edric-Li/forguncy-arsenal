@@ -19,7 +19,9 @@ public class PptConverter
 
     static PptConverter()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        IsInstalled = LibreOfficeConverter.IsInstalled;
+
+        if (!IsInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var appType = Type.GetTypeFromProgID("KWPP.Application") ??
                           Type.GetTypeFromProgID("PowerPoint.Application");
@@ -30,11 +32,6 @@ public class PptConverter
             {
                 NormaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
-        }
-
-        if (!IsInstalled)
-        {
-            IsInstalled = LibreOfficeConverter.IsInstalled;
         }
     }
 
