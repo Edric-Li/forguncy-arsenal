@@ -52,7 +52,8 @@ public class Arsenal : ForguncyApi
 
             if (fileName != meteData.Name)
             {
-                MetadataCacheService.Get(uploadId).Name = fileName;
+                meteData.Name = fileName;
+                MetadataCacheService.Set(uploadId, meteData);
             }
 
             var tempFolderPath = Path.Combine(Configuration.Configuration.TempFolderPath, body.Hash ?? uploadId);

@@ -162,7 +162,7 @@ public static class FileUploadService
                 case ConflictStrategy.Overwrite:
                     dbContext.Remove(fileEntity);
                     await dbContext.SaveChangesAsync();
-                    break;
+                    return metadata.Name;
 
                 case ConflictStrategy.Rename:
                     var num = 1;
@@ -195,8 +195,6 @@ public static class FileUploadService
         {
             _ = dbContext.DisposeAsync();
         }
-
-        return null;
     }
 
     /// <summary>
