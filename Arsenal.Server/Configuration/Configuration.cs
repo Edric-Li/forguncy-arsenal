@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Text;
+using Arsenal.Server.DataBase;
 using Arsenal.Server.Model;
 
 namespace Arsenal.Server.Configuration;
@@ -150,6 +152,34 @@ public class Configuration
     }
 
     /// <summary>
+    /// 初始化数据库相关信息
+    /// </summary>
+    private void InitDatabaseFile()
+    {
+        var workFolder = GetParents(GetType().Assembly.Location, 4).FullName;
+
+        var arsenalTemp = Path.Combine(workFolder, "ArsenalTemp");
+
+        if (!Directory.Exists(arsenalTemp))
+        {
+            Directory.CreateDirectory(arsenalTemp);
+        }
+
+        var databaseFilePath = DatabaseInitializer.GetDatabaseFilePath();
+
+        var destDatabaseFilePath = Path.Combine(arsenalTemp, Path.GetFileName(databaseFilePath));
+
+        if (File.Exists(databaseFilePath))
+        {
+            File.Copy(databaseFilePath, destDatabaseFilePath, true);
+        }
+
+        DatabaseInitializer.DatabaseFilePath = destDatabaseFilePath;
+
+        File.WriteAllText(Path.Combine(arsenalTemp, "db_file_path"), destDatabaseFilePath, Encoding.UTF8);
+    }
+
+    /// <summary>
     /// 加载设计器文件到网站
     /// 这个操作有点2,不过确实想不到啥好的方案了，等后续看官方有没有出接口吧
     /// 能把功能实现就可以了
@@ -158,23 +188,18 @@ public class Configuration
     {
         var workFolder = GetParents(GetType().Assembly.Location, 4).FullName;
 
-        var designerFolder = Path.Combine(workFolder, "Designer", "arsenal");
+        var designerArsenalFolder = Path.Combine(workFolder, "Designer", "arsenal");
 
-        if (!Directory.Exists(designerFolder))
+        if (!Directory.Exists(designerArsenalFolder))
         {
             return;
         }
 
-        var designerFiles = Directory.GetFiles(designerFolder, "*", SearchOption.AllDirectories);
+        var designerFiles = Directory.GetFiles(designerArsenalFolder, "*", SearchOption.AllDirectories);
 
-        foreach (var designerFile in designerFiles)
+        Parallel.ForEach(designerFiles, designerFile =>
         {
-            if (designerFile.Contains("sqlite3-shm") || designerFile.Contains("sqlite3-wal"))
-            {
-                continue;
-            }
-
-            var webSiteFile = designerFile.Replace(designerFolder, string.Empty);
+            var webSiteFile = designerFile.Replace(designerArsenalFolder, string.Empty);
 
             try
             {
@@ -184,7 +209,7 @@ public class Configuration
             {
                 Trace.Write(e.Message);
             }
-        }
+        });
     }
 
     /// <summary>
@@ -207,13 +232,14 @@ public class Configuration
                 UserServiceUrl = DefaultUserServiceUrl
             };
 
+            CreateFolders();
             CopyDesignerFilesToWebSite();
+            InitDatabaseFile();
         }
         else
         {
             AppConfig = GlobalConfigParser.GetAppConfig(GetAppName());
         }
 
-        CreateFolders();
     }
 }

@@ -1,26 +1,121 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using GrapeCity.Forguncy.Plugin;
-using Newtonsoft.Json;
+using Microsoft.Data.Sqlite;
 
 namespace Arsenal.Common;
 
 public abstract class CommonUtils
 {
+    /// <summary>
+    /// 当前工程的工作目录
+    /// </summary>
+    private static string WorkingDirectory { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 根目录
+    /// </summary>
+    private static string RootFolderPath => Path.Combine(WorkingDirectory, "WebSite", "Upload", "arsenal");
+
+    /// <summary>
+    /// 最后一次备份数据库文件的时间
+    /// </summary>
+    private static DateTime? _lastBackupDatabaseFileTime;
+
+    /// <summary>
+    /// 是否正在复制网站文件到设计器
+    /// </summary>
     private static bool _isCopyingWebSiteFilesToDesigner;
 
-    private static string _watermarkEditorIndexHtmlPath;
-
+    /// <summary>
+    /// 复制网站文件到设计器锁
+    /// </summary>
     private static readonly object CopyWebSiteFilesToDesignerLock = new();
 
-    private static ConcurrentDictionary<Type, Dictionary<string, string>> _jsonMetaDataCache = new();
+    /// <summary>
+    /// 最后一次复制网站文件到设计器的时间
+    /// </summary>
+    private static DateTime _lastCopyWebSiteFilesToDesignerTime = DateTime.MinValue;
+
+    /// <summary>
+    /// 水印编辑器的index.html文件路径
+    /// </summary>
+    private static string _watermarkEditorIndexHtmlPath;
+
+    /// <summary>
+    /// 获取数据库文件路径
+    /// </summary>
+    /// <returns></returns>
+    private static string GetDatabaseFilePath()
+    {
+        var dbFilePath = Path.Combine(WorkingDirectory, "ArsenalTemp", "db_file_path");
+
+        return !File.Exists(dbFilePath) ? null : File.ReadAllText(dbFilePath);
+    }
+
+    /// <summary>
+    /// 根据IFileUploadContext初始化工作目录
+    /// </summary>
+    /// <param name="context"></param>
+    public static void InitWorkingDirectoryByIFileUploadContext(IFileUploadContext context)
+    {
+        WorkingDirectory =
+            GetFolderSpecifyParent(context.GetForguncyUserTemplateFolderLocalPath(), 4).FullName;
+    }
+
+    /// <summary>
+    /// 备份数据库文件
+    /// </summary>
+    public static void BackupDatabaseFile()
+    {
+        // 如果没有工作目录，不备份
+        if (WorkingDirectory == string.Empty)
+        {
+            return;
+        }
+
+        // 3秒内不重复备份
+        if (_lastBackupDatabaseFileTime != null && DateTime.Now - _lastBackupDatabaseFileTime < TimeSpan.FromSeconds(3))
+        {
+            return;
+        }
+
+        var dbFilePath = GetDatabaseFilePath();
+
+        // 数据库文件不存在，不备份
+        if (dbFilePath == null)
+        {
+            return;
+        }
+
+        var destFilePath = Path.Combine(RootFolderPath, "data", Path.GetFileName(dbFilePath));
+
+        // 如果数据库文件没有变化，不备份
+        if (File.Exists(destFilePath) &&
+            new FileInfo(dbFilePath).LastWriteTime <= new FileInfo(destFilePath).LastWriteTime)
+        {
+            // 如果数据库文件没有变化，不备份
+            return;
+        }
+
+        var sqliteConnection = new SqliteConnection("Data Source=" + dbFilePath);
+        var destSqliteConnection = new SqliteConnection($"Data Source={destFilePath};pooling=false");
+
+        sqliteConnection.Open();
+        destSqliteConnection.Open();
+        sqliteConnection.BackupDatabase(destSqliteConnection);
+        sqliteConnection.Dispose();
+        destSqliteConnection.Dispose();
+
+        _lastBackupDatabaseFileTime = DateTime.Now;
+
+        CopyWebSiteFilesToDesigner();
+    }
 
     /// <summary>
     /// 获取指定层级的父级目录
@@ -28,7 +123,7 @@ public abstract class CommonUtils
     /// <param name="folderPath"></param>
     /// <param name="num"></param>
     /// <returns></returns>
-    public static DirectoryInfo GetFolderSpecifyParent(string folderPath, int num)
+    private static DirectoryInfo GetFolderSpecifyParent(string folderPath, int num)
     {
         var directoryInfo = Directory.GetParent(folderPath);
 
@@ -40,9 +135,25 @@ public abstract class CommonUtils
         return directoryInfo;
     }
 
-    public static void CopyWebSiteFilesToDesigner(IFileUploadContext context)
+    /// <summary>
+    /// 复制网站文件到设计器
+    /// </summary>
+    public static void CopyWebSiteFilesToDesigner()
     {
+        // 如果工作目录为空，则直接返回
+        if (string.IsNullOrWhiteSpace(WorkingDirectory))
+        {
+            return;
+        }
+
+        // 如果正在复制网站文件到设计器，则直接返回
         if (_isCopyingWebSiteFilesToDesigner)
+        {
+            return;
+        }
+
+        // 3秒内不重复复制
+        if (DateTime.Now - _lastCopyWebSiteFilesToDesignerTime < TimeSpan.FromSeconds(3))
         {
             return;
         }
@@ -53,10 +164,8 @@ public abstract class CommonUtils
             {
                 _isCopyingWebSiteFilesToDesigner = true;
 
-                var workFolder = GetFolderSpecifyParent(context.GetForguncyUserTemplateFolderLocalPath(), 4).FullName;
-
-                var designerUploadFolderPath = Path.Combine(workFolder, "Designer", "Upload");
-                var webSiteUploadFolder = Path.Combine(workFolder, "WebSite", "Upload");
+                var designerUploadFolderPath = Path.Combine(WorkingDirectory, "Designer", "Upload");
+                var webSiteUploadFolder = Path.Combine(WorkingDirectory, "WebSite", "Upload");
                 var webSiteUploadArsenalFolder = Path.Combine(webSiteUploadFolder, "arsenal");
 
                 if (Directory.Exists(webSiteUploadArsenalFolder))
@@ -65,18 +174,17 @@ public abstract class CommonUtils
                         .GetFiles(webSiteUploadArsenalFolder, "*.*", SearchOption.AllDirectories)
                         .ToList();
 
-                    foreach (var iFilePath in allUsedUploadFilePaths)
+                    Parallel.ForEach(allUsedUploadFilePaths, iFilePath =>
                     {
                         if (iFilePath.Contains("sqlite3-shm") || iFilePath.Contains("sqlite3-wal"))
                         {
-                            continue;
+                            return;
                         }
 
                         var targetFilePath = Path.Combine(designerUploadFolderPath,
                             iFilePath.Replace(webSiteUploadFolder + '\\', string.Empty));
 
                         var targetFolder = Path.GetDirectoryName(targetFilePath);
-
 
                         if (!Directory.Exists(targetFolder))
                         {
@@ -86,7 +194,7 @@ public abstract class CommonUtils
                         File.Copy(iFilePath,
                             targetFilePath,
                             true);
-                    }
+                    });
                 }
 
                 if (!Directory.Exists(designerUploadFolderPath))
@@ -104,49 +212,7 @@ public abstract class CommonUtils
         }
 
         _isCopyingWebSiteFilesToDesigner = false;
-    }
-
-    public static Dictionary<string, string> GetPropertyPaths(Type type, string parentKeyPath = "",
-        string parentPath = "")
-    {
-        if (_jsonMetaDataCache.TryGetValue(type, out var value))
-        {
-            return value;
-        }
-
-        var propertyPaths = new Dictionary<string, string>();
-
-        foreach (var property in type.GetProperties())
-        {
-            var displayName = property.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
-
-            displayName = string.IsNullOrEmpty(parentKeyPath) ? displayName : $"{parentKeyPath}.{displayName}";
-
-            if (!string.IsNullOrEmpty(displayName))
-            {
-                var propertyName1 = property.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName;
-
-                var propertyName = string.IsNullOrEmpty(parentPath)
-                    ? propertyName1
-                    : $"{parentPath}.{propertyName1}";
-
-                if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
-                {
-                    var nestedProperties = GetPropertyPaths(property.PropertyType, displayName, propertyName);
-                    foreach (var nestedProperty in nestedProperties)
-                    {
-                        propertyPaths.Add(nestedProperty.Key, nestedProperty.Value);
-                    }
-                }
-                else
-                {
-                    propertyPaths.Add(displayName, propertyName);
-                }
-            }
-        }
-
-        _jsonMetaDataCache.TryAdd(type, propertyPaths);
-        return propertyPaths;
+        _lastCopyWebSiteFilesToDesignerTime = DateTime.Now;
     }
 
     /// <summary>
@@ -160,7 +226,7 @@ public abstract class CommonUtils
         {
             _watermarkEditorIndexHtmlPath =
                 Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                    "Resources\\dist\\watermark-editor\\index.html");
+                    @"Resources\dist\watermark-editor\index.html");
         }
 
         if (!File.Exists(_watermarkEditorIndexHtmlPath))
@@ -170,5 +236,21 @@ public abstract class CommonUtils
         }
 
         return _watermarkEditorIndexHtmlPath;
+    }
+
+    public static void SafeExecute(Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception e)
+        {
+            Trace.Write(e.Message);
+
+#if DEBUG
+            throw;
+#endif
+        }
     }
 }

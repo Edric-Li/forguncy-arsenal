@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
+using Arsenal.Commands;
 using Arsenal.Common;
 using Arsenal.Server.Model.Params;
 using GrapeCity.Forguncy.Commands;
@@ -15,7 +16,7 @@ namespace Arsenal;
 [OrderWeight((int)ServerCommandOrderWeight.CreateDownloadLinkToFileCommand)]
 [Description("可为服务器端文件创建一个临时下载链接, 该链接可以在指定的时间内被使用。")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/create-download-link.png")]
-public class CreateDownloadLinkToFileCommand : Command, ICommandExecutableInServerSideAsync, INeedUploadFileByUser
+public class CreateDownloadLinkToFile : CommandBase, ICommandExecutableInServerSideAsync
 {
     [DisplayName("服务器文件路径")]
     [FormulaProperty]
@@ -36,7 +37,7 @@ public class CreateDownloadLinkToFileCommand : Command, ICommandExecutableInServ
     [DisplayName("创建副本")]
     [Description("创建副本后，即使原始文件被删除或移动，您仍然可以使用该下载链接下载文件。")]
     public bool CreateCopy { get; set; }
-    
+
     [DisplayName("保存下载链接到")]
     [ResultToProperty]
     public string FileLinkResult { get; set; }
@@ -91,17 +92,6 @@ public class CreateDownloadLinkToFileCommand : Command, ICommandExecutableInServ
     public override CommandScope GetCommandScope()
     {
         return CommandScope.ExecutableInServer;
-    }
-
-    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
-    {
-        return new List<FileCopyInfo>(0);
-    }
-
-    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
-    {
-        CommonUtils.CopyWebSiteFilesToDesigner(context);
-        return null;
     }
 
     public override string ToString()

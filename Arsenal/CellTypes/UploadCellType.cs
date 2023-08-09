@@ -12,7 +12,7 @@ namespace Arsenal;
 [OrderWeight(1)]
 [Category("文件")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
-public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, ISupportReadOnly
+public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly
 {
     private ListType _listType = ListType.Text;
     
@@ -76,17 +76,6 @@ public class UploadCellType : CellType, INeedUploadFileByUser, ISupportDisable, 
         [ItemDisplayName("显示状态")] [Required] ElementState state
     )
     {
-    }
-
-    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
-    {
-        return default;
-    }
-
-    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
-    {
-        CommonUtils.CopyWebSiteFilesToDesigner(context);
-        return null;
     }
 
     public override bool GetRunTimeMethodVisible(string name)

@@ -8,7 +8,7 @@ namespace Arsenal;
 [OrderWeight(2)]
 [Category("文件")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/preview.png")]
-public class PreviewCellType : CellType
+public class PreviewCellType : CellTypeBase
 {
     [DisplayName("水印设置")]
     [JsonProperty("watermarkSettings")]

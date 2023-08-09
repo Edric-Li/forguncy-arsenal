@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Arsenal.Commands;
 using Arsenal.Common;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
@@ -7,13 +8,12 @@ using Newtonsoft.Json;
 namespace Arsenal;
 
 [Category("文件管理")]
-[OrderWeight((int)ClientCommandOrderWeight.UploadFolderCommand)]
-[Icon("pack://application:,,,/Arsenal;component/Resources/images/upload-folder.png")]
-
-public class UploadFolderCommand : Command
+[OrderWeight((int)ClientCommandOrderWeight.UploadCommand)]
+[Icon("pack://application:,,,/Arsenal;component/Resources/images/upload1.png")]
+public class Upload : CommandBase
 {
     private object _folder = string.Empty;
-
+    
     [DisplayName("文件夹路径")]
     [Description("默认会按日期存放（年/月/日），如无特殊需求,不建议填写,一旦自定义,则无法使用断点续传功能")]
     [JsonProperty("folder")]
@@ -33,23 +33,52 @@ public class UploadFolderCommand : Command
     [JsonProperty("conflictStrategy")]
     public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
 
+    [DisplayName("允许上传文件的扩展名")]
+    [JsonProperty("allowedExtensions")]
+    public string AllowedExtensions { get; set; } = "*";
+
+    [DisplayName("最大上传文件大小")]
+    [JsonProperty("maxSize")]
+    [IntProperty(AllowNull = true, Watermark = "不限制")]
+    public int? MaxSize { get; set; }
+
+    [DisplayName("最大上传文件个数")]
+    [IntProperty(AllowNull = true, Watermark = "不限制")]
+    [JsonProperty("maxCount")]
+    public int? MaxCount { get; set; } = 1;
+
     [DisplayName("上传完成命令")]
     [JsonProperty("uploadSuccessCommand")]
     [CustomCommandObject(InitParamProperties = "fileKey|fileName", InitParamValues = "附件值|文件名称")]
     public CustomCommandObject UploadSuccessCommand { get; set; }
 
     [DisplayName("高级设置")]
-    [ObjectProperty(ObjType = typeof(UploadFolderCommandAdvancedSettings))]
+    [ObjectProperty(ObjType = typeof(UploadCommandAdvancedSettings))]
     [JsonProperty("advancedSettings")]
-    public UploadFolderCommandAdvancedSettings AdvancedSettings { get; set; } = new();
+    public UploadCommandAdvancedSettings AdvancedSettings { get; set; } = new();
+    
+    public override bool GetDesignerPropertyVisible(string propertyName, CommandScope commandScope)
+    {
+        if (propertyName == nameof(AdvancedSettings.EnableCrop))
+        {
+            return MaxCount == 1;
+        }
+
+        if (propertyName == nameof(ConflictStrategy))
+        {
+            return !string.IsNullOrWhiteSpace(Folder?.ToString());
+        }
+        
+        return base.GetDesignerPropertyVisible(propertyName, commandScope);
+    }
 
     public override string ToString()
     {
-        return "上传文件夹";
+        return "上传文件";
     }
 }
 
-public class UploadFolderCommandAdvancedSettings : ObjectPropertyBase
+public class UploadCommandAdvancedSettings : ObjectPropertyBase
 {
     [DisplayName("上传完成命令触发时机")]
     [JsonProperty("uploadSuccessCommandTriggerTiming")]
@@ -66,6 +95,16 @@ public class UploadFolderCommandAdvancedSettings : ObjectPropertyBase
     [ObjectProperty(ObjType = typeof(WatermarkSettings))]
     public WatermarkSettings WatermarkSettings { get; set; } = new();
 
+    [DisplayName("裁切图片")]
+    [JsonProperty("enableCrop")]
+    [DefaultValue(false)]
+    public bool EnableCrop { get; set; }
+
+    [DisplayName("裁剪设置")]
+    [JsonProperty("imgCropSettings")]
+    [ObjectProperty(ObjType = typeof(ImgCropSettings))]
+    public ImgCropSettings ImgCropSettings { get; set; } = new();
+
     [DisplayName("断点续传/秒传")]
     [JsonProperty("enableResumableUpload")]
     [DefaultValue(true)]
@@ -76,6 +115,16 @@ public class UploadFolderCommandAdvancedSettings : ObjectPropertyBase
         if (propertyName == nameof(WatermarkSettings))
         {
             return EnableWatermark;
+        }
+
+        if (propertyName == nameof(ImgCropSettings))
+        {
+            return EnableCrop && GetDesignerPropertyVisible(nameof(EnableCrop));
+        }
+
+        if (propertyName == nameof(EnableCrop))
+        {
+            return string.IsNullOrWhiteSpace(TempValueStoreInstance.Folder?.ToString());
         }
 
         return base.GetDesignerPropertyVisible(propertyName);

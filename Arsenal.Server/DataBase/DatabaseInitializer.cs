@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Arsenal.Server.Common;
 using Arsenal.Server.DataBase.Models;
 using Microsoft.EntityFrameworkCore;
 using File = System.IO.File;
@@ -26,6 +27,11 @@ public class DatabaseInitializer
     public static DatabaseInitializer Instance => LazyInstance.Value;
 
     /// <summary>
+    /// 数据库链接串
+    /// </summary>
+    public static string DatabaseFilePath { get; set; } = string.Empty;
+
+    /// <summary>
     /// 确保初始化
     /// </summary>
     public void EnsureInitialization()
@@ -39,7 +45,6 @@ public class DatabaseInitializer
 
         _ = InitAsync();
     }
-
 
     /// <summary>
     /// 初始化（初始化表信息）
@@ -89,16 +94,11 @@ public class DatabaseInitializer
             await MergeDatabaseAsync();
         }
     }
-    
-    /// <summary>
-    /// 初始化数据库连接串
-    /// 如果是在本地运行，那么就使用时间戳作为数据库文件名
-    /// 否则就使用默认的db.sqlite3
-    /// </summary>
-    private static void InitializeDatabaseConnectionString()
+
+    public static string GetDatabaseFilePath()
     {
         var dbFileName = "db";
-        
+
         if (Configuration.Configuration.RunAtLocal)
         {
             var unixTimestampStr = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
@@ -136,9 +136,54 @@ public class DatabaseInitializer
             dbFileName = unixTimestampStr;
         }
 
+        return Path.Combine(Configuration.Configuration.DataFolderPath, dbFileName + ".sqlite3");
+    }
+
+    /// <summary>
+    /// 初始化数据库连接串
+    /// 如果是在本地运行，那么就使用时间戳作为数据库文件名
+    /// 否则就使用默认的db.sqlite3
+    /// </summary>
+    private static void InitializeDatabaseConnectionString()
+    {
+        var filePath = string.IsNullOrWhiteSpace(DatabaseFilePath) ? GetDatabaseFilePath() : DatabaseFilePath;
+
         Configuration.Configuration.DatabaseConnectionString =
-            $"Data Source={Path.Combine(Configuration.Configuration.DataFolderPath, dbFileName + ".sqlite3")}";
-        
+            $"Data Source={filePath}";
+    }
+
+
+    private static async Task CleanupSqliteFileTask(string filePath, int retryTime = 0)
+    {
+        if (retryTime > 60)
+        {
+            Logger.Log(LogLevel.ERROR, "删除数据库文件失败，重试次数已达到上限");
+            return;
+        }
+
+        try
+        {
+            if (File.Exists(filePath + "-shm"))
+            {
+                File.Delete(filePath + "-shm");
+            }
+
+            if (File.Exists(filePath + "-wal"))
+            {
+                File.Delete(filePath + "-wal");
+            }
+
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.Log(LogLevel.ERROR, "删除数据库文件失败" + e.Message);
+            await Task.Delay((retryTime + 1) * 1000);
+            await CleanupSqliteFileTask(filePath, retryTime + 1);
+        }
     }
 
 
@@ -155,37 +200,12 @@ public class DatabaseInitializer
         }
 
         var officialDatabaseContext = new DatabaseContext();
+
         try
         {
-            var deletedSqliteFiles = new HashSet<string>();
-
-            var deletedMarkFiles = files
-                .Where(item => item.EndsWith(".deleted"))
-                .ToArray();
-
-            foreach (var item in deletedMarkFiles)
-            {
-                try
-                {
-                    var dbFilePath = item.Replace(".deleted", "");
-                    File.Delete(item);
-                    File.Delete(dbFilePath);
-                    deletedSqliteFiles.Add(dbFilePath);
-                }
-                catch (Exception e)
-                {
-                    Trace.WriteLine(e);
-                }
-            }
-
             foreach (var item in files)
             {
                 if (!item.EndsWith(".sqlite3"))
-                {
-                    continue;
-                }
-
-                if (deletedSqliteFiles.Contains(item))
                 {
                     continue;
                 }
@@ -197,7 +217,7 @@ public class DatabaseInitializer
                     continue;
                 }
 
-                var dbContext = new DatabaseContext($"Data Source={item}");
+                var dbContext = new DatabaseContext($"Data Source={item};pooling=false;");
 
                 try
                 {
@@ -240,13 +260,12 @@ public class DatabaseInitializer
                     }
 
                     await officialDatabaseContext.SaveChangesAsync();
-
-                    // Sqlite 连接后，文件会被锁定，所以在这里不直接删除，而是创建一个 .deleted 文件，等待下次启动时删除
-                    File.Create(item + ".deleted");
                 }
                 finally
                 {
-                    _ = dbContext.DisposeAsync();
+                    await dbContext.DisposeAsync();
+
+                    _ = CleanupSqliteFileTask(item);
                 }
             }
         }

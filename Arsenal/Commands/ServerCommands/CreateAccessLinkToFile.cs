@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
+using Arsenal.Commands;
 using Arsenal.Common;
 using Arsenal.Server.Model.Params;
 using GrapeCity.Forguncy.Commands;
@@ -15,7 +16,7 @@ namespace Arsenal;
 [OrderWeight((int)ServerCommandOrderWeight.CreateAccessLinkToFileCommand)]
 [Description("可为服务器端文件创建一个临时访问链接, 该链接可以在指定的时间内被使用。")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/create-download-link.png")]
-public class CreateAccessLinkToFileCommand : Command, ICommandExecutableInServerSideAsync, INeedUploadFileByUser
+public class CreateAccessLinkToFile : CommandBase, ICommandExecutableInServerSideAsync
 {
     [DisplayName("服务器文件路径")]
     [FormulaProperty]
@@ -90,17 +91,6 @@ public class CreateAccessLinkToFileCommand : Command, ICommandExecutableInServer
     public override CommandScope GetCommandScope()
     {
         return CommandScope.ExecutableInServer;
-    }
-
-    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
-    {
-        return new List<FileCopyInfo>(0);
-    }
-
-    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
-    {
-        CommonUtils.CopyWebSiteFilesToDesigner(context);
-        return null;
     }
 
     public override string ToString()

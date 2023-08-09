@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Arsenal.Commands;
 using Arsenal.Common;
 using Arsenal.Server.Common;
 using Arsenal.Server.Configuration;
@@ -18,8 +19,8 @@ namespace Arsenal;
 [Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.CopyServerFolderToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
-public class CopyServerFolderToArsenalFolderCommand : Command, ICommandExecutableInServerSideAsync,
-    IServerCommandParamGenerator, INeedUploadFileByUser
+public class CopyServerFolderToArsenalFolder : CommandBase, ICommandExecutableInServerSideAsync,
+    IServerCommandParamGenerator
 {
     [DisplayName("服务器文件夹路径")]
     [FormulaProperty]
@@ -188,17 +189,6 @@ public class CopyServerFolderToArsenalFolderCommand : Command, ICommandExecutabl
                 "大小（字节）"
             },
         };
-    }
-
-    public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
-    {
-        return new List<FileCopyInfo>(0);
-    }
-
-    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
-    {
-        CommonUtils.CopyWebSiteFilesToDesigner(context);
-        return null;
     }
 
     public override string ToString()

@@ -16,16 +16,22 @@ internal class Middleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        BootstrapService.EnsureInitialization();
-
+        if (context.Request.Path.Value.Contains("/customapi/arsenal/"))
+        {
+            BootstrapService.EnsureInitialization();
+        }
+        
         if (context.Request.Path.Value.Contains("/converted-file"))
         {
+            BootstrapService.EnsureInitialization();
             await context.HandleErrorAsync(async () => { await FileConvertService.GetConvertedFileAsync(context); });
             return;
         }
 
         if (context.Request.Path.Value.Contains("/Upload/"))
         {
+            BootstrapService.EnsureInitialization();
+
             var fileKey = context.Request.Path.Value.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
 
             if (!FileUploadService.IsValidFileKey(fileKey))
@@ -66,6 +72,8 @@ internal class Middleware
         }
         else if (context.Request.Path.Value.Contains("/FileDownloadUpload/Download"))
         {
+            BootstrapService.EnsureInitialization();
+
             var fileKey = context.Request.Query["file"];
 
             if (!FileUploadService.IsValidFileKey(fileKey))

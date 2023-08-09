@@ -17,8 +17,7 @@ namespace Arsenal;
 [Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.CopyServerFileToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
-public class CopyServerFileToArsenalFolderCommand : ICommandExecutableInServerSideAsync,
-    IServerCommandParamGenerator, INeedUploadFileByUser
+public class CopyServerFileToArsenalFolderCommand : ICommandExecutableInServerSideAsync, IServerCommandParamGenerator
 {
     [DisplayName("服务器文件路径")]
     [FormulaProperty]
@@ -132,12 +131,6 @@ public class CopyServerFileToArsenalFolderCommand : ICommandExecutableInServerSi
     public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
     {
         return new List<FileCopyInfo>(0);
-    }
-
-    public FileUploadInfo GetUploadFileInfosWhenSaveFile(IFileUploadContext context)
-    {
-        CommonUtils.CopyWebSiteFilesToDesigner(context);
-        return null;
     }
 
     public override string ToString()
