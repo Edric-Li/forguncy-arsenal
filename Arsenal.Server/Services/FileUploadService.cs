@@ -391,11 +391,16 @@ public static class FileUploadService
         {
             if (!string.IsNullOrWhiteSpace(metaData.Hash))
             {
-                dbContext.FileHashes.Add(new FileHash
+                var exist = await dbContext.FileHashes.AnyAsync(i => i.Hash == metaData.Hash && i.Path == relativePath);
+
+                if (!exist)
                 {
-                    Hash = metaData.Hash,
-                    Path = relativePath
-                });
+                    dbContext.FileHashes.Add(new FileHash
+                    {
+                        Hash = metaData.Hash,
+                        Path = relativePath
+                    });
+                }
             }
 
             await dbContext.SaveChangesAsync();
