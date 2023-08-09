@@ -35,8 +35,8 @@ const viewMap: {
 }[] = [
   { type: /mp3|wav|ogg|aac|flac|audio/, Component: AudioViewer },
   { type: /mp4|webm|video/, Component: VideoViewer },
-  { type: /docx/, Component: DocxPreview },
-  { type: /pptx/, Component: PowerPointPreview },
+  /*  { type: /docx/, Component: DocxPreview },
+    { type: /pptx/, Component: PowerPointPreview },*/
   {
     type: /pdf|pptx|ppt|doc/,
     Component: PDFViewer,
@@ -48,7 +48,7 @@ const viewMap: {
   { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
   { type: /svg/, Component: SVGPreview },
   { type: /xlsx|xls|csv/, Component: ExcelPreview },
-  { type: /zip|fgcc/, Component: ZipViewer },
+  { type: /zip|fgcc|fgcp/, Component: ZipViewer },
 ];
 
 export const isImage = (fileUrl: string) => {

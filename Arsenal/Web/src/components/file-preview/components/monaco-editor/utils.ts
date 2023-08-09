@@ -29,6 +29,7 @@ const languageMap: { [key: string]: string } = {
   '.gql': 'graphql',
   '.hbs': 'handlebars',
   '.hcl': 'hcl',
+  '.htm': 'html',
   '.html': 'html',
   '.ini': 'ini',
   '.java': 'java',
