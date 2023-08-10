@@ -3,9 +3,9 @@ using Arsenal.Common;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 
-namespace Arsenal.Commands;
+namespace Arsenal;
 
-public class CommandBase : Command, INeedUploadFileByUser, IForceGenerateCell
+public abstract class CommandBase : Command, INeedUploadFileByUser, IForceGenerateCell
 {
     public List<FileCopyInfo> GetAllFileSourceAndTargetPathsWhenImportForguncyFile(IFileUploadContext context)
     {

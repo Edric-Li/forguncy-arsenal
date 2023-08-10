@@ -4,8 +4,8 @@
   ],
   "css": [],
   "javascript": [
-    "Resources/dist/dev-loader.js",
-    "Resources/dist/index.js"
+    "Resources/dist/index.js",
+    "Resources/dist/arsenal.core.js"
   ],
   "serverApiAssembly": [
     "Arsenal.Server.dll"
@@ -16,7 +16,7 @@
   "name_cn": "文件管理",
   "pluginType": "cellType,command",
   "guid": "8748d7dc-994d-45b8-80f9-f510cfcac6ac",
-  "version": "9.0.0.0",
+  "version": "9.0.0.1",
   "dependenceVersion": "9.0.0.0",
   "bundleJavaScript": false,
   "bundleCSS": false
