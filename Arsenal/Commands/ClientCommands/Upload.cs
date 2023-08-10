@@ -9,7 +9,7 @@ namespace Arsenal;
 [Category("文件管理")]
 [OrderWeight((int)ClientCommandOrderWeight.UploadCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload1.png")]
-public class Upload : CommandBase
+public class UploadCommand : CommandBase
 {
     private object _folder = string.Empty;
     

@@ -11,7 +11,7 @@ namespace Arsenal;
 [Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.DeleteFileCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/delete-file.png")]
-public class DeleteFile : CommandBase, ICommandExecutableInServerSideAsync
+public class DeleteFileCommand : CommandBase, ICommandExecutableInServerSideAsync
 {
     [DisplayName("附件值")]
     [FormulaProperty]

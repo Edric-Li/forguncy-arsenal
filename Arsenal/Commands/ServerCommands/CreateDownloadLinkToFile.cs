@@ -13,7 +13,7 @@ namespace Arsenal;
 [OrderWeight((int)ServerCommandOrderWeight.CreateDownloadLinkToFileCommand)]
 [Description("可为服务器端文件创建一个临时下载链接, 该链接可以在指定的时间内被使用。")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/create-download-link.png")]
-public class CreateDownloadLinkToFile : CommandBase, ICommandExecutableInServerSideAsync
+public class CreateDownloadLinkToFileCommand : CommandBase, ICommandExecutableInServerSideAsync
 {
     [DisplayName("服务器文件路径")]
     [FormulaProperty]

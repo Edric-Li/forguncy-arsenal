@@ -17,7 +17,7 @@ namespace Arsenal;
 [Category("文件管理")]
 [OrderWeight((int)ServerCommandOrderWeight.CopyServerFolderToArsenalFolderCommand)]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/move.png")]
-public class CopyServerFolderToArsenalFolder : CommandBase, ICommandExecutableInServerSideAsync,
+public class CopyServerFolderToArsenalFolderCommand : CommandBase, ICommandExecutableInServerSideAsync,
     IServerCommandParamGenerator
 {
     [DisplayName("服务器文件夹路径")]
