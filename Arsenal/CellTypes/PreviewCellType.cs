@@ -30,6 +30,16 @@ public class PreviewCellType : CellTypeBase
     [ObjectProperty(ObjType = typeof(AudioSettings))]
     public AudioSettings AudioSettings { get; set; } = new();
 
+    [DisplayName("PPT设置")]
+    [JsonProperty("powerPointSettings")]
+    [ObjectProperty(ObjType = typeof(PowerPointSettings))]
+    public PowerPointSettings PowerPointSettings { get; set; } = new();
+
+    [DisplayName("Word设置")]
+    [JsonProperty("wordSettings")]
+    [ObjectProperty(ObjType = typeof(WordSettings))]
+    public WordSettings WordSettings { get; set; } = new();
+
     [CategoryHeader("其他")]
     [DisplayName("当只有一个文件时隐藏标签页")]
     [JsonProperty("hideTabsWhenOnlyOneFile")]
@@ -165,6 +175,52 @@ public class PdfSettings : ObjectPropertyBase
     [DisplayName("禁止打印")]
     [JsonProperty("hidePrintButton")]
     public bool HidePrintButton { get; set; }
+}
+
+public class PowerPointSettings : ObjectPropertyBase
+{
+    [DisplayName("允许切换预览模式")]
+    [JsonProperty("allowSwitchPreviewMode")]
+    [DefaultValue(true)]
+    public bool AllowSwitchPreviewMode { get; set; } = true;
+
+    [DisplayName("默认预览模式")]
+    [JsonProperty("defaultPreviewMode")]
+    [ComboProperty(ValueList = "auto|image|pdf", DisplayList = "自动|图片|PDF")]
+    public string DefaultPreviewMode { get; set; } = "auto";
+
+    public override bool GetDesignerPropertyVisible(string propertyName)
+    {
+        if (propertyName == nameof(DefaultPreviewMode))
+        {
+            return AllowSwitchPreviewMode;
+        }
+
+        return base.GetDesignerPropertyVisible(propertyName);
+    }
+}
+
+public class WordSettings : ObjectPropertyBase
+{
+    [DisplayName("允许切换预览模式")]
+    [JsonProperty("allowSwitchPreviewMode")]
+    [DefaultValue(true)]
+    public bool AllowSwitchPreviewMode { get; set; } = true;
+
+    [DisplayName("默认预览模式")]
+    [JsonProperty("defaultPreviewMode")]
+    [ComboProperty(ValueList = "auto|docx|pdf", DisplayList = "自动|DOCX|PDF")]
+    public string DefaultPreviewMode { get; set; } = "auto";
+
+    public override bool GetDesignerPropertyVisible(string propertyName)
+    {
+        if (propertyName == nameof(DefaultPreviewMode))
+        {
+            return AllowSwitchPreviewMode;
+        }
+
+        return base.GetDesignerPropertyVisible(propertyName);
+    }
 }
 
 public class VideoSettings : ObjectPropertyBase

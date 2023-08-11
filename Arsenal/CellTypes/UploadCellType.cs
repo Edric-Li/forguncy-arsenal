@@ -431,6 +431,16 @@ public class PreviewSetting : ObjectPropertyBase
     [ObjectProperty(ObjType = typeof(AudioSettings))]
     public AudioSettings AudioSettings { get; set; } = new();
 
+    [DisplayName("PPT设置")]
+    [JsonProperty("powerPointSettings")]
+    [ObjectProperty(ObjType = typeof(PowerPointSettings))]
+    public PowerPointSettings PowerPointSettings { get; set; } = new();
+
+    [DisplayName("Word设置")]
+    [JsonProperty("wordSettings")]
+    [ObjectProperty(ObjType = typeof(WordSettings))]
+    public WordSettings WordSettings { get; set; } = new();
+
     [DisplayName("当只有一个文件时隐藏标签页")]
     [JsonProperty("hideTabsWhenOnlyOneFile")]
     [DefaultValue(true)]

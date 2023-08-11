@@ -181,15 +181,13 @@ public class FileConvertService
     }
 
     /// <summary>
-    /// 获取转换后的文件-工厂方法
+    /// 获取转换后的文件路径
     /// </summary>
     /// <param name="url"></param>
     /// <param name="targetFileType"></param>
-    /// <param name="forceUpdate"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="Exception"></exception>
-    private static async Task<string> GetConvertedFileFactoryAsync(string url, string targetFileType, bool forceUpdate)
+    private static string GetConvertedFilePath(string url, string targetFileType)
     {
         if (url is null || targetFileType is null)
         {
@@ -210,7 +208,47 @@ public class FileConvertService
 
         var convertedFilePath = Path.Combine(Configuration.Configuration.ConvertedFolderPath, convertedFileName);
 
-        if (File.Exists(convertedFilePath))
+        return convertedFilePath;
+    }
+
+    /// <summary>
+    /// 转换后的文件是否存在
+    /// </summary>
+    /// <param name="url"></param>
+    /// <param name="targetFileType"></param>
+    /// <returns></returns>
+    public static bool ConvertedFileExists(string url, string targetFileType)
+    {
+        var convertedFilePath = GetConvertedFilePath(url, targetFileType);
+
+        return File.Exists(convertedFilePath);
+    }
+
+    /// <summary>
+    /// 获取转换后的文件-工厂方法
+    /// </summary>
+    /// <param name="url"></param>
+    /// <param name="targetFileType"></param>
+    /// <param name="forceUpdate"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="Exception"></exception>
+    private static async Task<string> GetConvertedFileFactoryAsync(string url, string targetFileType, bool forceUpdate)
+    {
+        if (url is null || targetFileType is null)
+        {
+            throw new ArgumentNullException();
+        }
+
+        var fileName = Path.GetFileName(new Uri(url).LocalPath);
+
+        var isInnerFile = FileUploadService.IsValidFileKey(fileName);
+
+        var convertedFilePath = GetConvertedFilePath(url, targetFileType);
+
+        var fileExists = ConvertedFileExists(url, targetFileType);
+
+        if (fileExists)
         {
             if (forceUpdate)
             {

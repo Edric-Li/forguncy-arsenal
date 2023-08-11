@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import ImagePreview from './components/image';
 import ExcelPreview from './components/excel';
-import DocxPreview from './components/docx';
+import WordPreview from './components/word';
 import _ from 'lodash';
 import { isSuffixInLanguageMap } from './components/monaco-editor/utils';
 import MonacoEditorView from './components/monaco-editor';
@@ -18,16 +18,9 @@ import ZipViewer from './components/zip';
 import requestHelper from '../../common/request-helper';
 import getExtname from '../../common/get-extname';
 import PowerPointPreview from './components/ppt';
+import NotSupport from './not-support';
 
-const notSupportedStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  height: '100%',
-  width: '100%',
-};
-
-const convertibleFileTypes = new Set(['doc', 'ppt', 'pptx', 'xls', 'csv']);
+const convertibleFileTypes = new Set(['doc', 'ppt', 'xls', 'csv']);
 
 const viewMap: {
   type: RegExp;
@@ -35,12 +28,9 @@ const viewMap: {
 }[] = [
   { type: /mp3|wav|ogg|aac|flac|audio/, Component: AudioViewer },
   { type: /mp4|webm|video/, Component: VideoViewer },
-  /*  { type: /docx/, Component: DocxPreview },
-    { type: /pptx/, Component: PowerPointPreview },*/
-  {
-    type: /pdf|pptx|ppt|doc/,
-    Component: PDFViewer,
-  },
+  { type: /doc|docx/, Component: WordPreview },
+  { type: /ppt|pptx/, Component: PowerPointPreview },
+  { type: /pdf/, Component: PDFViewer },
   {
     type: /dxf|dwg|dgn|dwf|dwfx|dxb|dwt|plt|cf2|obj|fbx|collada|stl|stp|ifc|iges|3ds/,
     Component: PDFViewer,
@@ -125,10 +115,6 @@ const FilePreviewInner = (props: IProps) => {
     }
   }
 
-  if (fileExtension === 'docx' && !window.Arsenal.convertableFileExtensions?.has('docx')) {
-    Component = DocxPreview;
-  }
-
   if (!props.url) {
     return null;
   }
@@ -142,7 +128,7 @@ const FilePreviewInner = (props: IProps) => {
     !Component ||
     (convertibleFileTypes.has(fileExtension) && !window.Arsenal.convertableFileExtensions?.has(fileExtension))
   ) {
-    return <div style={notSupportedStyle}>暂不支持该文件类型</div>;
+    return <NotSupport />;
   }
 
   if (!exists) {

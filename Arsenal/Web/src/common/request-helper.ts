@@ -3,6 +3,7 @@ import { ConflictStrategy } from '../declarations/types';
 import { message } from 'antd';
 import FileUploadEngine from './file-upload-engine';
 import FileCacheService from './file-cache-service';
+import queryString from 'query-string';
 
 interface HttpResultData<T = { [name: string]: any }> {
   result: boolean;
@@ -213,6 +214,27 @@ const checkFileExists = async (url: string): Promise<boolean> => {
   }
 };
 
+const checkConvertedFileExists = async (url: string, targetType: string): Promise<boolean> => {
+  try {
+    const query = queryString.stringify({
+      url: FileUploadEngine.getAbsoluteUrl(url),
+      'target-type': targetType,
+    });
+
+    const response = await fetch(Forguncy.Helper.SpecialPath.getBaseUrl() + 'converted-file?' + query, {
+      method: 'HEAD',
+    });
+
+    if (response.ok) {
+      fileExisted.add(url);
+    }
+
+    return response.ok;
+  } catch (e) {
+    return true;
+  }
+};
+
 const requestHelper = {
   checkFileInfo,
   initMultipartUpload,
@@ -229,6 +251,7 @@ const requestHelper = {
   getConvertableFileExtensions,
   createFileConversionTask,
   checkFileExists,
+  checkConvertedFileExists,
 };
 
 export default requestHelper;

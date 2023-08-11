@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Web;
 using Arsenal.Server.Common;
 using Arsenal.Server.Services;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +25,16 @@ internal class Middleware
         if (context.Request.Path.Value.Contains("/converted-file"))
         {
             BootstrapService.EnsureInitialization();
+
+            if (context.Request.Method == "HEAD")
+            {
+                var url = HttpUtility.UrlDecode(context.Request.Query["url"].ToString());
+                var targetFileType = HttpUtility.UrlDecode(context.Request.Query["target-type"].ToString());
+                var exists = FileConvertService.ConvertedFileExists(url, targetFileType);
+                context.Response.StatusCode = exists ? 200 : 404;
+                return;
+            }
+            
             await context.HandleErrorAsync(async () => { await FileConvertService.GetConvertedFileAsync(context); });
             return;
         }

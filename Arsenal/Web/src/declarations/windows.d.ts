@@ -55,6 +55,14 @@ interface IPreviewOptions {
     hideSaveButton: boolean;
     hidePrintButton: boolean;
   };
+  wordSettings?: {
+    allowSwitchPreviewMode: boolean;
+    defaultPreviewMode: 'auto' | 'docx' | 'pdf';
+  };
+  powerPointSettings?: {
+    allowSwitchPreviewMode: boolean;
+    defaultPreviewMode: 'auto' | 'image' | 'pdf';
+  };
 }
 
 enum ContextMenuStatus {

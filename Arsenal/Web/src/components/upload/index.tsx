@@ -685,7 +685,15 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     return (
-      <Modal open title={previewTitle} footer={null} onCancel={handleCancel} centered width={document.body.clientWidth}>
+      <Modal
+        open
+        title={previewTitle}
+        footer={null}
+        onCancel={handleCancel}
+        centered
+        width={document.body.clientWidth}
+        destroyOnClose
+      >
         <div style={{ width: '100%', height: document.body.clientHeight - 105 }}>
           <FilePreviewInner
             url={previewImage}
