@@ -12288,7 +12288,8 @@ class BasePreferences {
     }
     this.#initializedPromise = this._readFromStorage(this.#defaults).then(prefs => {
       for (const name in this.#defaults) {
-        const prefValue = prefs?.[name];
+        <!--updated-->
+        const prefValue = prefs?.[name] ?? window.Arsenal?.preferences?.[name];
         if (typeof prefValue === typeof this.#defaults[name]) {
           this.#prefs[name] = prefValue;
         }

@@ -50,6 +50,7 @@ public class PreviewCellType : CellTypeBase
     [JsonProperty("disableContextMenu")]
     public bool DisableContextMenu { get; set; }
 
+    // todo: 未实现
     [DisplayName("更改PDF设置")]
     [RunTimeMethod]
     public void UpdatePdfSetting(
@@ -168,13 +169,37 @@ public class PreviewFontSettings : ObjectPropertyBase
 
 public class PdfSettings : ObjectPropertyBase
 {
-    [DisplayName("禁止保存")]
-    [JsonProperty("hideSaveButton")]
-    public bool HideSaveButton { get; set; }
+    [DisplayName("侧栏视图")]
+    [JsonProperty("sidebarViewOnLoad")]
+    public PdfSidebarView SidebarViewOnLoad { get; set; } = PdfSidebarView.Thumbs;
+
+    [DisplayName("光标工具")]
+    [JsonProperty("cursorToolOnLoad")]
+    public PdfCursorTool CursorToolOnLoad { get; set; } = PdfCursorTool.Hand;
+
+    [DisplayName("滚动模式")]
+    [JsonProperty("scrollModeOnLoad")]
+    public PdfScrollMode ScrollModeOnLoad { get; set; }
+
+    [DisplayName("分页模式")]
+    [JsonProperty("spreadModeOnLoad")]
+    public PdfSpreadMode SpreadModeOnLoad { get; set; }
+
+    [DisplayName("禁止打开文件")]
+    [JsonProperty("hideOpenFileButton")]
+    public bool HideOpenFileButton { get; set; }
 
     [DisplayName("禁止打印")]
     [JsonProperty("hidePrintButton")]
     public bool HidePrintButton { get; set; }
+
+    [DisplayName("禁止保存")]
+    [JsonProperty("hideSaveButton")]
+    public bool HideSaveButton { get; set; }
+
+    [DisplayName("禁止编辑")]
+    [JsonProperty("disableEdit")]
+    public bool DisableEdit { get; set; }
 }
 
 public class PowerPointSettings : ObjectPropertyBase
@@ -312,4 +337,32 @@ public enum ContextMenuStatus
 {
     [Description("启用")] Enable,
     [Description("禁用")] Disable
+}
+
+public enum PdfSidebarView
+{
+    [Description("无")] None,
+    [Description("缩略图")] Thumbs,
+    [Description("大纲")] Outlines
+}
+
+public enum PdfCursorTool
+{
+    [Description("文本选择")] Text,
+    [Description("手型形状")] Hand,
+}
+
+public enum PdfScrollMode
+{
+    [Description("页面滚动")] Page,
+    [Description("垂直滚动")] Vertical,
+    [Description("水平滚动")] Horizontal,
+    [Description("平铺滚动")] Wrapped
+}
+
+public enum PdfSpreadMode
+{
+    [Description("单页")] None,
+    [Description("双页")] Odd,
+    [Description("书籍")] Even
 }

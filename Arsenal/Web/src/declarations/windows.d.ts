@@ -52,8 +52,14 @@ interface IPreviewOptions {
   };
   disableContextMenu?: boolean;
   pdfSettings: {
+    sidebarViewOnLoad: number;
+    cursorToolOnLoad: number;
+    scrollModeOnLoad: number;
+    spreadModeOnLoad: number;
+    hideOpenFileButton: boolean;
     hideSaveButton: boolean;
     hidePrintButton: boolean;
+    disableEdit: boolean;
   };
   wordSettings?: {
     allowSwitchPreviewMode: boolean;

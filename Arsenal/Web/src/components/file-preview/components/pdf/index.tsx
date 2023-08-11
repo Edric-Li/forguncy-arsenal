@@ -47,15 +47,23 @@ const PDFViewer = (props: IPreviewComponentProps) => {
         return;
       }
 
-      $(getIframeDocument()?.getElementById('print')!).css(
-        'display',
-        props.pdfSettings?.hidePrintButton ? 'none' : 'block',
-      );
+      const setDomDisplay = (id: string, display: boolean) => {
+        $(getIframeDocument()?.getElementById(id)!).css('display', display ? 'block' : 'none');
+      };
 
-      $(getIframeDocument()?.getElementById('download')!).css(
-        'display',
-        props.pdfSettings?.hideSaveButton ? 'none' : 'block',
-      );
+      setDomDisplay('openFile', !props.pdfSettings?.hideOpenFileButton);
+      setDomDisplay('print', !props.pdfSettings?.hidePrintButton);
+      setDomDisplay('download', !props.pdfSettings?.hideSaveButton);
+      setDomDisplay('editorModeButtons', !props.pdfSettings?.disableEdit);
+
+      const isAllHide =
+        props.pdfSettings?.hideOpenFileButton &&
+        props.pdfSettings?.hidePrintButton &&
+        props.pdfSettings?.hideSaveButton &&
+        props.pdfSettings?.disableEdit;
+
+      // 如果所有按钮都隐藏，则隐藏分隔线
+      $('.verticalToolbarSeparator', getIframeDocument()).css('display', isAllHide ? 'none' : 'block');
 
       if (props.disableContextMenu) {
         getIframeDocument()?.addEventListener('contextmenu', preventDefaultEvent);
@@ -69,6 +77,16 @@ const PDFViewer = (props: IPreviewComponentProps) => {
     } else {
       iframe.addEventListener('load', handleElements);
     }
+
+    // @ts-ignore
+    iframe.contentWindow.Arsenal = {
+      preferences: {
+        sidebarViewOnLoad: props.pdfSettings?.sidebarViewOnLoad,
+        cursorToolOnLoad: props.pdfSettings?.cursorToolOnLoad,
+        scrollModeOnLoad: props.pdfSettings?.scrollModeOnLoad,
+        spreadModeOnLoad: props.pdfSettings?.spreadModeOnLoad,
+      },
+    } as any;
 
     return () => {
       getIframeDocument()?.removeEventListener('contextmenu', preventDefaultEvent);
