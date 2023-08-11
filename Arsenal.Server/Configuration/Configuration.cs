@@ -144,7 +144,7 @@ public class Configuration
         {
             Directory.CreateDirectory(TempFolderPath);
         }
-        
+
         if (!Directory.Exists(DataFolderPath))
         {
             Directory.CreateDirectory(DataFolderPath);
@@ -154,7 +154,7 @@ public class Configuration
     /// <summary>
     /// 初始化数据库相关信息
     /// </summary>
-    private void InitDatabaseFile()
+    private void InitDesignerDatabaseFile()
     {
         var workFolder = GetParents(GetType().Assembly.Location, 4).FullName;
 
@@ -234,12 +234,19 @@ public class Configuration
 
             CreateFolders();
             CopyDesignerFilesToWebSite();
-            InitDatabaseFile();
+            InitDesignerDatabaseFile();
         }
         else
         {
             AppConfig = GlobalConfigParser.GetAppConfig(GetAppName());
         }
 
+        CreateFolders();
+
+        if (instance.IsRunAtLocal())
+        {
+            CopyDesignerFilesToWebSite();
+            InitDesignerDatabaseFile();
+        }
     }
 }
