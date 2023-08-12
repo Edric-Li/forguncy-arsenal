@@ -274,8 +274,7 @@ public class UploadSettings : ObjectPropertyBase
 
     [DisplayName("支持断点续传和秒传")]
     [JsonProperty("enableResumableUpload")]
-    [DefaultValue(true)]
-    public bool EnableResumableUpload { get; set; } = true;
+    public bool EnableResumableUpload { get; set; }
 
     [DisplayName("支持上传前添加水印")]
     [JsonProperty("enableWatermark")]

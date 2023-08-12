@@ -106,8 +106,7 @@ public class UploadCommandAdvancedSettings : ObjectPropertyBase
 
     [DisplayName("断点续传/秒传")]
     [JsonProperty("enableResumableUpload")]
-    [DefaultValue(true)]
-    public bool EnableResumableUpload { get; set; } = true;
+    public bool EnableResumableUpload { get; set; }
 
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
