@@ -221,7 +221,8 @@ public class Arsenal : ForguncyApi
 
         await Context.HandleErrorAsync(async () =>
         {
-            await Context.BuildResultAsync(new HttpSuccessResult(FileConvertService.GetConvertableFileExtensions()));
+            var result = await FileConvertService.GetConvertableFileExtensionsAsync();
+            await Context.BuildResultAsync(new HttpSuccessResult(result));
         });
     }
 

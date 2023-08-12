@@ -1,5 +1,7 @@
 import preventDefaultEvent from '../../../../common/prevent-default-event';
 import { CSSProperties, useEffect, useMemo, useRef } from 'react';
+import getVideoFrameCount from '../../../../common/get-video-frame-count';
+import FileUploadEngine from '../../../../common/file-upload-engine';
 
 const defaultStyle: CSSProperties = {
   display: 'flex',
@@ -29,11 +31,31 @@ const VideoViewer = (props: IPreviewComponentProps) => {
       return;
     }
 
-    video.addEventListener('loadedmetadata', function () {
+    const handleResize = () => {
       if ((props.videoSettings.size as any) === VideoSize.Original) {
         $(video).css('width', video.videoWidth).css('height', video.videoHeight);
       } else {
         $(video).css('width', '100%').css('height', '100%');
+      }
+    };
+
+    handleResize();
+
+    video.addEventListener('loadedmetadata', function () {
+      handleResize();
+    });
+
+    video.addEventListener('error', async () => {
+      if (video.src === props.url) {
+        video.src = FileUploadEngine.getConvertedFileUrl(props.url, 'mp4');
+      }
+    });
+
+    video.addEventListener('canplay', async () => {
+      if (!getVideoFrameCount(video)) {
+        if (video.src === props.url) {
+          video.src = FileUploadEngine.getConvertedFileUrl(props.url, 'mp4');
+        }
       }
     });
 
@@ -44,20 +66,22 @@ const VideoViewer = (props: IPreviewComponentProps) => {
     return () => {
       video.removeEventListener('contextmenu', preventDefaultEvent);
     };
-  }, [rootRef, props]);
+  }, [rootRef, props.url]);
 
   return (
-    <video
-      ref={rootRef}
-      title='preview'
-      style={style}
-      src={props.url}
-      muted={props.videoSettings?.muted}
-      autoPlay={props.videoSettings?.autoPlay}
-      controls={props.videoSettings?.controls}
-      controlsList={props.videoSettings?.disableDownload ? 'nodownload' : undefined}
-      disablePictureInPicture={props.videoSettings?.disablePictureInPicture}
-    />
+    <>
+      <video
+        ref={rootRef}
+        title='preview'
+        style={style}
+        src={props.url}
+        muted={props.videoSettings?.muted}
+        autoPlay={props.videoSettings?.autoPlay}
+        controls={props.videoSettings?.controls}
+        controlsList={props.videoSettings?.disableDownload ? 'nodownload' : undefined}
+        disablePictureInPicture={props.videoSettings?.disablePictureInPicture}
+      />
+    </>
   );
 };
 

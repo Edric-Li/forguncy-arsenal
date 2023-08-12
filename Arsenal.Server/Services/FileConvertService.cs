@@ -65,6 +65,51 @@ public class FileConvertService
     };
 
     /// <summary>
+    /// 支持转换的视频文件的后缀名
+    /// </summary>
+    private static readonly HashSet<string> SupportedVideoFileExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "mp4",
+        "avi",
+        "wmv",
+        "mov",
+        "flv",
+        "mkv",
+        "rmvb",
+        "rm",
+        "3gp",
+        "mpeg",
+        "mpg",
+        "vob",
+        "swf",
+        "asf",
+        "m4v",
+        "f4v",
+        "dat",
+        "mts",
+        "m2ts",
+        "mxf",
+        "m2v",
+        "3g2",
+        "3gp2",
+        "3gpp",
+        "3gpp2",
+        "dv",
+        "divx",
+        "xvid",
+        "264",
+        "h264",
+        "h265",
+        "hevc",
+        "vp8",
+        "vp9",
+        "webm",
+        "ogv",
+        "ogg",
+        "dvd"
+    };
+
+    /// <summary>
     /// 转换任务
     /// </summary>
     private static readonly ConcurrentDictionary<string, Task<string>> ConvertingTasks = new();
@@ -116,7 +161,7 @@ public class FileConvertService
     /// 根据系统安装的转换器，获取可以转换的文件后缀名
     /// </summary>
     /// <returns></returns>
-    public static HashSet<string> GetConvertableFileExtensions()
+    public static async Task<HashSet<string>> GetConvertableFileExtensionsAsync()
     {
         var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -133,6 +178,11 @@ public class FileConvertService
         if (WordConverter.IsInstalled)
         {
             result.UnionWith(SupportedWordFileExtensions);
+        }
+
+        if (await VideoConverter.CheckInstalled())
+        {
+            result.UnionWith(SupportedVideoFileExtensions);
         }
 
         return result;
@@ -169,11 +219,13 @@ public class FileConvertService
             if (ZWCadConverter.IsInstalled)
             {
                 await new ZWCadConverter(inputFile, outputFile).ConvertToPdfAsync();
+                return true;
             }
-            else
-            {
-                await new AsposeCadConverter(inputFile, outputFile).ConvertToPdfAsync();
-            }
+        }
+
+        if (SupportedVideoFileExtensions.Contains(extension))
+        {
+            await new VideoConverter(inputFile, outputFile).ConvertToH264Async();
             return true;
         }
 

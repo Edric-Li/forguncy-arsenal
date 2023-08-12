@@ -29,7 +29,10 @@ const viewMap: {
   Component: React.ComponentType<IPreviewComponentProps>;
 }[] = [
   { type: /mp3|wav|ogg|aac|flac|audio/, Component: AudioViewer },
-  { type: /mp4|webm|video/, Component: VideoViewer },
+  {
+    type: /mp4|video|avi|wmv|mov|flv|mkv|rmvb|rm|3gp|mpeg|mpg|vob|swf|asf|m4v|f4v|dat|mts|m2ts|mxf|m2v|3g2|3gp2|3gpp|3gpp2|dv|divx|xvid|264|h264|h265|hevc|vp8|vp9|webm|ogv|ogg|dvd/,
+    Component: VideoViewer,
+  },
   { type: /doc|docx/, Component: WordPreview },
   { type: /ppt|pptx/, Component: PowerPointPreview },
   { type: /pdf/, Component: PDFViewer },
