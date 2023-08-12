@@ -227,16 +227,14 @@ public static class FileUploadService
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(metadata.Name);
                 var extension = Path.GetExtension(metadata.Name);
 
-                string GetNextFilePath() => GetAbsolutePath($"{fileNameWithoutExtension}({num}){extension}");
+                string GetFilePathByNum() => GetAbsolutePath($"{fileNameWithoutExtension}({num}){extension}");
 
-                var nextFilePath = GetNextFilePath();
-
-                while (File.Exists(nextFilePath))
+                while (File.Exists(GetFilePathByNum()))
                 {
                     num++;
                 }
 
-                return Path.GetFileName(nextFilePath);
+                return Path.GetFileName(GetFilePathByNum());
 
             default:
                 throw new Exception($"文件夹{metadata.FolderPath}下存在同名文件{metadata.Name}。");
