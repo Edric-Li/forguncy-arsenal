@@ -1,7 +1,8 @@
 import preventDefaultEvent from '../../../../common/prevent-default-event';
-import { CSSProperties, useEffect, useMemo, useRef } from 'react';
+import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import getVideoFrameCount from '../../../../common/get-video-frame-count';
 import FileUploadEngine from '../../../../common/file-upload-engine';
+import { Spin } from 'antd';
 
 const defaultStyle: CSSProperties = {
   display: 'flex',
@@ -16,11 +17,13 @@ enum VideoSize {
 
 const VideoViewer = (props: IPreviewComponentProps) => {
   const rootRef = useRef<HTMLVideoElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const style = useMemo(() => {
     return {
       ...defaultStyle,
       backgroundColor: Forguncy.ConvertToCssColor(props.videoSettings.backgroundColor),
+      opacity: 0,
     };
   }, [props]);
 
@@ -53,9 +56,10 @@ const VideoViewer = (props: IPreviewComponentProps) => {
 
     video.addEventListener('canplay', async () => {
       if (!getVideoFrameCount(video)) {
-        if (video.src === props.url) {
-          video.src = FileUploadEngine.getConvertedFileUrl(props.url, 'mp4');
-        }
+        video.src = FileUploadEngine.getConvertedFileUrl(props.url, 'mp4');
+      } else {
+        video.style.opacity = '1';
+        setIsLoading(false);
       }
     });
 
@@ -81,6 +85,11 @@ const VideoViewer = (props: IPreviewComponentProps) => {
         controlsList={props.videoSettings?.disableDownload ? 'nodownload' : undefined}
         disablePictureInPicture={props.videoSettings?.disablePictureInPicture}
       />
+      {isLoading && (
+        <div className='arsenal-spin-centered'>
+          <Spin />
+        </div>
+      )}
     </>
   );
 };
