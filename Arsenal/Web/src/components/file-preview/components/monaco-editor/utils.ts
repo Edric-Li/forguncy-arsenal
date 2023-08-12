@@ -1,6 +1,7 @@
 const languageMap: { [key: string]: string } = {
   '.editorconfig': 'plaintext',
   '.gitignore': 'plaintext',
+  '.gitattributes': 'plaintext',
   '.txt': 'plaintext',
   '.abap': 'abap',
   '.cls': 'apex',

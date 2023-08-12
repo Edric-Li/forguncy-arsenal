@@ -19,6 +19,8 @@ import requestHelper from '../../common/request-helper';
 import getExtname from '../../common/get-extname';
 import PowerPointPreview from './components/ppt';
 import NotSupport from './not-support';
+import MarkDownPreview from './components/md';
+import HtmlPreview from './components/html';
 
 const convertibleFileTypes = new Set(['doc', 'ppt', 'xls', 'csv']);
 
@@ -39,6 +41,8 @@ const viewMap: {
   { type: /svg/, Component: SVGPreview },
   { type: /xlsx|xls|csv/, Component: ExcelPreview },
   { type: /zip|fgcc|fgcp/, Component: ZipViewer },
+  { type: /md/, Component: MarkDownPreview },
+  { type: /htm|html/, Component: HtmlPreview },
 ];
 
 export const isImage = (fileUrl: string) => {
