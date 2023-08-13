@@ -80,6 +80,7 @@ const VideoViewer = (props: IPreviewComponentProps) => {
         title='preview'
         style={style}
         src={props.url}
+        loop={props.videoSettings?.loop}
         muted={props.videoSettings?.muted}
         autoPlay={props.videoSettings?.autoPlay}
         controls={props.videoSettings?.controls}
