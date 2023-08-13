@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import uploadCommand from '../../../commands/upload';
 import uploadFolderCommand from '../../../commands/upload-folder';
 import downloadFileCommand from '../../../commands/download-file';
@@ -8,6 +7,7 @@ import zipFileAndDownload from '../../../commands/zip-file-and-download';
 import getDifferenceFileKeys from '../../../commands/get-difference-file-keys';
 import cancelCommand from '../../../commands/cancel';
 import videoOperationCommand from '../../../commands/video-operation';
+import noop from '../../../common/noop';
 
 interface Props {
   commandName: string;
@@ -53,6 +53,6 @@ const commandWrapper = (props: Props): Function | null => {
     fn = videoOperationCommand;
   }
 
-  return (fn || _.noop).bind(null, props.commandBase);
+  return (fn || noop).bind(null, props.commandBase);
 };
 export default commandWrapper;

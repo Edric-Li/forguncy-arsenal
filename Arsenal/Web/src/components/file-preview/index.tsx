@@ -3,7 +3,6 @@ import FileUploadEngine from '../../common/file-upload-engine';
 import FilePreviewInner from './file-preview-inner';
 import { Tabs, TabsProps } from 'antd';
 import isInternalFile from '../../common/is-internal-file';
-import { clone } from 'lodash';
 
 const rootStyle: React.CSSProperties = {
   height: '100%',
@@ -58,7 +57,7 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       options.watermarkSettings.content = (
         props.cellType.CellElement.CellType as IPreviewOptions
       ).watermarkSettings.content;
-      setOptions(clone(options));
+      setOptions({ ...options });
     },
     runtimeMethod: {
       updatePdfSetting(hideSaveButton: boolean | null, hidePrintButton: boolean) {
@@ -70,7 +69,7 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           options.pdfSettings.hidePrintButton = hidePrintButton;
         }
 
-        setOptions(clone(options));
+        setOptions({ ...options });
       },
       updateVideoSetting(
         autoPlay: boolean | null,
@@ -107,7 +106,7 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
         options.videoSettings.size = size;
 
-        setOptions(clone(options));
+        setOptions({ ...options });
       },
 
       updateAudioSetting(
@@ -132,12 +131,12 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           options.audioSettings.loop = loop;
         }
 
-        setOptions(clone(options));
+        setOptions({ ...options });
       },
 
       updateContextMenuSetting(status: ContextMenuStatus) {
         options.disableContextMenu = status === ContextMenuStatus.Disable;
-        setOptions(clone(options));
+        setOptions({ ...options });
       },
     },
   }));

@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Spin } from 'antd';
+
 import preventDefaultEvent from '../../../../common/prevent-default-event';
 import FileUploadEngine from '../../../../common/file-upload-engine';
 import requestHelper from '../../../../common/request-helper';
-import { Spin } from 'antd';
 import getExtname from '../../../../common/get-extname';
 import generateUniqueKey from '../../../../common/generate-unique-key';
 

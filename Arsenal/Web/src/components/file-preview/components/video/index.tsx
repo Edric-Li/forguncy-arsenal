@@ -1,8 +1,9 @@
-import preventDefaultEvent from '../../../../common/prevent-default-event';
 import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+import { Spin } from 'antd';
+
+import preventDefaultEvent from '../../../../common/prevent-default-event';
 import getVideoFrameCount from '../../../../common/get-video-frame-count';
 import FileUploadEngine from '../../../../common/file-upload-engine';
-import { Spin } from 'antd';
 
 const defaultStyle: CSSProperties = {
   display: 'flex',

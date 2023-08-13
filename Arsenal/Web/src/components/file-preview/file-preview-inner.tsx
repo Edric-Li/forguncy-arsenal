@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import ImagePreview from './components/image';
 import ExcelPreview from './components/excel';
 import WordPreview from './components/word';
-import _ from 'lodash';
 import { isSuffixInLanguageMap } from './components/monaco-editor/utils';
 import MonacoEditorView from './components/monaco-editor';
 import SVGPreview from './components/svg';
@@ -114,7 +113,7 @@ const FilePreviewInner = (props: IProps) => {
   }, [props.options]);
 
   let Component: React.ComponentType<IPreviewComponentProps> | null =
-    _.find(viewMap, (m) => m.type.test(fileExtension.toLowerCase()))?.Component ?? null;
+    viewMap.find((m) => m.type.test(fileExtension.toLowerCase()))?.Component ?? null;
 
   if (Component === null) {
     if (isSuffixInLanguageMap(fileExtension)) {

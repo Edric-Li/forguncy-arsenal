@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { renderAsync } from 'docx-preview';
-import requestHelper from '../../../../common/request-helper';
 import { Button, Tooltip } from 'antd';
 import { SwitcherOutlined } from '@ant-design/icons';
+import { renderAsync } from 'docx-preview';
+
+import requestHelper from '../../../../common/request-helper';
 import PDFViewer from '../pdf';
 import NotSupport from '../../not-support';
 
