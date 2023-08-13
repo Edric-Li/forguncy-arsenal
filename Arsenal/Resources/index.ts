@@ -218,6 +218,4 @@ namespace Arsenal {
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetDifferenceFileKeysCommand, Arsenal", GetDifferenceFileKeysCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.CancelCommand, Arsenal", CancelCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.VideoOperationCommand, Arsenal", VideoOperationCommand);
-
-    window.Arsenal.canceledTokenSet = new Set<string>;
 }

@@ -96,6 +96,13 @@ interface Window {
     createReactCommand: (commandBase: Forguncy.Plugin.CommandBase, commandName: CommandName) => void;
     canceledTokenSet: Set<string>;
     convertableFileExtensions?: Set<string>;
+    pdfInfo: Map<
+      string,
+      {
+        url: string;
+        preferences: any;
+      }
+    >;
     __originalWindowMethods: { [key: string]: Function };
   };
 

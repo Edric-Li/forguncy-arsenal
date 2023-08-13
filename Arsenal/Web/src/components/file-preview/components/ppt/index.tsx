@@ -88,19 +88,7 @@ const PowerPointPreview = (props: IPreviewComponentProps) => {
       );
     }
 
-    return (
-      <PDFViewer
-        url={props.url}
-        suffix={'.pptx'}
-        evaluateFormula={props.evaluateFormula}
-        hideTabsWhenOnlyOneFile={props.hideTabsWhenOnlyOneFile}
-        watermarkSettings={props.watermarkSettings}
-        videoSettings={props.videoSettings}
-        audioSettings={props.audioSettings}
-        pdfSettings={props.pdfSettings}
-        disableContextMenu={props.disableContextMenu}
-      />
-    );
+    return <PDFViewer {...props} url={props.url} suffix={'.pptx'} />;
   };
 
   if (previewMode === null) {
@@ -123,7 +111,6 @@ const PowerPointPreview = (props: IPreviewComponentProps) => {
           />
         </Tooltip>
       )}
-      )
     </div>
   );
 };

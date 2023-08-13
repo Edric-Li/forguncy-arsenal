@@ -28,7 +28,7 @@ public class Configuration
     /// <summary>
     /// 转换后的文件夹路径
     /// </summary>
-    public static string ConvertedFolderPath => Path.Combine(RootFolderPath, "converted_files");
+    public static string ConvertedFolderPath { get; private set; }
 
     /// <summary>
     /// 临时文件夹路径
@@ -151,14 +151,19 @@ public class Configuration
         }
     }
 
+    private string GetArsenalTempPath()
+    {
+        var workFolder = GetParents(GetType().Assembly.Location, 4).FullName;
+
+        return Path.Combine(workFolder, "ArsenalTemp");
+    }
+
     /// <summary>
     /// 初始化数据库相关信息
     /// </summary>
     private void InitDesignerDatabaseFile()
     {
-        var workFolder = GetParents(GetType().Assembly.Location, 4).FullName;
-
-        var arsenalTemp = Path.Combine(workFolder, "ArsenalTemp");
+        var arsenalTemp = GetArsenalTempPath();
 
         if (!Directory.Exists(arsenalTemp))
         {
@@ -240,6 +245,9 @@ public class Configuration
         {
             AppConfig = GlobalConfigParser.GetAppConfig(GetAppName());
         }
+
+        var convertedFolderRootPath = instance.IsRunAtLocal() ? GetArsenalTempPath() : RootFolderPath;
+        ConvertedFolderPath = Path.Combine(convertedFolderRootPath, "converted_files");
 
         CreateFolders();
 

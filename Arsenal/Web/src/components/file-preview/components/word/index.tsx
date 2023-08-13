@@ -83,19 +83,7 @@ const WordPreview = (props: IPreviewComponentProps) => {
 
   const renderContent = () => {
     if (previewMode === PreviewMode.Pdf) {
-      return (
-        <PDFViewer
-          url={props.url}
-          suffix={'.docx'}
-          evaluateFormula={props.evaluateFormula}
-          hideTabsWhenOnlyOneFile={props.hideTabsWhenOnlyOneFile}
-          watermarkSettings={props.watermarkSettings}
-          videoSettings={props.videoSettings}
-          audioSettings={props.audioSettings}
-          pdfSettings={props.pdfSettings}
-          disableContextMenu={props.disableContextMenu}
-        />
-      );
+      return <PDFViewer {...props} url={props.url} suffix={'.docx'} />;
     }
 
     return <div ref={rootRef} style={{ width: '100%', height: '100%', overflow: 'auto' }} />;
@@ -105,7 +93,7 @@ const WordPreview = (props: IPreviewComponentProps) => {
     return <NotSupport />;
   }
 
-  if (previewMode) {
+  if (previewMode === null) {
     return null;
   }
 

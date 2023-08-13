@@ -3202,8 +3202,10 @@ const defaultOptions = {
   }
 };
 {
+  <!--updated-->
+  const key = location.href.split("?")[1].split("=")[1];
   defaultOptions.defaultUrl = {
-    value: "compressed.tracemonkey-pldi-09.pdf",
+    value: window.parent.Arsenal.pdfInfo.get(key).url,
     kind: OptionKind.VIEWER
   };
   defaultOptions.disablePreferences = {
@@ -12286,10 +12288,13 @@ class BasePreferences {
     if (this.constructor === BasePreferences) {
       throw new Error("Cannot initialize BasePreferences.");
     }
+    <!--updated-->
+    const key = location.href.split("?")[1].split("=")[1];
+    const preferencesInfo = window.parent?.Arsenal?.pdfInfo?.get(key).preferences;
     this.#initializedPromise = this._readFromStorage(this.#defaults).then(prefs => {
       for (const name in this.#defaults) {
         <!--updated-->
-        const prefValue = prefs?.[name] ?? window.Arsenal?.preferences?.[name];
+        const prefValue = prefs?.[name] ?? preferencesInfo?.[name];
         if (typeof prefValue === typeof this.#defaults[name]) {
           this.#prefs[name] = prefValue;
         }

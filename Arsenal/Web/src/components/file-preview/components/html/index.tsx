@@ -1,6 +1,6 @@
 import requestHelper from '../../../../common/request-helper';
 import { CSSProperties, useEffect, useState } from 'react';
-import * as sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from 'sanitize-html';
 
 const rootStyle: CSSProperties = {
   width: '100%',

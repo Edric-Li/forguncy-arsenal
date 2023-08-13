@@ -22,6 +22,7 @@ if (!window.Arsenal) {
     createReactCommand,
     createReactComponent,
     canceledTokenSet: new Set(),
+    pdfInfo: new Map(),
     __originalWindowMethods: {},
   };
 } else {

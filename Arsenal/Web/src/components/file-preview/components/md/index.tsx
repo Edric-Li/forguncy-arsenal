@@ -1,6 +1,6 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import { MdPreview, MdCatalog } from 'md-editor-rt';
-import * as sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from 'sanitize-html';
 import 'md-editor-rt/lib/preview.css';
 import requestHelper from '../../../../common/request-helper';
 

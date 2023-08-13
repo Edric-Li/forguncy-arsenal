@@ -4,6 +4,7 @@ import FileUploadEngine from '../../../../common/file-upload-engine';
 import requestHelper from '../../../../common/request-helper';
 import { Spin } from 'antd';
 import getExtname from '../../../../common/get-extname';
+import generateUniqueKey from '../../../../common/generate-unique-key';
 
 const PDFViewer = (props: IPreviewComponentProps) => {
   const rootRef = useRef<HTMLIFrameElement>(null);
@@ -25,10 +26,26 @@ const PDFViewer = (props: IPreviewComponentProps) => {
         url = FileUploadEngine.getConvertedFileUrl(props.url, 'pdf');
       }
 
+      if (!window.Arsenal.pdfInfo) {
+        window.Arsenal.pdfInfo = new Map();
+      }
+
+      const uniqueKey = generateUniqueKey('pdf-viewer');
+
+      window.Arsenal.pdfInfo.set(uniqueKey, {
+        url,
+        preferences: {
+          sidebarViewOnLoad: props.pdfSettings?.sidebarViewOnLoad,
+          cursorToolOnLoad: props.pdfSettings?.cursorToolOnLoad,
+          scrollModeOnLoad: props.pdfSettings?.scrollModeOnLoad,
+          spreadModeOnLoad: props.pdfSettings?.spreadModeOnLoad,
+        },
+      });
+
       setSrc(
         Forguncy.Helper.SpecialPath.getPluginRootPath('8748d7dc-994d-45b8-80f9-f510cfcac6ac') +
-          'Resources/pdfjs-3.8.162/web/viewer.html?file=' +
-          encodeURIComponent(url),
+          'Resources/pdfjs-3.8.162/web/viewer.html?key=' +
+          uniqueKey,
       );
     })();
   }, [props.url]);
@@ -77,16 +94,6 @@ const PDFViewer = (props: IPreviewComponentProps) => {
     } else {
       iframe.addEventListener('load', handleElements);
     }
-
-    // @ts-ignore
-    iframe.contentWindow.Arsenal = {
-      preferences: {
-        sidebarViewOnLoad: props.pdfSettings?.sidebarViewOnLoad,
-        cursorToolOnLoad: props.pdfSettings?.cursorToolOnLoad,
-        scrollModeOnLoad: props.pdfSettings?.scrollModeOnLoad,
-        spreadModeOnLoad: props.pdfSettings?.spreadModeOnLoad,
-      },
-    } as any;
 
     return () => {
       getIframeDocument()?.removeEventListener('contextmenu', preventDefaultEvent);
