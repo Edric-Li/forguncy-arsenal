@@ -341,6 +341,20 @@ public class FileConvertService
             throw new Exception("文件不存在");
         }
 
+        // 如果输入文件不在临时文件夹，需要将其复制到临时文件夹，避免转换时出现文件占用，导致发布失败
+        if (Configuration.Configuration.RunAtLocal &&
+            Path.GetDirectoryName(inputFilePath) != Configuration.Configuration.TempFolderPath)
+        {
+            try
+            {
+                File.Copy(inputFilePath, Path.Combine(Configuration.Configuration.TempFolderPath, fileName), true);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(LogLevel.ERROR, "将文件移动到临时目录失败，" + e.Message);
+            }
+        }
+
         if (!await ConvertFileAsync(inputFilePath, convertedFilePath))
         {
             throw new Exception("文件转换失败");

@@ -33,7 +33,7 @@ public class Configuration
     /// <summary>
     /// 临时文件夹路径
     /// </summary>
-    public static string TempFolderPath => Path.Combine(RootFolderPath, "temp");
+    public static string TempFolderPath { get; private set; }
 
     /// <summary>
     /// 数据文件夹路径
@@ -149,6 +149,11 @@ public class Configuration
         {
             Directory.CreateDirectory(DataFolderPath);
         }
+
+        if (!Directory.Exists(ConvertedFolderPath))
+        {
+            Directory.CreateDirectory(ConvertedFolderPath);
+        }
     }
 
     private string GetArsenalTempPath()
@@ -228,6 +233,7 @@ public class Configuration
         }
 
         var instance = new Configuration();
+
         if (instance.IsRunAtLocal())
         {
             RunAtLocal = true;
@@ -236,18 +242,16 @@ public class Configuration
                 LocalUploadFolderPath = instance.GetRunAtLocalUploadFolderPath(),
                 UserServiceUrl = DefaultUserServiceUrl
             };
-
-            CreateFolders();
-            CopyDesignerFilesToWebSite();
-            InitDesignerDatabaseFile();
         }
         else
         {
             AppConfig = GlobalConfigParser.GetAppConfig(GetAppName());
         }
 
-        var convertedFolderRootPath = instance.IsRunAtLocal() ? GetArsenalTempPath() : RootFolderPath;
-        ConvertedFolderPath = Path.Combine(convertedFolderRootPath, "converted_files");
+        var path = instance.IsRunAtLocal() ? GetArsenalTempPath() : RootFolderPath;
+
+        ConvertedFolderPath = Path.Combine(path, "converted_files");
+        TempFolderPath = Path.Combine(path, "temp");
 
         CreateFolders();
 
