@@ -104,7 +104,7 @@ const PowerPointPreview = (props: IPreviewComponentProps) => {
             shape='circle'
             icon={<SwitcherOutlined />}
             size={'large'}
-            style={{ position: 'absolute', right: 50, bottom: 35, opacity: showSwitcher ? 1 : 0 }}
+            style={{ position: 'absolute', right: 22, bottom: 5, opacity: showSwitcher ? 1 : 0 }}
             onClick={() => {
               setPreviewMode(previewMode === PreviewMode.Image ? PreviewMode.Pdf : PreviewMode.Image);
             }}

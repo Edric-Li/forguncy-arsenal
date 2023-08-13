@@ -147,7 +147,7 @@ const FilePreviewInner = (props: IProps) => {
   }
 
   return (
-    <div className='arsenal-filled-and-centered' ref={rootRef}>
+    <div className='arsenal-filled-and-centered' ref={rootRef} style={{ position: 'relative' }}>
       <ResizeObserver
         onResize={(size) => {
           setSize(size);

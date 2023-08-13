@@ -19,6 +19,8 @@ const WordPreview = (props: IPreviewComponentProps) => {
 
   useEffect(() => {
     (async () => {
+      setShowSwitcher(false);
+
       if (props.suffix === 'doc') {
         setPreviewMode(PreviewMode.Pdf);
         return;
@@ -57,7 +59,7 @@ const WordPreview = (props: IPreviewComponentProps) => {
 
   useEffect(() => {
     (async () => {
-      if (previewMode === PreviewMode.Docx) {
+      if (previewMode === PreviewMode.Docx && props.suffix === 'docx') {
         try {
           const buffer = await requestHelper.getBlob(props.url);
           await renderAsync(buffer, rootRef.current as HTMLElement);
@@ -106,14 +108,13 @@ const WordPreview = (props: IPreviewComponentProps) => {
             shape='circle'
             icon={<SwitcherOutlined />}
             size={'large'}
-            style={{ position: 'absolute', right: 50, bottom: 35, opacity: showSwitcher ? 1 : 0 }}
+            style={{ position: 'absolute', right: 22, bottom: 5, opacity: showSwitcher ? 1 : 0 }}
             onClick={() => {
               setPreviewMode(previewMode === PreviewMode.Docx ? PreviewMode.Pdf : PreviewMode.Docx);
             }}
           />
         </Tooltip>
       )}
-      )
     </>
   );
 };
