@@ -1,7 +1,7 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import requestHelper from '../../../../common/request-helper';
 import type { DataNode } from 'antd/es/tree';
-import { Input, Modal, Tree } from 'antd';
+import { Input, InputRef, Modal, Tree } from 'antd';
 import FileUploadEngine from '../../../../common/file-upload-engine';
 import FilePreviewInner, { isImage } from '../../file-preview-inner';
 import ImageFullScreenPreview from '../../../image-full-screen-preview';
@@ -68,6 +68,8 @@ const buildTree = (paths: string[]): Node[] => {
 const ZipViewer = (props: IPreviewComponentProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const originalPathRef = useRef<string[]>([]);
+  const searchInputRef = useRef<InputRef | null>(null);
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewName, setPreviewName] = useState('');
@@ -91,7 +93,8 @@ const ZipViewer = (props: IPreviewComponentProps) => {
       if (event.ctrlKey && event.key === 'f') {
         event.preventDefault();
         event.stopPropagation();
-
+        // 如果已经显示了搜索框，就直接聚焦
+        searchInputRef.current?.focus();
         setShowSearch(true);
       }
     };
@@ -159,10 +162,16 @@ const ZipViewer = (props: IPreviewComponentProps) => {
           );
 
         if (item.children) {
-          return { title, key: item.key, children: loop(item.children) };
+          return {
+            ...item,
+            title,
+            key: item.key,
+            children: loop(item.children),
+          };
         }
 
         return {
+          ...item,
           title,
           key: item.key,
         };
@@ -175,6 +184,7 @@ const ZipViewer = (props: IPreviewComponentProps) => {
     return (
       <div className='arsenal-file-preview-zip-search-box'>
         <Input
+          ref={searchInputRef}
           placeholder='请输入搜索内容'
           onChange={handleSearchChanged}
           autoFocus
