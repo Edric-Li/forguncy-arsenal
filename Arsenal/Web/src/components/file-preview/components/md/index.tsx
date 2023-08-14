@@ -29,7 +29,7 @@ const MarkDownPreview = (props: IPreviewComponentProps) => {
   return (
     <div style={rootStyle} ref={rootRef}>
       <MdPreview editorId={id} modelValue={text} style={mdPreviewStyle} />
-      <MdCatalog editorId={id} scrollElement={rootRef.current as HTMLElement} />
+      <MdCatalog editorId={id} scrollElement={rootRef.current as HTMLElement} style={{ overflow: 'auto' }} />
     </div>
   );
 };
