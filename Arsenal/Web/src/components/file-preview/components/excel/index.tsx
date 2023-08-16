@@ -11,20 +11,9 @@ import FileUploadEngine from '../../../../common/file-upload-engine';
  * @constructor
  */
 const ExcelPreview = (props: IPreviewComponentProps) => {
-  const rootRef: React.RefObject<HTMLDivElement> = useRef(null);
-  const spreadRef = useRef<any>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [showSpin, setShowSpin] = useState<boolean>(true);
   const excelIoRef = useRef<any>(null);
-
-  const getSpread = () => {
-    if (!spreadRef.current) {
-      spreadRef.current = new window.GC.Spread.Sheets.Workbook(rootRef.current, {
-        calcOnDemand: true,
-        showTabStrip: false,
-      });
-    }
-    return spreadRef.current;
-  };
 
   const getExcelIo = () => {
     if (!excelIoRef.current) {
@@ -39,6 +28,10 @@ const ExcelPreview = (props: IPreviewComponentProps) => {
 
   useEffect(() => {
     (async () => {
+      if (rootRef.current) {
+        setShowSpin(true);
+      }
+
       if (props.url === null) {
         return;
       }
@@ -62,8 +55,11 @@ const ExcelPreview = (props: IPreviewComponentProps) => {
         file,
         function (json: any) {
           setShowSpin(false);
+          const spread = new window.GC.Spread.Sheets.Workbook(rootRef.current, {
+            calcOnDemand: true,
+            showTabStrip: false,
+          });
 
-          const spread = getSpread();
           spread.fromJSON(json);
           // 禁用右键菜单
           spread.contextMenu = false;
@@ -85,7 +81,9 @@ const ExcelPreview = (props: IPreviewComponentProps) => {
     })();
 
     return () => {
-      rootRef.current?.remove();
+      if (rootRef.current) {
+        rootRef.current.innerHTML = '';
+      }
     };
   }, [props.url]);
 
