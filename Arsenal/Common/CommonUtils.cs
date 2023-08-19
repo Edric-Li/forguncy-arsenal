@@ -106,6 +106,13 @@ public abstract class CommonUtils
         var sqliteConnection = new SqliteConnection("Data Source=" + dbFilePath);
         var destSqliteConnection = new SqliteConnection($"Data Source={destFilePath};pooling=false");
 
+        var destFolder = Path.GetDirectoryName(destFilePath);
+
+        if (!Directory.Exists(destFolder))
+        {
+            return;
+        }
+
         sqliteConnection.Open();
         destSqliteConnection.Open();
         sqliteConnection.BackupDatabase(destSqliteConnection);
