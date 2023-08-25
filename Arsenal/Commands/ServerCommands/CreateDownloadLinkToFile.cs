@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
 using Arsenal.Server.Model.Params;
+using Arsenal.Server.Services;
 using GrapeCity.Forguncy.Commands;
 using GrapeCity.Forguncy.Plugin;
 
@@ -45,6 +46,8 @@ public class CreateDownloadLinkToFileCommand : CommandBase, ICommandExecutableIn
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
+        BootstrapService.EnsureInitialization();
+
         var filePath = (await dataContext.EvaluateFormulaAsync(FilePath))?.ToString();
         var expirationDateStr = (await dataContext.EvaluateFormulaAsync(ExpirationDate))?.ToString();
         var downloadFileName = (await dataContext.EvaluateFormulaAsync(DownloadFileName))?.ToString();

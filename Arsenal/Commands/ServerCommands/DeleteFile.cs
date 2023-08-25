@@ -20,6 +20,8 @@ public class DeleteFileCommand : CommandBase, ICommandExecutableInServerSideAsyn
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
+        BootstrapService.EnsureInitialization();
+
         var fileKeys = (await dataContext.EvaluateFormulaAsync(FileKeys))?.ToString();
 
         if (string.IsNullOrWhiteSpace(fileKeys))
