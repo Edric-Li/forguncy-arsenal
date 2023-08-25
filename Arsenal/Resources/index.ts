@@ -80,6 +80,20 @@ namespace Arsenal {
             this.__reactComponent?.setDisable?.(this.isDisabled());
         }
 
+        sleep(ms: number) {
+            return new Promise((resolve) => setTimeout(() => resolve(null), ms));
+        };
+
+        async waitUntilReactComponentLoaded() {
+            while (true) {
+                if (this._reactComponentLoaded) {
+                    break;
+                }
+
+                await this.sleep(30)
+            }
+        }
+
         onReactComponentLoaded() {
             this._reactComponentLoaded = true;
 
@@ -133,15 +147,18 @@ namespace Arsenal {
     export class PCUpload extends ReactCellType {
         ComponentName = 'PCUpload';
 
-        SetElementDisplayState(...args) {
+        async SetElementDisplayState(...args) {
+            await this.waitUntilReactComponentLoaded();
             this.__reactComponent.runtimeMethod["setElementDisplayState"](...args);
         }
 
-        Upload(...args) {
+        async Upload(...args) {
+            await this.waitUntilReactComponentLoaded();
             this.__reactComponent.runtimeMethod["upload"](...args);
         }
 
-        UploadFolder(...args) {
+        async UploadFolder(...args) {
+            await this.waitUntilReactComponentLoaded();
             this.__reactComponent.runtimeMethod["uploadFolder"](...args);
         }
     }
@@ -149,19 +166,23 @@ namespace Arsenal {
     export class FilePreview extends ReactCellType {
         ComponentName = 'FilePreview';
 
-        UpdatePdfSetting(...args) {
+        async UpdatePdfSetting(...args) {
+            await this.waitUntilReactComponentLoaded();
             this.__reactComponent.runtimeMethod["updatePdfSetting"](...args);
         }
 
-        UpdateVideoSetting(...args) {
+        async UpdateVideoSetting(...args) {
+            await this.waitUntilReactComponentLoaded();
             this.__reactComponent.runtimeMethod["updateVideoSetting"](...args);
         }
 
-        UpdateAudioSetting(...args) {
+        async UpdateAudioSetting(...args) {
+            await this.waitUntilReactComponentLoaded();
             this.__reactComponent.runtimeMethod["updateAudioSetting"](...args);
         }
 
-        UpdateContextMenuSetting(...args) {
+        async UpdateContextMenuSetting(...args) {
+            await this.waitUntilReactComponentLoaded();
             this.__reactComponent.runtimeMethod["updateContextMenuSetting"](...args);
         }
     }
