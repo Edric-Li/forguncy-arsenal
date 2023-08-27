@@ -172,8 +172,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   useEffect(() => {
     const newUploadList = {
-      showDownloadIcon: hasDownloadPermission || !hiddenElements.has(Element.Download),
-      showPreviewIcon: hasPreviewPermission || !hiddenElements.has(Element.Preview),
+      showDownloadIcon: hasDownloadPermission && !hiddenElements.has(Element.Download),
+      showPreviewIcon: hasPreviewPermission && !hiddenElements.has(Element.Preview),
       showRemoveIcon: !isReadOnly && hasDeletePermission && !hiddenElements.has(Element.Delete),
       downloadIcon: <DownloadOutlined />,
       previewIcon: <EyeOutlined />,
