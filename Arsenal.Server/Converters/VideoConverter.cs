@@ -44,13 +44,15 @@ public class VideoConverter
         }
     }
 
-    // 检查是否安装了ffmpeg
-    public static async Task<bool> CheckInstalled()
+    /// <summary>
+    /// 检查是否安装了ffmpeg
+    /// </summary>
+    /// <returns></returns>
+    public static async Task<bool> CheckInstalledAsync()
     {
-        // 如果已经检查过了，直接返回结果
-        if (_isInstalled != null)
+        if (_isInstalled.HasValue)
         {
-            return (bool)_isInstalled;
+            return _isInstalled.Value;
         }
 
         // 如果是Windows系统，检查在默认安装路径下是否存在ffmpeg.exe
@@ -69,8 +71,7 @@ public class VideoConverter
         var result = await GetFFmpegVersionAsync();
 
         _isInstalled = result != null;
-
-        return (bool)_isInstalled;
+        return _isInstalled.Value;
     }
 
     public VideoConverter(string filePath, string savePath)

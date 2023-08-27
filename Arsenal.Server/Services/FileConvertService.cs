@@ -165,22 +165,22 @@ public class FileConvertService
     {
         var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        if (PptConverter.IsInstalled)
+        if (await PptConverter.CheckInstalledAsync())
         {
             result.UnionWith(SupportedPowerPointFileExtensions);
         }
 
-        if (ExcelConverter.IsInstalled)
+        if (await ExcelConverter.CheckInstalledAsync())
         {
             result.UnionWith(SupportedExcelFileExtensions);
         }
 
-        if (WordConverter.IsInstalled)
+        if (await WordConverter.CheckInstalledAsync())
         {
             result.UnionWith(SupportedWordFileExtensions);
         }
 
-        if (await VideoConverter.CheckInstalled())
+        if (await VideoConverter.CheckInstalledAsync())
         {
             result.UnionWith(SupportedVideoFileExtensions);
         }

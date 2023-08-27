@@ -9,30 +9,38 @@ namespace Arsenal.Server.Converters;
 /// </summary>
 public class PptConverter
 {
-    public static readonly bool IsInstalled;
-
     private readonly string _filePath;
 
     private readonly string _savePath;
 
-    private static readonly NormaOfficeAppManager NormaOfficeAppManager;
+    private static NormaOfficeAppManager _normaOfficeAppManager;
 
-    static PptConverter()
+    private static bool? _isInstalled;
+
+    public static async Task<bool> CheckInstalledAsync()
     {
-        IsInstalled = LibreOfficeConverter.IsInstalled;
+        if (_isInstalled.HasValue)
+        {
+            return _isInstalled.Value;
+        }
 
-        if (!IsInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        var isInstalled = await LibreOfficeConverter.CheckInstalledAsync();
+
+        if (!isInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var appType = Type.GetTypeFromProgID("KWPP.Application") ??
                           Type.GetTypeFromProgID("PowerPoint.Application");
 
-            IsInstalled = appType != null;
+            isInstalled = appType != null;
 
-            if (IsInstalled)
+            if (isInstalled)
             {
-                NormaOfficeAppManager = new NormaOfficeAppManager(appType);
+                _normaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
         }
+
+        _isInstalled = isInstalled;
+        return isInstalled;
     }
 
     public PptConverter(string pptPath, string savePath)
@@ -43,13 +51,13 @@ public class PptConverter
 
     public async Task ConvertToPdfAsync()
     {
-        if (NormaOfficeAppManager == null)
+        if (_normaOfficeAppManager == null)
         {
             await new LibreOfficeConverter(_filePath, _savePath).ConvertToPdfAsync();
             return;
         }
 
-        var app = await NormaOfficeAppManager.CreateOrGetAppAsync();
+        var app = await _normaOfficeAppManager.CreateOrGetAppAsync();
 
         try
         {
@@ -67,7 +75,7 @@ public class PptConverter
         }
         finally
         {
-            NormaOfficeAppManager.Release();
+            _normaOfficeAppManager.Release();
         }
     }
 }

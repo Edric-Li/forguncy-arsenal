@@ -7,29 +7,38 @@ namespace Arsenal.Server.Converters;
 
 public class WordConverter
 {
-    public static readonly bool IsInstalled;
-
     private readonly string _filePath;
 
     private readonly string _savePath;
 
-    private static readonly NormaOfficeAppManager NormaOfficeAppManager;
+    private static NormaOfficeAppManager _normaOfficeAppManager;
 
-    static WordConverter()
+    private static bool? _isInstalled;
+
+    public static async Task<bool> CheckInstalledAsync()
     {
-        IsInstalled = LibreOfficeConverter.IsInstalled;
+        if (_isInstalled.HasValue)
+        {
+            return _isInstalled.Value;
+        }
 
-        if (!IsInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        var isInstalled = await LibreOfficeConverter.CheckInstalledAsync();
+
+        if (!isInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var appType = Type.GetTypeFromProgID("KWPS.Application") ?? Type.GetTypeFromProgID("Word.Application");
 
-            IsInstalled = appType != null;
+            isInstalled = appType != null;
 
-            if (IsInstalled)
+            if (isInstalled)
             {
-                NormaOfficeAppManager = new NormaOfficeAppManager(appType);
+                _normaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
         }
+
+        _isInstalled = isInstalled;
+
+        return isInstalled;
     }
 
     public WordConverter(string filePath, string savePath)
@@ -40,13 +49,13 @@ public class WordConverter
 
     public async Task ConvertToPdfAsync()
     {
-        if (NormaOfficeAppManager == null)
+        if (_normaOfficeAppManager == null)
         {
             await new LibreOfficeConverter(_filePath, _savePath).ConvertToPdfAsync();
         }
         else
         {
-            var app = await NormaOfficeAppManager.CreateOrGetAppAsync();
+            var app = await _normaOfficeAppManager.CreateOrGetAppAsync();
 
             try
             {
@@ -63,7 +72,7 @@ public class WordConverter
             }
             finally
             {
-                NormaOfficeAppManager.Release();
+                _normaOfficeAppManager.Release();
             }
         }
     }

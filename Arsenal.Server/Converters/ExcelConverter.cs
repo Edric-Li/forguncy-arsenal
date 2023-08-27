@@ -6,29 +6,37 @@ namespace Arsenal.Server.Converters;
 
 public class ExcelConverter
 {
-    public static readonly bool IsInstalled;
-
     private readonly string _filePath;
 
     private readonly string _savePath;
 
-    private static readonly NormaOfficeAppManager NormaOfficeAppManager;
+    private static NormaOfficeAppManager _normaOfficeAppManager;
 
-    static ExcelConverter()
+    private static bool? _isInstalled;
+
+    public static async Task<bool> CheckInstalledAsync()
     {
-        IsInstalled = LibreOfficeConverter.IsInstalled;
+        if (_isInstalled.HasValue)
+        {
+            return _isInstalled.Value;
+        }
 
-        if (!IsInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        var isInstalled = await LibreOfficeConverter.CheckInstalledAsync();
+
+        if (!isInstalled && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var appType = Type.GetTypeFromProgID("KET.Application") ?? Type.GetTypeFromProgID("Excel.Application");
 
-            IsInstalled = appType != null;
+            isInstalled = appType != null;
 
-            if (IsInstalled)
+            if (isInstalled)
             {
-                NormaOfficeAppManager = new NormaOfficeAppManager(appType);
+                _normaOfficeAppManager = new NormaOfficeAppManager(appType);
             }
         }
+
+        _isInstalled = isInstalled;
+        return isInstalled;
     }
 
     public ExcelConverter(string xlsPath, string savePath)
@@ -39,13 +47,13 @@ public class ExcelConverter
 
     public async Task ConvertToXlsxAsync()
     {
-        if (NormaOfficeAppManager == null)
+        if (_normaOfficeAppManager == null)
         {
             await new LibreOfficeConverter(_filePath, _savePath).ConvertToXlsxAsync();
             return;
         }
 
-        var app = await NormaOfficeAppManager.CreateOrGetAppAsync();
+        var app = await _normaOfficeAppManager.CreateOrGetAppAsync();
 
         try
         {
@@ -62,7 +70,7 @@ public class ExcelConverter
         }
         finally
         {
-            NormaOfficeAppManager.Release();
+            _normaOfficeAppManager.Release();
         }
     }
 }
