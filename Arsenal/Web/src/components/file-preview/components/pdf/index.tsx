@@ -70,8 +70,14 @@ const PDFViewer = (props: IPreviewComponentProps) => {
       };
 
       setDomDisplay('openFile', !props.pdfSettings?.hideOpenFileButton);
+      setDomDisplay('secondaryOpenFile', !props.pdfSettings?.hideOpenFileButton);
+
       setDomDisplay('print', !props.pdfSettings?.hidePrintButton);
+      setDomDisplay('secondaryPrint', !props.pdfSettings?.hidePrintButton);
+
       setDomDisplay('download', !props.pdfSettings?.hideSaveButton);
+      setDomDisplay('secondaryDownload', !props.pdfSettings?.hideSaveButton);
+
       setDomDisplay('editorModeButtons', !props.pdfSettings?.disableEdit);
 
       const isAllHide =
