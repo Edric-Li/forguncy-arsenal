@@ -69,15 +69,13 @@ const PDFViewer = (props: IPreviewComponentProps) => {
         $(getIframeDocument()?.getElementById(id)!).css('display', display ? 'block' : 'none');
       };
 
+      setDomDisplay('secondaryOpenFile', false);
+      setDomDisplay('secondaryPrint', false);
+      setDomDisplay('secondaryDownload', false);
+
       setDomDisplay('openFile', !props.pdfSettings?.hideOpenFileButton);
-      setDomDisplay('secondaryOpenFile', !props.pdfSettings?.hideOpenFileButton);
-
       setDomDisplay('print', !props.pdfSettings?.hidePrintButton);
-      setDomDisplay('secondaryPrint', !props.pdfSettings?.hidePrintButton);
-
       setDomDisplay('download', !props.pdfSettings?.hideSaveButton);
-      setDomDisplay('secondaryDownload', !props.pdfSettings?.hideSaveButton);
-
       setDomDisplay('editorModeButtons', !props.pdfSettings?.disableEdit);
 
       const isAllHide =
