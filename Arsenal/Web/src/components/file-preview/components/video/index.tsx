@@ -50,13 +50,13 @@ const VideoViewer = (props: IPreviewComponentProps) => {
     });
 
     video.addEventListener('error', async () => {
-      if (video.src === props.url) {
+      if (video.src === props.url && window.Arsenal.convertableFileExtensions?.has(props.suffix)) {
         video.src = FileUploadEngine.getConvertedFileUrl(props.url, 'mp4');
       }
     });
 
     video.addEventListener('canplay', async () => {
-      if (!getVideoFrameCount(video)) {
+      if (!getVideoFrameCount(video) && window.Arsenal.convertableFileExtensions?.has(props.suffix)) {
         video.src = FileUploadEngine.getConvertedFileUrl(props.url, 'mp4');
       } else {
         video.style.opacity = '1';
