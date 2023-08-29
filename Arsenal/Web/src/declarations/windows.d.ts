@@ -35,6 +35,7 @@ interface IPreviewOptions {
   enableWatermark?: boolean;
   watermarkSettings: IPreviewWatermarkSettings;
   videoSettings: {
+    playsInline: boolean;
     autoPlay: boolean;
     controls: boolean;
     disableDownload: boolean;

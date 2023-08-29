@@ -260,6 +260,10 @@ public class VideoSettings : ObjectPropertyBase
     [DefaultValue(true)]
     public bool Controls { get; set; } = true;
 
+    [DisplayName("内联播放")]
+    [JsonProperty("playsInline")]
+    public bool PlaysInline { get; set; }
+
     [DisplayName("禁止下载")]
     [JsonProperty("disableDownload")]
     public bool DisableDownload { get; set; }

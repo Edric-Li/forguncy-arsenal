@@ -2,7 +2,6 @@ import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { Spin } from 'antd';
 
 import preventDefaultEvent from '../../../../common/prevent-default-event';
-import getVideoFrameCount from '../../../../common/get-video-frame-count';
 import FileUploadEngine from '../../../../common/file-upload-engine';
 
 const defaultStyle: CSSProperties = {
@@ -56,12 +55,8 @@ const VideoViewer = (props: IPreviewComponentProps) => {
     });
 
     video.addEventListener('canplay', async () => {
-      if (!getVideoFrameCount(video) && window.Arsenal.convertableFileExtensions?.has(props.suffix)) {
-        video.src = FileUploadEngine.getConvertedFileUrl(props.url, 'mp4');
-      } else {
-        video.style.opacity = '1';
-        setIsLoading(false);
-      }
+      video.style.opacity = '1';
+      setIsLoading(false);
     });
 
     if (props.disableContextMenu) {
@@ -86,6 +81,7 @@ const VideoViewer = (props: IPreviewComponentProps) => {
         controls={props.videoSettings?.controls}
         controlsList={props.videoSettings?.disableDownload ? 'nodownload' : undefined}
         disablePictureInPicture={props.videoSettings?.disablePictureInPicture}
+        playsInline={props.videoSettings.playsInline}
       />
       {isLoading && (
         <div className='arsenal-spin-centered'>
