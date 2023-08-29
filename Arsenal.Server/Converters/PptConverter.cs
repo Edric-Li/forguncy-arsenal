@@ -70,7 +70,7 @@ public class PptConverter
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.ERROR, "PPT转换失败," + e.Message);
+            Logger.Error("PPT转换失败", e);
             throw;
         }
         finally

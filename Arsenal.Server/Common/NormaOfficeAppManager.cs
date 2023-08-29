@@ -55,7 +55,7 @@ public class NormaOfficeAppManager
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.ERROR, "销毁ZWCAD应用程序失败" + e.Message);
+            Logger.Error("销毁应用程序失败", e);
         }
     }
 
@@ -98,7 +98,7 @@ public class NormaOfficeAppManager
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.ERROR, "释放进程失败" + e.Message);
+            Logger.Error("释放进程失败", e);
         }
     }
 }

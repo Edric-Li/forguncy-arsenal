@@ -316,8 +316,7 @@ public abstract class GlobalConfigParser
         appConfig.StorageType = appStorageInfo.StorageType;
         appConfig.UserServiceUrl = GetUserServiceUrl(appConfig.RootPath);
 
-        Logger.Log(LogLevel.INFO, $"AppConfig: {JsonConvert.SerializeObject(appConfig)}");
-
+        Logger.Information($"AppConfig: {JsonConvert.SerializeObject(appConfig)}");
         return appConfig;
     }
 }

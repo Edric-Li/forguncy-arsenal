@@ -2,6 +2,7 @@
 using Arsenal.Server.Model;
 using Arsenal.Server.Model.HttpResult;
 using Arsenal.Server.Model.Params;
+using Arsenal.Server.Provider;
 using Arsenal.Server.Services;
 using GrapeCity.Forguncy.ServerApi;
 
@@ -11,7 +12,7 @@ public class Arsenal : ForguncyApi
 {
     void PreInit()
     {
-        MetadataCacheService.CacheService = Context.RequestServices.GetService(typeof(ICacheService)) as ICacheService;
+        BootstrapService.EnsureInitialization(Context);
     }
     
     [Post]
@@ -46,14 +47,14 @@ public class Arsenal : ForguncyApi
                 meteData.Uploader = userIdentity.Name;
             }
 
-            MetadataCacheService.Set(uploadId, meteData);
+            CacheServiceProvider.UploadMetadataCacheService.Set(uploadId, meteData);
 
             var fileName = await FileUploadService.GenerateAppropriateFileNameByUploadId(uploadId);
 
             if (fileName != meteData.Name)
             {
                 meteData.Name = fileName;
-                MetadataCacheService.Set(uploadId, meteData);
+                CacheServiceProvider.UploadMetadataCacheService.Set(uploadId, meteData);
             }
 
             var tempFolderPath = Path.Combine(Configuration.Configuration.TempFolderPath, body.Hash ?? uploadId);

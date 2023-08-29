@@ -85,16 +85,12 @@ class FileUploadEngine {
     }
   }
 
+  public static getConvertedFileToken(fileUrl: string, targetType: string, forceUpdated: boolean = false): string {
+    return encodeURIComponent('url=' + encodeURI(this.getAbsoluteUrl(fileUrl)) + '&target-type=' + encodeURIComponent(targetType) + '&force-updated=' + forceUpdated);
+  }
+
   public static getConvertedFileUrl(fileUrl: string, targetType: string, forceUpdated: boolean = false): string {
-    return (
-      Forguncy.Helper.SpecialPath.getBaseUrl() +
-      'converted-file?url=' +
-      encodeURI(this.getAbsoluteUrl(fileUrl)) +
-      '&target-type=' +
-      encodeURIComponent(targetType) +
-      '&force-updated=' +
-      forceUpdated
-    );
+    return (Forguncy.Helper.SpecialPath.getBaseUrl() + 'converted-file/' + this.getConvertedFileToken(fileUrl, targetType, forceUpdated));
   }
 
   public static extractFileNameFromUrl(url: string): string {

@@ -184,13 +184,8 @@ const createFileConversionTask = async (
       originalResponse: null!,
     };
   }
-  const res = (await axios.get('/createFileConversionTask', {
-    params: {
-      url: FileUploadEngine.getAbsoluteUrl(url),
-      'target-type': targetType,
-      'force-updated': forceUpdated,
-    },
-  })) as HttpResultData<string>;
+
+  const res = (await axios.get('/createFileConversionTask/' + FileUploadEngine.getConvertedFileToken(url, targetType, forceUpdated))) as HttpResultData<string>;
 
   if (res.result) {
     convertedFiles.add(url);
@@ -216,12 +211,7 @@ const checkFileExists = async (url: string): Promise<boolean> => {
 
 const checkConvertedFileExists = async (url: string, targetType: string): Promise<boolean> => {
   try {
-    const query = queryString.stringify({
-      url: FileUploadEngine.getAbsoluteUrl(url),
-      'target-type': targetType,
-    });
-
-    const response = await fetch(Forguncy.Helper.SpecialPath.getBaseUrl() + 'converted-file?' + query, {
+    const response = await fetch(FileUploadEngine.getConvertedFileUrl(url, targetType, false), {
       method: 'HEAD',
     });
 

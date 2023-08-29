@@ -1,8 +1,7 @@
 ﻿using System.Text;
-using System.Web;
 using Arsenal.Server.Common;
+using Arsenal.Server.Provider;
 using Arsenal.Server.Services;
-using Microsoft.AspNetCore.Http;
 
 namespace Arsenal.Server.Middlewares;
 
@@ -17,31 +16,37 @@ internal class Middleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (context.Request.Path.Value.Contains("/customapi/arsenal/"))
+        if (context.Request.Path.Value!.Contains("/customapi/arsenal/"))
         {
-            BootstrapService.EnsureInitialization();
+            BootstrapService.EnsureInitialization(context);
         }
-        
+
         if (context.Request.Path.Value.Contains("/converted-file"))
         {
-            BootstrapService.EnsureInitialization();
+            BootstrapService.EnsureInitialization(context);
 
             if (context.Request.Method == "HEAD")
             {
-                var url = HttpUtility.UrlDecode(context.Request.Query["url"].ToString());
-                var targetFileType = HttpUtility.UrlDecode(context.Request.Query["target-type"].ToString());
-                var exists = FileConvertService.ConvertedFileExists(url, targetFileType);
+                var args = FileConvertService.GetConvertFileArgsFromContext(context);
+                var exists = FileConvertService.ConvertedFileExists(args.Url, args.TargetFileType);
                 context.Response.StatusCode = exists ? 200 : 404;
                 return;
             }
-            
-            await context.HandleErrorAsync(async () => { await FileConvertService.GetConvertedFileAsync(context); });
+
+            await context.HandleErrorAsync(async () =>
+            {
+                var filePath = await FileConvertService.GetConvertedFileAsync(context);
+                var cacheKey = context.Request.Path.Value.Split("/").Last();
+                CacheServiceProvider.ConvertedFilePathsService.Set(cacheKey, filePath);
+                await _next(context);
+            });
+
             return;
         }
 
         if (context.Request.Path.Value.Contains("/Upload/"))
         {
-            BootstrapService.EnsureInitialization();
+            BootstrapService.EnsureInitialization(context);
 
             var fileKey = context.Request.Path.Value.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
 
@@ -53,37 +58,19 @@ internal class Middleware
 
             var diskFilePath = await FileUploadService.GetFileFullPathByFileKeyAsync(fileKey);
 
-            if (context.Request.Method == "HEAD")
+            if (diskFilePath != null && !File.Exists(diskFilePath) &&
+                Configuration.Configuration.AppConfig.UseCloudStorage)
             {
-                if (File.Exists(diskFilePath))
-                {
-                    context.Response.StatusCode = 200;
-                    return;
-                }
+                var relativePath = diskFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
+                context.Response.Redirect(relativePath.Replace("\\", "/"));
+                return;
             }
 
-            if (diskFilePath != null)
-            {
-                var stream = FileUploadService.GetFileStreamByFilePath(diskFilePath);
-
-                if (stream != null)
-                {
-                    await stream.CopyToAsync(context.Response.Body);
-                    await stream.DisposeAsync();
-                    return;
-                }
-
-                if (Configuration.Configuration.AppConfig.UseCloudStorage)
-                {
-                    var relativePath = diskFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
-                    context.Response.Redirect(relativePath.Replace("\\", "/"));
-                    return;
-                }
-            }
+            CacheServiceProvider.UploadFilePathsCacheService.Set(fileKey, diskFilePath);
         }
         else if (context.Request.Path.Value.Contains("/FileDownloadUpload/Download"))
         {
-            BootstrapService.EnsureInitialization();
+            BootstrapService.EnsureInitialization(context);
 
             var fileKey = context.Request.Query["file"];
 

@@ -78,7 +78,7 @@ const TableView = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
              },
          },
      ];
- 
+
      const rowSelection = {
          onChange: (selectedRowKeys: React.Key[], selectedRows: DataType[]) => {
              //console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
@@ -89,18 +89,18 @@ const TableView = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
          }),
          columnWidth: 60
      };
- 
+
      useEffect(() => {
          props.cellType.setValueToElement = (jelement, value) => {
- 
+
          };
      }, []);
- 
+
      const tableScroll = useMemo<TableProps<unknown>['scroll']>(
          () => (dataSource ? {y: tableScrollY} : undefined),
          [dataSource, tableScrollY],
      );
- 
+
      return (
          <div className="arsenal-table-view-root">
              <ResizeObserver onResize={(size) => {

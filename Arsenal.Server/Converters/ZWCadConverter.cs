@@ -133,7 +133,7 @@ public class ZWCadConverter
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.ERROR, "销毁ZWCAD应用程序失败" + e.Message);
+            Logger.Error("销毁ZWCAD应用程序失败", e);
         }
     }
 
@@ -248,7 +248,7 @@ public class ZWCadConverter
             }
             catch (Exception e)
             {
-                Logger.Log(LogLevel.ERROR, "ZWCAD转换失败," + e.Message);
+                Logger.Error("ZWCAD转换失败", e);
                 throw;
             }
             finally

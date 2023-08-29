@@ -65,7 +65,7 @@ public class ExcelConverter
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.ERROR, "Excel转换失败," + e.Message);
+            Logger.Error("Excel转换失败", e);
             throw;
         }
         finally

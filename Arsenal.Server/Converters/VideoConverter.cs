@@ -122,7 +122,7 @@ public class VideoConverter
             }
             else
             {
-                Logger.Log(LogLevel.ERROR, "不支持的操作系统");
+                Logger.Error("不支持的操作系统");
                 return;
             }
 

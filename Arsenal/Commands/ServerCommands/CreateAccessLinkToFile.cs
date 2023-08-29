@@ -46,7 +46,7 @@ public class CreateAccessLinkToFileCommand : CommandBase, ICommandExecutableInSe
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
-        BootstrapService.EnsureInitialization();
+        BootstrapService.EnsureInitialization(dataContext.Context);
 
         var filePath = (await dataContext.EvaluateFormulaAsync(FilePath))?.ToString();
         var expirationDateStr = (await dataContext.EvaluateFormulaAsync(ExpirationDate))?.ToString();

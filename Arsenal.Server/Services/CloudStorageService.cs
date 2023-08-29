@@ -181,7 +181,7 @@ public abstract class CloudStorageService
         request.Headers.Add("AuthorizationName",
             Convert.ToBase64String(Encoding.UTF8.GetBytes(Configuration.Configuration.AppConfig.StorageType)));
 
-        request.Content = new JsonContent(content);
+        request.Content = new CustomJsonContent(content);
 
         return await HttpClientHelper.Client.SendAsync(request);
     }

@@ -157,7 +157,7 @@ public class DatabaseInitializer
     {
         if (retryTime > 60)
         {
-            Logger.Log(LogLevel.ERROR, "删除数据库文件失败，重试次数已达到上限");
+            Logger.Error("删除数据库文件失败，重试次数已达到上限。");
             return;
         }
 
@@ -180,7 +180,7 @@ public class DatabaseInitializer
         }
         catch (Exception e)
         {
-            Logger.Log(LogLevel.ERROR, "删除数据库文件失败" + e.Message);
+            Logger.Error("删除数据库文件失败" + e.Message);
             await Task.Delay((retryTime + 1) * 1000);
             await CleanupSqliteFileTask(filePath, retryTime + 1);
         }

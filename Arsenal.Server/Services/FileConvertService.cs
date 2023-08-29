@@ -4,7 +4,7 @@ using System.Text;
 using System.Web;
 using Arsenal.Server.Common;
 using Arsenal.Server.Converters;
-using Microsoft.AspNetCore.Http;
+using Arsenal.Server.Model;
 
 namespace Arsenal.Server.Services;
 
@@ -279,30 +279,27 @@ public class FileConvertService
     /// <summary>
     /// 获取转换后的文件-工厂方法
     /// </summary>
-    /// <param name="url"></param>
-    /// <param name="targetFileType"></param>
-    /// <param name="forceUpdate"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="Exception"></exception>
-    private static async Task<string> GetConvertedFileFactoryAsync(string url, string targetFileType, bool forceUpdate)
+    private static async Task<string> GetConvertedFileFactoryAsync(ConvertFileArgs convertFileArgs)
     {
-        if (url is null || targetFileType is null)
+        if (convertFileArgs.Url is null || convertFileArgs.TargetFileType is null)
         {
             throw new ArgumentNullException();
         }
 
-        var fileName = Path.GetFileName(new Uri(url).LocalPath);
+        var fileName = Path.GetFileName(new Uri(convertFileArgs.Url).LocalPath);
 
         var isInnerFile = FileUploadService.IsValidFileKey(fileName);
 
-        var convertedFilePath = GetConvertedFilePath(url, targetFileType);
+        var convertedFilePath = GetConvertedFilePath(convertFileArgs.Url, convertFileArgs.TargetFileType);
 
-        var fileExists = ConvertedFileExists(url, targetFileType);
+        var fileExists = ConvertedFileExists(convertFileArgs.Url, convertFileArgs.TargetFileType);
 
         if (fileExists)
         {
-            if (forceUpdate)
+            if (convertFileArgs.ForceUpdated)
             {
                 File.Delete(convertedFilePath);
             }
@@ -333,7 +330,7 @@ public class FileConvertService
         }
         else
         {
-            await DownloadFileAsync(url, inputFilePath);
+            await DownloadFileAsync(convertFileArgs.Url, inputFilePath);
         }
 
         if (inputFilePath == string.Empty || !File.Exists(inputFilePath))
@@ -351,7 +348,7 @@ public class FileConvertService
             }
             catch (Exception e)
             {
-                Logger.Log(LogLevel.ERROR, "将文件移动到临时目录失败，" + e.Message);
+                Logger.Error("将文件移动到临时目录失败", e);
             }
         }
 
@@ -366,18 +363,16 @@ public class FileConvertService
     /// <summary>
     /// 创建或获取转换任务
     /// </summary>
-    /// <param name="url"></param>
-    /// <param name="targetFileType"></param>
-    /// <param name="forceUpdate"></param>
+    /// <param name="convertFileArgs"></param>
     /// <returns></returns>
-    private static Task<string> CreateOrGetConvertingTaskAsync(string url, string targetFileType, bool forceUpdate)
+    private static Task<string> CreateOrGetConvertingTaskAsync(ConvertFileArgs convertFileArgs)
     {
-        var key = url + targetFileType;
+        var key = convertFileArgs.Url + convertFileArgs.TargetFileType;
 
         lock (ConvertingTaskLockObj)
         {
             if (ConvertingTasks.TryGetValue(key, out var task) && !task.IsCompleted && !task.IsFaulted &&
-                !task.IsCanceled && !forceUpdate)
+                !task.IsCanceled && !convertFileArgs.ForceUpdated)
             {
                 return task;
             }
@@ -389,7 +384,7 @@ public class FileConvertService
         {
             if (!ConvertingTasks.ContainsKey(key))
             {
-                ConvertingTasks[key] = GetConvertedFileFactoryAsync(url, targetFileType, forceUpdate);
+                ConvertingTasks[key] = GetConvertedFileFactoryAsync(convertFileArgs);
             }
         }
 
@@ -400,34 +395,51 @@ public class FileConvertService
     }
 
     /// <summary>
+    /// 从context中提取ConvertFileParam
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public static ConvertFileArgs GetConvertFileArgsFromContext(HttpContext context)
+    {
+        var param = new ConvertFileArgs();
+
+        var argsMap = new Dictionary<string, string>();
+        var str = HttpUtility.UrlDecode(context.Request.Path.Value!.Split("/").Last());
+
+        str.Split("&").ToList().ForEach(s =>
+        {
+            var kv = s.Split("=");
+            argsMap.Add(kv[0], kv[1]);
+        });
+
+        param.Url = HttpUtility.UrlDecode(argsMap["url"]);
+        param.TargetFileType = HttpUtility.UrlDecode(argsMap["target-type"]);
+        param.ForceUpdated = argsMap["force-updated"] == "true";
+
+        return param;
+    }
+    
+    /// <summary>
     /// 创建转换任务
     /// </summary>
     /// <param name="context"></param>
     public static async Task CreateFileConversionTask(HttpContext context)
     {
-        await GetConvertedFileAsync(context, false);
+        await GetConvertedFileAsync(context);
     }
 
     /// <summary>
     /// 获取转换后的文件
     /// </summary>
     /// <param name="context"></param>
-    /// <param name="needResponseFileStream"></param>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="Exception"></exception>
-    public static async Task GetConvertedFileAsync(HttpContext context, bool needResponseFileStream = true)
+    public static async Task<string> GetConvertedFileAsync(
+        HttpContext context)
     {
-        var url = HttpUtility.UrlDecode(context.Request.Query["url"].ToString());
-        var targetFileType = HttpUtility.UrlDecode(context.Request.Query["target-type"].ToString());
-        var forceUpdate = context.Request.Query["force-updated"].ToString();
+        var convertFileArg = GetConvertFileArgsFromContext(context);
 
-        var filePath = await CreateOrGetConvertingTaskAsync(url, targetFileType, forceUpdate == "true");
-
-        // 请求未取消，且需要返回文件流时才返回文件流
-        if (!context.RequestAborted.IsCancellationRequested && needResponseFileStream)
-        {
-            await context.ResponseStreamByFilePathAsync(filePath);
-        }
+        return await CreateOrGetConvertingTaskAsync(convertFileArg);
     }
 
     /// <summary>

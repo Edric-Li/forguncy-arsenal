@@ -48,7 +48,7 @@ public class CopyServerFolderToArsenalFolderCommand : CommandBase, ICommandExecu
 
     public async Task<ExecuteResult> ExecuteAsync(IServerCommandExecuteContext dataContext)
     {
-        BootstrapService.EnsureInitialization();
+        BootstrapService.EnsureInitialization(dataContext.Context);
         
         var localFolderValue = (await dataContext.EvaluateFormulaAsync(LocalFolder))?.ToString();
         var targetRelativeFolderPath = (await dataContext.EvaluateFormulaAsync(TargetRelativeFolderPath))?.ToString();

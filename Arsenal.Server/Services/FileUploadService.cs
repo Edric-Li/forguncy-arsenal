@@ -1,12 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO.Compression;
 using Arsenal.Server.Common;
 using Arsenal.Server.DataBase;
 using Arsenal.Server.DataBase.Models;
 using Arsenal.Server.Model;
 using Arsenal.Server.Model.Params;
-using Microsoft.AspNetCore.Http;
+using Arsenal.Server.Provider;
 using Microsoft.EntityFrameworkCore;
 using Exception = System.Exception;
 using File = System.IO.File;
@@ -23,7 +22,7 @@ public static class FileUploadService
 
     public static async Task<bool> CheckFileInfoAsync(string uploadId)
     {
-        var metaData = MetadataCacheService.Get(uploadId);
+        var metaData = CacheServiceProvider.UploadMetadataCacheService.Get(uploadId);
 
         if (metaData == null)
         {
@@ -92,7 +91,7 @@ public static class FileUploadService
 
         parts.Sort();
 
-        var folderName = MetadataCacheService.Get(uploadId).Hash ?? uploadId;
+        var folderName = CacheServiceProvider.UploadMetadataCacheService.Get(uploadId).Hash ?? uploadId;
 
         var tmpFile = Path.Combine(Configuration.Configuration.TempFolderPath, folderName, ".merge");
 
@@ -121,7 +120,7 @@ public static class FileUploadService
     /// <exception cref="Exception"></exception>
     public static async Task<string> GenerateAppropriateFileNameByUploadId(string key)
     {
-        var metadata = MetadataCacheService.Get(key);
+        var metadata = CacheServiceProvider.UploadMetadataCacheService.Get(key);
 
         if (metadata == null)
         {
@@ -266,7 +265,7 @@ public static class FileUploadService
         try
         {
             File.Delete(tmpFile);
-            var metaData = MetadataCacheService.Get(uploadId);
+            var metaData = CacheServiceProvider.UploadMetadataCacheService.Get(uploadId);
             Directory.Delete(Path.Combine(Configuration.Configuration.TempFolderPath, metaData?.Hash ?? uploadId),
                 true);
         }
@@ -297,7 +296,7 @@ public static class FileUploadService
 
     public static List<int> ListParts(string uploadId)
     {
-        var metaData = MetadataCacheService.Get(uploadId);
+        var metaData = CacheServiceProvider.UploadMetadataCacheService.Get(uploadId);
         var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, metaData.Hash ?? uploadId);
 
         return !Directory.Exists(folderPath)
@@ -307,7 +306,7 @@ public static class FileUploadService
 
     public static async Task UploadPartAsync(string uploadId, int partNumber, IFormFile file)
     {
-        var metaData = MetadataCacheService.Get(uploadId);
+        var metaData = CacheServiceProvider.UploadMetadataCacheService.Get(uploadId);
 
         var folderName = metaData.Hash ?? uploadId;
         var folderPath = Path.Combine(Configuration.Configuration.TempFolderPath, folderName);
@@ -334,7 +333,7 @@ public static class FileUploadService
 
     public static async Task<DataBase.Models.File> CompleteMultipartUploadAsync(string uploadId)
     {
-        var metaData = MetadataCacheService.Get(uploadId);
+        var metaData = CacheServiceProvider.UploadMetadataCacheService.Get(uploadId);
 
         var key = metaData.Hash ?? uploadId;
 
@@ -417,7 +416,7 @@ public static class FileUploadService
 
     public static async Task<DataBase.Models.File> AddFileRecordAsync(string uploadId)
     {
-        var metaData = MetadataCacheService.Get(uploadId);
+        var metaData = CacheServiceProvider.UploadMetadataCacheService.Get(uploadId);
 
         var dbContext = new DatabaseContext();
 

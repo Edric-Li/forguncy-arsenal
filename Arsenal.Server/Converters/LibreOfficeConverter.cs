@@ -187,7 +187,7 @@ public class LibreOfficeConverter
         }
         catch (Exception ex)
         {
-            Logger.Log(LogLevel.ERROR, "转换过程中发生异常: " + ex.Message);
+            Logger.Error("转换过程中发生异常 ", ex);
         }
         finally
         {

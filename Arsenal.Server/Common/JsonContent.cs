@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 
 namespace Arsenal.Server.Common;
 
-public class JsonContent : StringContent
+public class CustomJsonContent : StringContent
 {
-    public JsonContent(object data) : base(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json")
+    public CustomJsonContent(object data) : base(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json")
     {
     }
 }
