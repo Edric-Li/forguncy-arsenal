@@ -203,6 +203,11 @@ const checkFileExists = async (url: string): Promise<boolean> => {
     if (response.ok) {
       fileExisted.add(url);
     }
+
+    if (response.status === 403) {
+      return true;
+    }
+
     return response.ok;
   } catch (e) {
     return true;

@@ -7,6 +7,9 @@ public static class HttpClientHelper
     public static HttpClient Client => _client ??= new HttpClient(new HttpClientHandler()
     {
         ServerCertificateCustomValidationCallback = (_, _, _, _) => true,
-    });
+    })
+    {
+        Timeout = Timeout.InfiniteTimeSpan
+    };
 }
     
