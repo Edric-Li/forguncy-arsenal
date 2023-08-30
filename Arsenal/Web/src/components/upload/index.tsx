@@ -281,10 +281,12 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         },
 
         setElementDisplayState(element: Element, elementState: ElementState) {
-          const newHiddenElements = new Set(hiddenElements);
-          const method = elementState === ElementState.Hidden ? 'add' : 'delete';
-          newHiddenElements[method](element);
-          setHiddenElements(newHiddenElements);
+          setHiddenElements((oldHiddenElements) => {
+            const newHiddenElements = new Set(oldHiddenElements);
+            const method = elementState === ElementState.Hidden ? 'add' : 'delete';
+            newHiddenElements[method](element);
+            return newHiddenElements;
+          });
         },
       },
     };
