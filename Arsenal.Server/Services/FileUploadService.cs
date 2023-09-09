@@ -379,7 +379,8 @@ public static class FileUploadService
         if (Configuration.Configuration.AppConfig.UseCloudStorage)
         {
             _ = CloudStorageService.CreateUploadTaskAsync(
-                targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", string.Empty));
+                targetFilePath.Replace(Configuration.Configuration.UploadFolderPath + Path.DirectorySeparatorChar,
+                    string.Empty));
         }
 
         var dbContext = new DatabaseContext();
@@ -545,7 +546,8 @@ public static class FileUploadService
             }
 
             File.Copy(param.FilePath, destFileName);
-            filePath = destFileName.Replace(Configuration.Configuration.TemporaryDownloadFolderPath + "\\",
+            filePath = destFileName.Replace(
+                Configuration.Configuration.TemporaryDownloadFolderPath + Path.DirectorySeparatorChar,
                 string.Empty);
         }
 

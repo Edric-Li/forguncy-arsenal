@@ -238,7 +238,9 @@ public abstract class CloudStorageService
     /// <returns></returns>
     private static async Task<ResultData> UploadFileToCloudStorageAsync(string filePath)
     {
-        var folder = Path.GetDirectoryName(filePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", ""));
+        var folder =
+            Path.GetDirectoryName(
+                filePath.Replace(Configuration.Configuration.UploadFolderPath + Path.DirectorySeparatorChar, ""));
 
         return await SendJsonRequestAsync("UploadFile", new Dictionary<string, object>
         {
@@ -311,7 +313,8 @@ public abstract class CloudStorageService
     public static async Task DownloadFileToLocalAsync(string filePath, string localFolderPath)
     {
         var folder =
-            Path.GetDirectoryName(filePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", ""));
+            Path.GetDirectoryName(
+                filePath.Replace(Configuration.Configuration.UploadFolderPath + Path.DirectorySeparatorChar, ""));
         var folderPath = Path.Combine(Configuration.Configuration.AppConfig.CloudStorageUploadFolderPath, folder);
         var cloudFilePath = Path.Combine(folderPath, Path.GetFileName(filePath));
 
@@ -336,7 +339,8 @@ public abstract class CloudStorageService
     public static async Task DeleteFileAsync(string filePath)
     {
         var folder =
-            Path.GetDirectoryName(filePath.Replace(Configuration.Configuration.UploadFolderPath + "\\", ""));
+            Path.GetDirectoryName(
+                filePath.Replace(Configuration.Configuration.UploadFolderPath + Path.DirectorySeparatorChar, ""));
         var folderPath = Path.Combine(Configuration.Configuration.AppConfig.CloudStorageUploadFolderPath, folder);
         var cloudFilePath = Path.Combine(folderPath, Path.GetFileName(filePath));
 

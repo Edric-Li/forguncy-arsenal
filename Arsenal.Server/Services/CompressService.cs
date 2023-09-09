@@ -41,7 +41,7 @@ public abstract class CompressService
                     continue;
                 }
 
-                var entryName = fullPath.Replace(Configuration.Configuration.UploadFolderPath + "\\", "");
+                var entryName = fullPath.Replace(Configuration.Configuration.UploadFolderPath + Path.DirectorySeparatorChar, "");
 
                 if (!needKeepFolderStructure)
                 {
