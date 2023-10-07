@@ -1,27 +1,31 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useRef } from 'react';
 
 const usePermission = () => {
-  const [roleSet, setRoleSet] = useState<Set<string>>(new Set());
+  const roleSetRef = useRef<Set<string> | null>(null);
 
-  useEffect(() => {
-    // @ts-ignore
-    const { Role, InheritedPermissionRoles } = Forguncy.ForguncyData.userInfo;
+  const getRoleSet = () => {
+    if (roleSetRef.current === null) {
+      // @ts-ignore
+      const { Role, InheritedPermissionRoles } = Forguncy.ForguncyData.userInfo;
 
-    const set: Set<string> = new Set();
-    const roles = [...Role.split(','), ...InheritedPermissionRoles.split(',')];
+      const set: Set<string> = new Set();
+      const roles = [...Role.split(','), ...InheritedPermissionRoles.split(',')];
 
-    roles.forEach((i: string) => {
-      if (i) {
-        set.add(i);
-      }
-    });
+      roles.forEach((i: string) => {
+        if (i) {
+          set.add(i);
+        }
+      });
 
-    setRoleSet(set);
-  }, []);
+      roleSetRef.current = set;
+    }
+
+    return roleSetRef.current;
+  };
 
   const hasPermission = useCallback(
-    (roles: string[]) => roles.includes('FGC_Anonymous') || !!roles.find((i) => roleSet.has(i)),
-    [roleSet],
+    (roles: string[]) => roles.includes('FGC_Anonymous') || !!roles.find((i) => getRoleSet().has(i)),
+    [],
   );
 
   return {
