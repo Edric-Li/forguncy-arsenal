@@ -6,6 +6,7 @@ import requestHelper from '../../common/request-helper';
 interface IProps {
   url: string;
   onClose: () => void;
+  items?: string[];
 }
 
 /**
@@ -15,25 +16,39 @@ interface IProps {
  */
 const ImageFullScreenPreview = (props: IProps) => {
   const [src, setSrc] = useState('');
+  const [index, setIndex] = useState(0);
+
+  const handleChange = async (index: number) => {
+    const file = await requestHelper.getFile(props.items![index]);
+    const url = await convertFileToSrc(file);
+    setSrc(url);
+    setIndex(index);
+  };
+
+  const countRender = (current: number, total: number): string => {
+    return props.items?.length ? `${current} / ${total}` : '';
+  };
 
   useEffect(() => {
-    (async () => {
-      const file = await requestHelper.getFile(props.url);
-      const url = await convertFileToSrc(file);
-      setSrc(url);
-    })();
+    if (!props.items?.length) {
+      setSrc(props.url);
+      return;
+    }
+    const index = props.items.findIndex((item) => item === props.url);
+    handleChange(index).finally();
   }, []);
 
   return (
-    <Image
-      src=''
-      style={{ display: 'none' }}
+    <Image.PreviewGroup
       preview={{
+        current: index,
         visible: true,
         src: src,
         onVisibleChange: props.onClose,
+        onChange: handleChange,
+        countRender,
       }}
-    />
+      items={props.items}></Image.PreviewGroup>
   );
 };
 

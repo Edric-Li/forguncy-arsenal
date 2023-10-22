@@ -601,8 +601,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           disabled={disabled}
           onClick={() => {
             handleUpload();
-          }}
-        >
+          }}>
           <UploadOutlined />
           上传
         </Dropdown.Button>
@@ -627,8 +626,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
               e.preventDefault();
               e.stopPropagation();
               handleUpload();
-            }}
-          >
+            }}>
             {!hasDragComponent && (
               <>
                 <p className='ant-upload-drag-icon'>
@@ -655,8 +653,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
               if (listType === 'picture-circle' || listType === 'picture-card') {
                 handleUpload(false);
               }
-            }}
-          >
+            }}>
             {showUploadButton && <div>{renderButton}</div>}
           </div>
         }
@@ -683,7 +680,14 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     if (isImage(previewImage)) {
-      return <ImageFullScreenPreview url={previewImage} onClose={handleCancel} />;
+      const items: string[] = [];
+      fileListRef.current.forEach((item) => {
+        if (item.url && isImage(item.url)) {
+          items.push(item.url);
+        }
+      });
+
+      return <ImageFullScreenPreview url={previewImage} onClose={handleCancel} items={items}/>;
     }
 
     return (
@@ -694,8 +698,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         onCancel={handleCancel}
         centered
         width={document.body.clientWidth}
-        destroyOnClose
-      >
+        destroyOnClose>
         <div style={{ width: '100%', height: document.body.clientHeight - 105 }}>
           <FilePreviewInner
             url={previewImage}
