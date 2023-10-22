@@ -5,7 +5,6 @@ import getFileAccessUrlCommand from '../../../commands/get-file-access-url';
 import getDownloadUrlCommand from '../../../commands/get-download-url';
 import zipFileAndDownload from '../../../commands/zip-file-and-download';
 import getDifferenceFileKeys from '../../../commands/get-difference-file-keys';
-import cancelCommand from '../../../commands/cancel';
 import videoOperationCommand from '../../../commands/video-operation';
 import noop from '../../../common/noop';
 
@@ -43,10 +42,6 @@ const commandWrapper = (props: Props): Function | null => {
 
   if (props.commandName === 'GetDifferenceFileKeys') {
     fn = getDifferenceFileKeys;
-  }
-
-  if (props.commandName === 'Cancel') {
-    fn = cancelCommand;
   }
 
   if (props.commandName === 'VideoOperation') {

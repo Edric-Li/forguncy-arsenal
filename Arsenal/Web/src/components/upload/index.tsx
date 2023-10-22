@@ -294,10 +294,6 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
 
   const syncFileListRefDataToState = () => setFileList([...fileListRef.current]);
 
-  const isCancelled = (cancellationToken: string) => {
-    return window.Arsenal.canceledTokenSet.has(cancellationToken);
-  };
-
   const handleBeforeUpload = async (file: CustomFile | RcFile) => {
     if (file.size / 1024 / 1024 > props.options.uploadSettings.maxSize) {
       messageApi.error({
@@ -324,13 +320,15 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         [props.options.eventSettings.beforeUpload.ParamProperties['name']]: file.name,
         [props.options.eventSettings.beforeUpload.ParamProperties['ext']]: getExtname(file.name),
         [props.options.eventSettings.beforeUpload.ParamProperties['size']]: file.size,
-        [props.options.eventSettings.beforeUpload.ParamProperties['cancellationToken']]: file.uid,
       };
 
-      await executeCommand(props.options.eventSettings.beforeUpload, initParams, props.runTimePageName);
+      const isNormalComplete = await executeCommand(
+        props.options.eventSettings.beforeUpload,
+        initParams,
+        props.runTimePageName,
+      );
 
-      if (isCancelled(file.uid)) {
-        window.Arsenal.canceledTokenSet.delete(file.uid);
+      if (!isNormalComplete) {
         return false;
       }
     }
@@ -400,19 +398,17 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     if (props.options.eventSettings.beforeDelete) {
-      await executeCommand(
+      const isNormalComplete = await executeCommand(
         props.options.eventSettings.beforeDelete,
         {
           [props.options.eventSettings.beforeDelete.ParamProperties['name']]: file.name,
           [props.options.eventSettings.beforeDelete.ParamProperties['fileKey']]:
             FileUploadEngine.extractFileNameFromUrl(file.url!),
-          [props.options.eventSettings.beforeDelete.ParamProperties['cancellationToken']]: file.uid,
         },
         props.runTimePageName,
       );
 
-      if (isCancelled(file.uid)) {
-        window.Arsenal.canceledTokenSet.delete(file.uid);
+      if (!isNormalComplete) {
         return false;
       }
     }
@@ -434,19 +430,17 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     if (props.options.eventSettings.beforePreview) {
-      await executeCommand(
+      const isNormalComplete = await executeCommand(
         props.options.eventSettings.beforePreview,
         {
           [props.options.eventSettings.beforePreview.ParamProperties['name']]: file.name,
           [props.options.eventSettings.beforePreview.ParamProperties['fileKey']]:
             FileUploadEngine.extractFileNameFromUrl(file.url!),
-          [props.options.eventSettings.beforePreview.ParamProperties['cancellationToken']]: file.uid,
         },
         props.runTimePageName,
       );
 
-      if (isCancelled(file.uid)) {
-        window.Arsenal.canceledTokenSet.delete(file.uid);
+      if (!isNormalComplete) {
         return;
       }
     }
@@ -465,19 +459,17 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
 
     if (props.options.eventSettings.beforeDownload) {
-      await executeCommand(
+      const isNormalComplete = await executeCommand(
         props.options.eventSettings.beforeDownload,
         {
           [props.options.eventSettings.beforeDownload.ParamProperties['name']]: file.name,
           [props.options.eventSettings.beforeDownload.ParamProperties['fileKey']]:
             FileUploadEngine.extractFileNameFromUrl(file.url!),
-          [props.options.eventSettings.beforeDownload.ParamProperties['cancellationToken']]: file.uid,
         },
         props.runTimePageName,
       );
 
-      if (isCancelled(file.uid)) {
-        window.Arsenal.canceledTokenSet.delete(file.uid);
+      if (!isNormalComplete) {
         return;
       }
     }

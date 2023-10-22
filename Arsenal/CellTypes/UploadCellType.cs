@@ -219,19 +219,19 @@ public class ImgCropSettings : ObjectPropertyBase
 public class PermissionSettings : ObjectPropertyBase
 {
     [DisplayName("上传")]
-    [JsonProperty("upload")]
+    [JsonProperty("upload", ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<string> Upload { get; set; } = new() { "FGC_Anonymous" };
 
     [DisplayName("下载")]
-    [JsonProperty("download")]
+    [JsonProperty("download", ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<string> Download { get; set; } = new() { "FGC_Anonymous" };
 
     [DisplayName("预览")]
-    [JsonProperty("preview")]
+    [JsonProperty("preview", ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<string> Preview { get; set; } = new() { "FGC_Anonymous" };
 
     [DisplayName("删除")]
-    [JsonProperty("delete")]
+    [JsonProperty("delete", ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<string> Delete { get; set; } = new() { "FGC_Anonymous" };
 }
 
@@ -379,8 +379,8 @@ public class EventSettings : ObjectPropertyBase
 {
     [DisplayName("上传前")]
     [JsonProperty("beforeUpload")]
-    [CustomCommandObject(InitParamProperties = "name|ext|size|cancellationToken",
-        InitParamValues = "文件名称|扩展名|大小|取消令牌")]
+    [CustomCommandObject(InitParamProperties = "name|ext|size",
+        InitParamValues = "文件名称|扩展名|大小")]
     public CustomCommandObject BeforeUpload { get; set; }
 
     [DisplayName("上传后")]
@@ -391,20 +391,20 @@ public class EventSettings : ObjectPropertyBase
 
     [DisplayName("预览前")]
     [JsonProperty("beforePreview")]
-    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
-        InitParamValues = "文件名称|附件值|取消令牌")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey",
+        InitParamValues = "文件名称|附件值")]
     public CustomCommandObject BeforePreview { get; set; }
     
     [DisplayName("下载前")]
     [JsonProperty("beforeDownload")]
-    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
-        InitParamValues = "文件名称|附件值|取消令牌")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey",
+        InitParamValues = "文件名称|附件值")]
     public CustomCommandObject BeforeDownload { get; set; }
 
     [DisplayName("删除前")]
     [JsonProperty("beforeDelete")]
-    [CustomCommandObject(InitParamProperties = "name|fileKey|cancellationToken",
-        InitParamValues = "文件名称|附件值|取消令牌")]
+    [CustomCommandObject(InitParamProperties = "name|fileKey",
+        InitParamValues = "文件名称|附件值")]
     public CustomCommandObject BeforeDelete { get; set; }
 }
 

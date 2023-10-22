@@ -4,7 +4,7 @@ const executeCommand = (
     [name: string]: string | number;
   },
   runTimePageName: string,
-) => {
+): Promise<boolean> => {
   return new Promise((resolve) => {
     // @ts-ignore
     Forguncy.ForguncyData.commandExecutor.executeCommand(obj.Commands, {
@@ -13,8 +13,8 @@ const executeCommand = (
       commandID: new Date().getTime(),
       eventType: 'click',
       initParams: initParams,
-      callbackOnCommandCompleted: () => {
-        resolve(true);
+      callbackOnCommandCompleted: (normalComplete: boolean) => {
+        resolve(normalComplete);
       },
     });
   });
