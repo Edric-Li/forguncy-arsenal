@@ -317,6 +317,11 @@ public class UploadSettings : ObjectPropertyBase
     [ObjectProperty(ObjType = typeof(DragAndDropSettings))]
     public DragAndDropSettings DragAndDropSettings { get; set; } = new();
 
+    [DisplayName("计算文件哈希值")]
+    [JsonProperty("computeHash")]
+    [Description("开启后，可在上传前以及上传后的事件中获取到文件的哈希值。")]
+    public bool ComputeHash { get; set; }
+
     public override bool GetDesignerPropertyVisible(string propertyName)
     {
         if (propertyName == nameof(ConflictStrategy))
@@ -359,6 +364,11 @@ public class UploadSettings : ObjectPropertyBase
             return AllowFolderSelection && GetDesignerPropertyVisible(nameof(AllowFolderSelection));
         }
 
+        if (propertyName == nameof(ComputeHash))
+        {
+            return EnableResumableUpload == false;
+        }
+
         return base.GetDesignerPropertyVisible(propertyName);
     }
 }
@@ -379,14 +389,14 @@ public class EventSettings : ObjectPropertyBase
 {
     [DisplayName("上传前")]
     [JsonProperty("beforeUpload")]
-    [CustomCommandObject(InitParamProperties = "name|ext|size",
-        InitParamValues = "文件名称|扩展名|大小")]
+    [CustomCommandObject(InitParamProperties = "name|ext|size|hash",
+        InitParamValues = "文件名称|扩展名|大小|哈希值")]
     public CustomCommandObject BeforeUpload { get; set; }
 
     [DisplayName("上传后")]
     [JsonProperty("afterUpload")]
-    [CustomCommandObject(InitParamProperties = "name|ext|size|fileKey",
-        InitParamValues = "文件名称|扩展名|大小|附件值")]
+    [CustomCommandObject(InitParamProperties = "name|ext|size|fileKey|hash",
+        InitParamValues = "文件名称|扩展名|大小|附件值|哈希值")]
     public CustomCommandObject AfterUpload { get; set; }
 
     [DisplayName("预览前")]

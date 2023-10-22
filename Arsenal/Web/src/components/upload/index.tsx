@@ -32,6 +32,7 @@ import executeCommand from '../../common/execute-command';
 import getExtname from '../../common/get-extname';
 import parseDataTransferItemList from '../../common/parse-data-transfer-iten-list';
 import parseAccept from '../../common/parse-accept';
+import { FileHashCalculationEngine } from '../../common/file-hash-calculation-engine';
 
 enum ListType {
   text,
@@ -94,6 +95,7 @@ export interface IOptions {
     };
     allowFolderSelection: boolean;
     defaultSelectionOfFileType: FileSelectionType;
+    computeHash: boolean;
   };
 }
 
@@ -315,11 +317,17 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
       }
     }
 
+    let fileHash = '';
+
     if (props.options.eventSettings.beforeUpload) {
+      if (props.options.uploadSettings.computeHash || props.options.uploadSettings.enableResumableUpload) {
+        fileHash = await FileHashCalculationEngine.execute(file);
+      }
       const initParams = {
         [props.options.eventSettings.beforeUpload.ParamProperties['name']]: file.name,
         [props.options.eventSettings.beforeUpload.ParamProperties['ext']]: getExtname(file.name),
         [props.options.eventSettings.beforeUpload.ParamProperties['size']]: file.size,
+        [props.options.eventSettings.beforeUpload.ParamProperties['hash']]: fileHash,
       };
 
       const isNormalComplete = await executeCommand(
@@ -380,6 +388,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
                 FileUploadEngine.extractFileNameFromUrl(callbackInfo.url!),
               [props.options.eventSettings.afterUpload.ParamProperties['ext']]: getExtname(file.name),
               [props.options.eventSettings.afterUpload.ParamProperties['size']]: file.size,
+              [props.options.eventSettings.beforeUpload.ParamProperties['hash']]: fileHash,
             },
             props.runTimePageName,
           );
