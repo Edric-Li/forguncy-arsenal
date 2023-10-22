@@ -78,6 +78,7 @@ class FileUploadEngine {
 
   public static isRelativeUrl(url: string): boolean {
     try {
+      // eslint-disable-next-line no-new
       new URL(url);
       return false;
     } catch (error) {
@@ -86,11 +87,22 @@ class FileUploadEngine {
   }
 
   public static getConvertedFileToken(fileUrl: string, targetType: string, forceUpdated: boolean = false): string {
-    return encodeURIComponent('url=' + encodeURI(this.getAbsoluteUrl(fileUrl)) + '&target-type=' + encodeURIComponent(targetType) + '&force-updated=' + forceUpdated);
+    return encodeURIComponent(
+      'url=' +
+        encodeURI(this.getAbsoluteUrl(fileUrl)) +
+        '&target-type=' +
+        encodeURIComponent(targetType) +
+        '&force-updated=' +
+        forceUpdated,
+    );
   }
 
   public static getConvertedFileUrl(fileUrl: string, targetType: string, forceUpdated: boolean = false): string {
-    return (Forguncy.Helper.SpecialPath.getBaseUrl() + 'converted-file/' + this.getConvertedFileToken(fileUrl, targetType, forceUpdated));
+    return (
+      Forguncy.Helper.SpecialPath.getBaseUrl() +
+      'converted-file/' +
+      this.getConvertedFileToken(fileUrl, targetType, forceUpdated)
+    );
   }
 
   public static extractFileNameFromUrl(url: string): string {

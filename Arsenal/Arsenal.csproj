@@ -137,6 +137,8 @@
 		<Resource Include="Resources\images\video.png" />
 		<None Remove="Resources\images\pdf.png"/>
 		<Resource Include="Resources\images\pdf.png"/>
+        <None Remove="Resources\images\preview-file.png"/>
+        <Resource Include="Resources\images\preview-file.png"/>
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="&quot;..\PackageTools\ForguncyPluginPackageTool.exe&quot; $(ProjectDir) &quot;C:\Program Files\Forguncy 9&quot; " />

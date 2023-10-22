@@ -227,6 +227,10 @@ namespace Arsenal {
         ComponentName = 'VideoOperation';
     }
 
+    export class PreviewFileCommand extends ReactCommand {
+        ComponentName = 'PreviewFileCommand';
+    }
+
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.UploadCellType, Arsenal', PCUpload);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.PreviewCellType, Arsenal', FilePreview);
     Forguncy.Plugin.CellTypeHelper.registerCellType('Arsenal.TableViewCellType, Arsenal', TableView);
@@ -239,4 +243,5 @@ namespace Arsenal {
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.GetDifferenceFileKeysCommand, Arsenal", GetDifferenceFileKeysCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.CancelCommand, Arsenal", CancelCommand);
     Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.VideoOperationCommand, Arsenal", VideoOperationCommand);
+    Forguncy.Plugin.CommandFactory.registerCommand("Arsenal.PreviewFileCommand, Arsenal", PreviewFileCommand);
 }

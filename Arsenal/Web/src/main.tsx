@@ -21,7 +21,6 @@ if (!window.Arsenal) {
   window.Arsenal = {
     createReactCommand,
     createReactComponent,
-    canceledTokenSet: new Set(),
     pdfInfo: new Map(),
     __originalWindowMethods: {},
   };

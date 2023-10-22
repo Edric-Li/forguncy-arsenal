@@ -185,7 +185,9 @@ const createFileConversionTask = async (
     };
   }
 
-  const res = (await axios.get('/createFileConversionTask/' + FileUploadEngine.getConvertedFileToken(url, targetType, forceUpdated))) as HttpResultData<string>;
+  const res = (await axios.get(
+    '/createFileConversionTask/' + FileUploadEngine.getConvertedFileToken(url, targetType, forceUpdated),
+  )) as HttpResultData<string>;
 
   if (res.result) {
     convertedFiles.add(url);

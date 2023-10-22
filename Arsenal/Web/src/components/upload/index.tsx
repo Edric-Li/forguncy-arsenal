@@ -33,6 +33,7 @@ import getExtname from '../../common/get-extname';
 import parseDataTransferItemList from '../../common/parse-data-transfer-iten-list';
 import parseAccept from '../../common/parse-accept';
 import { FileHashCalculationEngine } from '../../common/file-hash-calculation-engine';
+import FileModalPreview from '../file-modal-preview';
 
 enum ListType {
   text,
@@ -602,7 +603,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           disabled={disabled}
           onClick={() => {
             handleUpload();
-          }}>
+          }}
+        >
           <UploadOutlined />
           上传
         </Dropdown.Button>
@@ -627,7 +629,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
               e.preventDefault();
               e.stopPropagation();
               handleUpload();
-            }}>
+            }}
+          >
             {!hasDragComponent && (
               <>
                 <p className='ant-upload-drag-icon'>
@@ -654,7 +657,8 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
               if (listType === 'picture-circle' || listType === 'picture-card') {
                 handleUpload(false);
               }
-            }}>
+            }}
+          >
             {showUploadButton && <div>{renderButton}</div>}
           </div>
         }
@@ -679,35 +683,25 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     if (!previewOpen) {
       return null;
     }
+    const imageItems: string[] = [];
 
     if (isImage(previewImage)) {
-      const items: string[] = [];
       fileListRef.current.forEach((item) => {
         if (item.url && isImage(item.url)) {
-          items.push(item.url);
+          imageItems.push(item.url);
         }
       });
-
-      return <ImageFullScreenPreview url={previewImage} onClose={handleCancel} items={items}/>;
     }
 
     return (
-      <Modal
-        open
-        title={previewTitle}
-        footer={null}
+      <FileModalPreview
         onCancel={handleCancel}
-        centered
-        width={document.body.clientWidth}
-        destroyOnClose>
-        <div style={{ width: '100%', height: document.body.clientHeight - 105 }}>
-          <FilePreviewInner
-            url={previewImage}
-            evaluateFormula={props.evaluateFormula}
-            options={props.options.previewSetting}
-          />
-        </div>
-      </Modal>
+        evaluateFormula={props.evaluateFormula}
+        previewSetting={props.options.previewSetting}
+        url={previewImage}
+        imageItems={imageItems}
+        title={previewTitle ?? ''}
+      />
     );
   };
 

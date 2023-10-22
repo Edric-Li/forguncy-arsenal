@@ -26,7 +26,7 @@ const ImageFullScreenPreview = (props: IProps) => {
   };
 
   const countRender = (current: number, total: number): string => {
-    return props.items?.length ? `${current} / ${total}` : '';
+    return props?.items?.length ? `${current} / ${total}` : '';
   };
 
   useEffect(() => {
@@ -48,7 +48,8 @@ const ImageFullScreenPreview = (props: IProps) => {
         onChange: handleChange,
         countRender,
       }}
-      items={props.items}></Image.PreviewGroup>
+      items={props.items}
+    />
   );
 };
 

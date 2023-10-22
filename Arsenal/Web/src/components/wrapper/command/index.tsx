@@ -7,6 +7,7 @@ import zipFileAndDownload from '../../../commands/zip-file-and-download';
 import getDifferenceFileKeys from '../../../commands/get-difference-file-keys';
 import videoOperationCommand from '../../../commands/video-operation';
 import noop from '../../../common/noop';
+import PreviewFileCommand from '../../../commands/preview-file-command';
 
 interface Props {
   commandName: string;
@@ -46,6 +47,10 @@ const commandWrapper = (props: Props): Function | null => {
 
   if (props.commandName === 'VideoOperation') {
     fn = videoOperationCommand;
+  }
+
+  if (props.commandName === 'PreviewFileCommand') {
+    fn = PreviewFileCommand;
   }
 
   return (fn || noop).bind(null, props.commandBase);
