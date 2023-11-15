@@ -214,15 +214,6 @@ public class FileConvertService
             return true;
         }
 
-        if (SupportedCadFileExtensions.Contains(extension))
-        {
-            if (ZWCadConverter.IsInstalled)
-            {
-                await new ZWCadConverter(inputFile, outputFile).ConvertToPdfAsync();
-                return true;
-            }
-        }
-
         if (SupportedVideoFileExtensions.Contains(extension))
         {
             await new VideoConverter(inputFile, outputFile).ConvertToH264Async();
