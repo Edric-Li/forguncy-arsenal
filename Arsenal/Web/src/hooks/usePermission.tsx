@@ -23,10 +23,15 @@ const usePermission = () => {
     return roleSetRef.current;
   };
 
-  const hasPermission = useCallback(
-    (roles: string[]) => roles.includes('FGC_Anonymous') || !!roles.find((i) => getRoleSet().has(i)),
-    [],
-  );
+  const hasPermission = useCallback((roles: string[]) => {
+    if (roles.includes('FGC_Anonymous')) {
+      return true;
+    }
+    if (roles.includes('FGC_LoginUser')) {
+      return roles.length;
+    }
+    return !!roles.find((i) => getRoleSet().has(i));
+  }, []);
 
   return {
     hasPermission,
