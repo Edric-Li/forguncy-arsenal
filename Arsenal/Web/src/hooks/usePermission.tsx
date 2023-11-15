@@ -6,7 +6,7 @@ const usePermission = () => {
   const getRoleSet = () => {
     if (roleSetRef.current === null) {
       // @ts-ignore
-      const { Role, InheritedPermissionRoles } = Forguncy.ForguncyData.userInfo;
+      const { Role = '', InheritedPermissionRoles = '' } = Forguncy.ForguncyData.userInfo;
 
       const set: Set<string> = new Set();
       const roles = [...Role.split(','), ...InheritedPermissionRoles.split(',')];

@@ -14,12 +14,12 @@ public class Arsenal : ForguncyApi
     {
         BootstrapService.EnsureInitialization(Context);
     }
-    
+
     [Post]
     public async Task InitMultipartUpload()
     {
         PreInit();
-        
+
         await Context.HandleErrorAsync(async () =>
         {
             var body = await Context.ParseBodyAsync<InitMultipartUploadParam>();
@@ -46,6 +46,8 @@ public class Arsenal : ForguncyApi
             {
                 meteData.Uploader = userIdentity.Name;
             }
+
+            meteData.Uploader ??= "Arsenal_Anonymous";
 
             CacheServiceProvider.UploadMetadataCacheService.Set(uploadId, meteData);
 
@@ -174,7 +176,7 @@ public class Arsenal : ForguncyApi
     public async Task GetZipEntries()
     {
         PreInit();
-        
+
         await Context.HandleErrorAsync(async () =>
         {
             var fileKey = Context.Request.Query["fileKey"];
