@@ -6,6 +6,7 @@ import FileUploadEngine from '../../../../common/file-upload-engine';
 import requestHelper from '../../../../common/request-helper';
 import getExtname from '../../../../common/get-extname';
 import generateUniqueKey from '../../../../common/generate-unique-key';
+import { ToolBarStatus } from '../../../../declarations/types';
 
 const PDFViewer = (props: IPreviewComponentProps) => {
   const rootRef = useRef<HTMLIFrameElement>(null);
@@ -36,7 +37,8 @@ const PDFViewer = (props: IPreviewComponentProps) => {
       window.Arsenal.pdfInfo.set(uniqueKey, {
         url,
         preferences: {
-          sidebarViewOnLoad: props.pdfSettings?.sidebarViewOnLoad,
+          sidebarViewOnLoad:
+            props.pdfSettings.toolbarStatus === ToolBarStatus.Hide ? 0 : props.pdfSettings?.sidebarViewOnLoad,
           cursorToolOnLoad: props.pdfSettings?.cursorToolOnLoad,
           scrollModeOnLoad: props.pdfSettings?.scrollModeOnLoad,
           spreadModeOnLoad: props.pdfSettings?.spreadModeOnLoad,
@@ -89,6 +91,14 @@ const PDFViewer = (props: IPreviewComponentProps) => {
 
       if (props.disableContextMenu) {
         getIframeDocument()?.addEventListener('contextmenu', preventDefaultEvent);
+      }
+
+      if (props.pdfSettings.toolbarStatus === ToolBarStatus.Hide) {
+        $(getIframeDocument()?.getElementById('toolbarContainer')!).css('display', 'none');
+        $(getIframeDocument()?.getElementById('viewerContainer')!).css('top', '0');
+      } else {
+        $(getIframeDocument()?.getElementById('toolbarContainer')!).css('display', 'block');
+        $(getIframeDocument()?.getElementById('viewerContainer')!).css('top', '32px');
       }
     };
 

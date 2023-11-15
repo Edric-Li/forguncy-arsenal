@@ -26,3 +26,8 @@ export interface ImgCropSettings {
   showReset: boolean;
   centered: boolean;
 }
+
+export enum ToolBarStatus {
+  Show,
+  Hide,
+}

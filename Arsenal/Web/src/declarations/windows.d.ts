@@ -53,6 +53,7 @@ interface IPreviewOptions {
   };
   disableContextMenu?: boolean;
   pdfSettings: {
+    toolbarStatus: number;
     sidebarViewOnLoad: number;
     cursorToolOnLoad: number;
     scrollModeOnLoad: number;

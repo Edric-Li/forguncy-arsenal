@@ -167,8 +167,18 @@ public class PreviewFontSettings : ObjectPropertyBase
     public string FontStyle { get; set; } = "normal";
 }
 
+public enum ToolBarStatus
+{
+    [Description("显示")] Show,
+    [Description("隐藏")] Hide
+}
+
 public class PdfSettings : ObjectPropertyBase
 {
+    [DisplayName("工具栏")]
+    [JsonProperty("toolbarStatus")]
+    public ToolBarStatus ToolBarStatus { get; set; } = ToolBarStatus.Show;
+
     [DisplayName("侧栏视图")]
     [JsonProperty("sidebarViewOnLoad")]
     public PdfSidebarView SidebarViewOnLoad { get; set; } = PdfSidebarView.Thumbs;
@@ -200,6 +210,17 @@ public class PdfSettings : ObjectPropertyBase
     [DisplayName("禁止编辑")]
     [JsonProperty("disableEdit")]
     public bool DisableEdit { get; set; }
+
+    public override bool GetDesignerPropertyVisible(string propertyName)
+    {
+        if (propertyName is nameof(HideOpenFileButton) or nameof(HidePrintButton) or nameof(HideSaveButton)
+            or nameof(DisableEdit) or nameof(SidebarViewOnLoad))
+        {
+            return ToolBarStatus == ToolBarStatus.Show;
+        }
+
+        return base.GetDesignerPropertyVisible(propertyName);
+    }
 }
 
 public class PowerPointSettings : ObjectPropertyBase
