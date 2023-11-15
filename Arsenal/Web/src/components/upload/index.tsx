@@ -188,9 +188,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   }, [hiddenElements, isReadOnly]);
 
   useEffect(() => {
-    if (props.options.listType === ListType['picture-card'] || props.options.listType === ListType['picture-circle']) {
       $('.ant-upload-select', props.container).css('display', showUploadButton ? 'inline-block' : 'none');
-    }
   }, [showUploadButton]);
 
   const hasDragComponent = useMemo(
@@ -389,7 +387,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
                 FileUploadEngine.extractFileNameFromUrl(callbackInfo.url!),
               [props.options.eventSettings.afterUpload.ParamProperties['ext']]: getExtname(file.name),
               [props.options.eventSettings.afterUpload.ParamProperties['size']]: file.size,
-              [props.options.eventSettings.beforeUpload.ParamProperties['hash']]: fileHash,
+              [props.options.eventSettings.afterUpload.ParamProperties['hash']]: fileHash,
             },
             props.runTimePageName,
           );
@@ -603,8 +601,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
           disabled={disabled}
           onClick={() => {
             handleUpload();
-          }}
-        >
+          }}>
           <UploadOutlined />
           上传
         </Dropdown.Button>
@@ -629,8 +626,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
               e.preventDefault();
               e.stopPropagation();
               handleUpload();
-            }}
-          >
+            }}>
             {!hasDragComponent && (
               <>
                 <p className='ant-upload-drag-icon'>
@@ -657,8 +653,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
               if (listType === 'picture-circle' || listType === 'picture-card') {
                 handleUpload(false);
               }
-            }}
-          >
+            }}>
             {showUploadButton && <div>{renderButton}</div>}
           </div>
         }
@@ -706,7 +701,12 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   };
 
   return (
-    <div className={cx('arsenal-upload-root', isUnClickableList && 'arsenal-upload-un-clickable-list')}>
+      <div
+          className={cx(
+              'arsenal-upload-root',
+              isUnClickableList && 'arsenal-upload-un-clickable-list',
+              showUploadButton ? 'arsenal-upload-upload-button-show' : 'arsenal-upload-upload-button-hide',
+          )}>
       {contextHolder}
       {renderContent()}
       {renderFilePreview()}

@@ -73,3 +73,11 @@
 .arsenal-file-preview-zip-tree-search-value {
   background-color: #ffff00;
 }
+
+.arsenal-upload-upload-button-show .ant-upload-list-item:first-child {
+    margin-top: 8px !important;
+}
+
+.arsenal-upload-upload-button-hide .ant-upload-list-item:first-child {
+    margin-top: 0 !important;
+}
