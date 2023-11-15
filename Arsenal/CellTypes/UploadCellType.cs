@@ -15,7 +15,7 @@ namespace Arsenal;
 public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly
 {
     private ListType _listType = ListType.Text;
-    
+
     [DisplayName("权限设置")]
     [JsonProperty("permissionSettings")]
     [ObjectProperty(ObjType = typeof(PermissionSettings))]
@@ -102,13 +102,16 @@ public enum FileSelectionType
 
 public enum ListType
 {
-    [Description("经典")] 
+    [Description("经典")]
     Text,
-    [Description("图片列表")] 
+
+    [Description("图片列表")]
     Picture,
-    [Description("照片墙")] 
+
+    [Description("照片墙")]
     PictureCard,
-    [Description("圆形照片墙")] 
+
+    [Description("圆形照片墙")]
     PictureCircle
 }
 
@@ -220,19 +223,19 @@ public class PermissionSettings : ObjectPropertyBase
 {
     [DisplayName("上传")]
     [JsonProperty("upload", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-    public List<string> Upload { get; set; } = new() { "FGC_Anonymous" };
+    public List<string> Upload { get; set; } = new() { "FGC_LoginUser" };
 
     [DisplayName("下载")]
     [JsonProperty("download", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-    public List<string> Download { get; set; } = new() { "FGC_Anonymous" };
+    public List<string> Download { get; set; } = new() { "FGC_LoginUser" };
 
     [DisplayName("预览")]
     [JsonProperty("preview", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-    public List<string> Preview { get; set; } = new() { "FGC_Anonymous" };
+    public List<string> Preview { get; set; } = new() { "FGC_LoginUser" };
 
     [DisplayName("删除")]
     [JsonProperty("delete", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-    public List<string> Delete { get; set; } = new() { "FGC_Anonymous" };
+    public List<string> Delete { get; set; } = new() { "FGC_LoginUser" };
 }
 
 public class UploadSettings : ObjectPropertyBase
@@ -257,7 +260,7 @@ public class UploadSettings : ObjectPropertyBase
     [Description("用于处理已存在相同名称文件的情况。")]
     [JsonProperty("conflictStrategy")]
     public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
-    
+
     [DisplayName("允许上传文件的扩展名")]
     [JsonProperty("allowedExtensions")]
     public string AllowedExtensions { get; set; } = "*";
@@ -404,7 +407,7 @@ public class EventSettings : ObjectPropertyBase
     [CustomCommandObject(InitParamProperties = "name|fileKey",
         InitParamValues = "文件名称|附件值")]
     public CustomCommandObject BeforePreview { get; set; }
-    
+
     [DisplayName("下载前")]
     [JsonProperty("beforeDownload")]
     [CustomCommandObject(InitParamProperties = "name|fileKey",
