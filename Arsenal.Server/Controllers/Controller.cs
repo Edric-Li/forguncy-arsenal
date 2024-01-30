@@ -15,6 +15,15 @@ public class Arsenal : ForguncyApi
         BootstrapService.EnsureInitialization(Context);
     }
 
+    void CheckAuthenticated()
+    {
+        var userIdentity = Context.User.Identity;
+        if (userIdentity == null)
+        {
+            throw new Exception("Unauthorized");
+        }
+    }
+
     [Post]
     public async Task InitMultipartUpload()
     {
@@ -236,6 +245,48 @@ public class Arsenal : ForguncyApi
         {
             await FileConvertService.CreateFileConversionTask(Context);
             await Context.BuildResultAsync(new HttpSuccessResult());
+        });
+    }
+
+    [Post]
+    public async Task UploadSingleFile()
+    {
+        PreInit();
+        CheckAuthenticated();
+
+        await Context.HandleErrorAsync(async () =>
+        {
+            var files = Context.Request.Form.Files;
+
+            if (files.Count == 0)
+            {
+                throw new Exception("No file uploaded.");
+            }
+
+            var file = files.FirstOrDefault();
+            var fileName = file.FileName;
+
+            if (Context.Request.Form.TryGetValue("fileName", out var customFileName))
+            {
+                fileName = customFileName.ToString();
+            }
+
+            var result = await FileUploadService.UploadSingleFileAsync(file, fileName);
+            await Context.BuildResultAsync(new HttpSuccessResult(result));
+        });
+    }
+
+    [Post]
+    public async Task UploadSingleFileByBase64()
+    {
+        PreInit();
+        CheckAuthenticated();
+
+        await Context.HandleErrorAsync(async () =>
+        {
+            var body = await Context.ParseBodyAsync<UploadSingleFileByBase64Param>();
+            var result = FileUploadService.UploadSingleFileByBase64(body.Base64, body.FileName);
+            await Context.BuildResultAsync(new HttpSuccessResult(result));
         });
     }
 }

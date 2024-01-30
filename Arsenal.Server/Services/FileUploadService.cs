@@ -781,5 +781,57 @@ public static class FileUploadService
         return timestamp * 1000;
     }
 
+    /// <summary>
+    /// 上传单个文件
+    /// </summary>
+    /// <param name="file"></param>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    public static async Task<string> UploadSingleFileAsync(IFormFile file, string fileName)
+    {
+        var folderPath = Path.Combine(Configuration.Configuration.AppConfig.LocalUploadFolderPath ?? String.Empty,
+            "temp");
+
+        var tempFileName = Path.Combine(folderPath, Guid.NewGuid() + "_" + fileName);
+        var fileTempPath = Path.Combine(folderPath, tempFileName);
+
+        try
+        {
+            await CopyStreamAsync(file.OpenReadStream(), fileTempPath);
+            File.Move(fileTempPath, fileTempPath);
+            return tempFileName;
+        }
+        catch (Exception)
+        {
+            File.Delete(fileTempPath);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 根据Base64上传单个文件
+    /// </summary>
+    /// <param name="base64String"></param>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    public static string UploadSingleFileByBase64(string base64String, string fileName)
+    {
+        var folderPath = Path.Combine(Configuration.Configuration.AppConfig.LocalUploadFolderPath ?? String.Empty,
+            "temp");
+
+        var tempFileName = Path.Combine(folderPath, Guid.NewGuid() + "_" + fileName);
+        var fileTempPath = Path.Combine(folderPath, tempFileName);
+
+        var strBase64 =
+            base64String.Trim()[(base64String.IndexOf(",", StringComparison.Ordinal) + 1)..];
+        var stream = new MemoryStream(Convert.FromBase64String(strBase64));
+        var fs = new FileStream(fileTempPath, FileMode.OpenOrCreate, FileAccess.Write);
+        var array = stream.ToArray();
+        fs.Write(array, 0, array.Length);
+        fs.Close();
+
+        return tempFileName;
+    }
+
     #endregion
 }
