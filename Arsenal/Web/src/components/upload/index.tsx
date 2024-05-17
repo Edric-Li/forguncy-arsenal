@@ -7,15 +7,14 @@ import {
   PlusOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { message, Modal, Upload, Dropdown, Button } from 'antd';
+import { message, Upload, Dropdown, Button } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { ShowUploadListInterface, UploadListType } from 'antd/es/upload/interface';
 import FileUploadEngine from '../../common/file-upload-engine';
 import ImgCrop, { ImgCropProps } from 'antd-img-crop';
-import FilePreviewInner, { isImage } from '../file-preview/file-preview-inner';
+import { isImage } from '../file-preview/file-preview-inner';
 import { getBase64 } from '../../common/get-base64';
-import ImageFullScreenPreview from '../image-full-screen-preview';
 import FileCacheService from '../../common/file-cache-service';
 import addWatermarkToFile from '../../common/add-watermark-to-file';
 import { ConflictStrategy, ImgCropSettings, WatermarkSettings } from '../../declarations/types';
@@ -188,7 +187,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
   }, [hiddenElements, isReadOnly]);
 
   useEffect(() => {
-      $('.ant-upload-select', props.container).css('display', showUploadButton ? 'inline-block' : 'none');
+    $('.ant-upload-select', props.container).css('display', showUploadButton ? 'inline-block' : 'none');
   }, [showUploadButton]);
 
   const hasDragComponent = useMemo(
@@ -341,7 +340,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
     }
     const newFile =
       file.type.startsWith('image/') && props.options.uploadSettings.enableWatermark
-        ? await addWatermarkToFile(file, props.options.uploadSettings.watermarkSettings)
+          ? await addWatermarkToFile(file, props.options.uploadSettings.watermarkSettings, props.evaluateFormula)
         : file;
 
     const customFile: CustomFile = newFile as CustomFile;

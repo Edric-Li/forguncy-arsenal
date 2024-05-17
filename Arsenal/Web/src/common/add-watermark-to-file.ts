@@ -4,8 +4,13 @@ import { WatermarkSettings } from '../declarations/types';
  * 给图片添加水印
  * @param file
  * @param settings
+ * @param evaluateFormula
  */
-const addWatermarkToFile = (file: File, settings: WatermarkSettings): Promise<File> => {
+const addWatermarkToFile = (
+    file: File,
+    settings: WatermarkSettings,
+    evaluateFormula: (formula: string) => unknown,
+): Promise<File> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event: any) => {
@@ -21,7 +26,7 @@ const addWatermarkToFile = (file: File, settings: WatermarkSettings): Promise<Fi
         context.drawImage(image, 0, 0);
         context.fillStyle = Forguncy.ConvertToCssColor(settings.fillStyle);
         context.font = settings.fontSize + 'px ' + settings.fontFamily;
-        context.fillText(settings.text, settings.x, settings.y);
+        context.fillText(evaluateFormula(settings.text) as string, settings.x, settings.y);
         canvas.toBlob((blob) => {
           if (!blob) {
             return resolve(file);

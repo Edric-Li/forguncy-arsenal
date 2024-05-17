@@ -77,7 +77,7 @@ const UploadCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase }) => {
 
     const newFile =
       file.type.startsWith('image/') && param.advancedSettings.enableWatermark
-        ? await addWatermarkToFile(file, param.advancedSettings.watermarkSettings)
+        ? await addWatermarkToFile(file, param.advancedSettings.watermarkSettings, props.ctx.evaluateFormula)
         : file;
 
     const uploadFile: UploadFile = {
