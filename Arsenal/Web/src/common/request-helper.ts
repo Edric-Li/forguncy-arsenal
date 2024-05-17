@@ -3,7 +3,7 @@ import { ConflictStrategy } from '../declarations/types';
 import { message } from 'antd';
 import FileUploadEngine from './file-upload-engine';
 import FileCacheService from './file-cache-service';
-import queryString from 'query-string';
+import { v4 } from 'uuid';
 
 interface HttpResultData<T = { [name: string]: any }> {
   result: boolean;
@@ -43,8 +43,14 @@ export type HttpHandlerResult<T = object> = Promise<HttpResultData<T>>;
 const convertedFiles = new Set<string>();
 const zipEntries = new Map<string, string[]>();
 const fileExisted = new Set<string>();
+const TraceContextIdHeaderKey = 'Fgc-Trace-Context-Id';
 
 axios.defaults.baseURL = Forguncy.Helper.SpecialPath.getBaseUrl() + 'customapi/arsenal';
+
+axios.interceptors.request.use((config) => {
+  config.headers![TraceContextIdHeaderKey] = v4();
+  return config;
+});
 
 axios.interceptors.response.use(
   (response) => {
