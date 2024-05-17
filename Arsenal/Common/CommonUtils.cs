@@ -245,6 +245,33 @@ public abstract class CommonUtils
         return _watermarkEditorIndexHtmlPath;
     }
 
+    /// <summary>
+    /// 是否是合法的文件夹路径
+    /// </summary>
+    /// <param name="folder"></param>
+    /// <returns></returns>
+    public static bool IsValidFolder(string folder)
+    {
+        if (folder == null)
+        {
+            return true;
+        }
+
+        // 是Linux系统的绝对路径
+        if (folder.StartsWith("/"))
+        {
+            return false;
+        }
+
+        // 是Windows系统的绝对路径
+        if (folder.Contains(':'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public static void SafeExecute(Action action)
     {
         try

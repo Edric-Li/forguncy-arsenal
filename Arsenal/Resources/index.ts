@@ -105,10 +105,13 @@ namespace Arsenal {
             }
         }
 
-        onPageLoaded(info) {
-            waitForCondition(() => window.Arsenal.createReactComponent, 25).then(() => {
-                window.Arsenal.createReactComponent(this, this.ComponentName);
-            });
+        async onPageLoaded(info) {
+            return new Promise(resolve => {
+                waitForCondition(() => window.Arsenal.createReactComponent, 25).then(() => {
+                    window.Arsenal.createReactComponent(this, this.ComponentName);
+                    setTimeout(() => resolve(null), 200)
+                });
+            })
         }
 
         createContent() {

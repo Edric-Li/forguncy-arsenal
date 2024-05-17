@@ -37,15 +37,6 @@
       <Isolated>false</Isolated>
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </COMReference>
-	  <COMReference Include="ZWCAD">
-		  <VersionMinor>0</VersionMinor>
-		  <VersionMajor>1</VersionMajor>
-		  <Guid>2f671c10-669f-11e7-91b7-bc5ff42ac839</Guid>
-		  <Lcid>0</Lcid>
-		  <WrapperTool>tlbimp</WrapperTool>
-		  <Isolated>false</Isolated>
-		  <EmbedInteropTypes>true</EmbedInteropTypes>
-	  </COMReference>
 	  <COMReference Include="ZWDSTLIB">
 		  <WrapperTool>tlbimp</WrapperTool>
 		  <VersionMinor>0</VersionMinor>
@@ -87,16 +78,35 @@
 		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="6.0.14" />
 	</ItemGroup>
 	<ItemGroup>
-		<Reference Include="Forguncy.Commands" Exclude="runtime">
-			<HintPath>C:\Program Files\Forguncy 9\Website\bin\Forguncy.Commands.dll</HintPath>
+		<Reference Include="Forguncy.Commands">
+			<HintPath>ReferForguncyDLL\Forguncy.Commands.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="GrapeCity.Forguncy.Plugin" Exclude="runtime">
-			<HintPath>C:\Program Files\Forguncy 9\Website\bin\GrapeCity.Forguncy.Plugin.dll</HintPath>
+		<Reference Include="Forguncy.Commands.Design">
+			<HintPath>ReferForguncyDLL\Forguncy.Commands.Design.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="GrapeCity.Forguncy.CellTypes">
+			<HintPath>ReferForguncyDLL\GrapeCity.Forguncy.CellTypes.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="GrapeCity.Forguncy.CellTypes.Design">
+			<HintPath>ReferForguncyDLL\GrapeCity.Forguncy.CellTypes.Design.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="GrapeCity.Forguncy.Plugin">
+			<HintPath>ReferForguncyDLL\GrapeCity.Forguncy.Plugin.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="GrapeCity.Forguncy.Plugin.Design">
+			<HintPath>ReferForguncyDLL\GrapeCity.Forguncy.Plugin.Design.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Analyzer Include="..\PackageTools\PluginAnalyzer.dll"/>
+	</ItemGroup>
+	<ItemGroup>
 		<Reference Include="GrapeCity.Forguncy.ServerApi">
-			<HintPath>C:\Program Files\Forguncy 9\Website\bin\GrapeCity.Forguncy.ServerApi.dll</HintPath>
+			<HintPath>..\ReferForguncyDLL\GrapeCity.Forguncy.ServerApi.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Microsoft.EntityFrameworkCore">
@@ -110,10 +120,6 @@
 		</Reference>
 		<Reference Include="Microsoft.EntityFrameworkCore.Sqlite">
 			<HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.Sqlite.dll</HintPath>
-		</Reference>
-		<Reference Include="Newtonsoft.Json" Exclude="runtime">
-			<HintPath>C:\Program Files\Forguncy 9\Website\bin\Newtonsoft.Json.dll</HintPath>
-			<Private>False</Private>
 		</Reference>
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0">
 			<ExcludeAssets>runtime</ExcludeAssets>

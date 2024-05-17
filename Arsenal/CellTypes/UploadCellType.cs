@@ -12,10 +12,11 @@ namespace Arsenal;
 [OrderWeight(1)]
 [Category("文件")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
-public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly
+[Designer("Arsenal.Designer.UploadCellTypeDesigner, Arsenal")]
+public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly, ICellTypeChecker
 {
     private ListType _listType = ListType.Text;
-    
+
     [DisplayName("权限设置")]
     [JsonProperty("permissionSettings")]
     [ObjectProperty(ObjType = typeof(PermissionSettings))]
@@ -88,10 +89,20 @@ public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly
         return base.GetRunTimeMethodVisible(name);
     }
 
+    // todo 不知道为什么不生效
+    public IEnumerable<ForguncyErrorInfo> CheckCellTypeErrors(IBuilderContext context)
+    {
+        if (!CommonUtils.IsValidFolder(UploadSettings.Folder?.ToString()))
+        {
+            yield return new ForguncyErrorInfo() { ErrorType = ForguncyErrorType.Warning, Message = "文件夹路径设置错误，请检查!" };
+        }
+    }
+
     public override string ToString()
     {
         return "文件上传";
     }
+
 }
 
 public enum FileSelectionType
@@ -102,13 +113,16 @@ public enum FileSelectionType
 
 public enum ListType
 {
-    [Description("经典")] 
+    [Description("经典")]
     Text,
-    [Description("图片列表")] 
+
+    [Description("图片列表")]
     Picture,
-    [Description("照片墙")] 
+
+    [Description("照片墙")]
     PictureCard,
-    [Description("圆形照片墙")] 
+
+    [Description("圆形照片墙")]
     PictureCircle
 }
 
@@ -257,7 +271,7 @@ public class UploadSettings : ObjectPropertyBase
     [Description("用于处理已存在相同名称文件的情况。")]
     [JsonProperty("conflictStrategy")]
     public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
-    
+
     [DisplayName("允许上传文件的扩展名")]
     [JsonProperty("allowedExtensions")]
     public string AllowedExtensions { get; set; } = "*";
@@ -404,7 +418,7 @@ public class EventSettings : ObjectPropertyBase
     [CustomCommandObject(InitParamProperties = "name|fileKey",
         InitParamValues = "文件名称|附件值")]
     public CustomCommandObject BeforePreview { get; set; }
-    
+
     [DisplayName("下载前")]
     [JsonProperty("beforeDownload")]
     [CustomCommandObject(InitParamProperties = "name|fileKey",

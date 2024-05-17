@@ -3,7 +3,7 @@ using GrapeCity.Forguncy.CellTypes;
 
 namespace Arsenal.Designer;
 
-public class PreviewCellTypeDesigner : CellTypeDesigner<PreviewCellType>
+public class UploadCellTypeDesigner : CellTypeDesigner<UploadCellType>
 {
     public override FrameworkElement GetDrawingControl(ICellInfo cellInfo, IDrawingHelper drawingHelper)
     {

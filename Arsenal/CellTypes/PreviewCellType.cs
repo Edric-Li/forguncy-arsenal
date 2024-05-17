@@ -8,6 +8,7 @@ namespace Arsenal;
 [OrderWeight(2)]
 [Category("文件")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/preview.png")]
+[Designer("Arsenal.Designer.PreviewCellTypeDesigner, Arsenal")]
 public class PreviewCellType : CellTypeBase
 {
     [DisplayName("水印设置")]

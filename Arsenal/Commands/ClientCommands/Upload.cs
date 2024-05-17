@@ -12,9 +12,9 @@ namespace Arsenal;
 public class UploadCommand : CommandBase
 {
     private object _folder = string.Empty;
-    
+
     [DisplayName("文件夹路径")]
-    [Description("默认会按日期存放（年/月/日），如无特殊需求,不建议填写,一旦自定义,则无法使用断点续传功能")]
+    [Description("默认会按日期存放（年/月/日）。")]
     [JsonProperty("folder")]
     [FormulaProperty]
     public object Folder
@@ -55,7 +55,7 @@ public class UploadCommand : CommandBase
     [ObjectProperty(ObjType = typeof(UploadCommandAdvancedSettings))]
     [JsonProperty("advancedSettings")]
     public UploadCommandAdvancedSettings AdvancedSettings { get; set; } = new();
-    
+
     public override bool GetDesignerPropertyVisible(string propertyName, CommandScope commandScope)
     {
         if (propertyName == nameof(AdvancedSettings.EnableCrop))
@@ -67,7 +67,7 @@ public class UploadCommand : CommandBase
         {
             return !string.IsNullOrWhiteSpace(Folder?.ToString());
         }
-        
+
         return base.GetDesignerPropertyVisible(propertyName, commandScope);
     }
 
