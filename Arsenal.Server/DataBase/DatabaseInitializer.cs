@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using Arsenal.Server.Common;
+using Arsenal.Server.DataBase.Builder;
 using Arsenal.Server.DataBase.Models;
+using GrapeCity.Forguncy.ServerApi;
 using Microsoft.EntityFrameworkCore;
 using File = System.IO.File;
 
@@ -29,7 +31,12 @@ public class DatabaseInitializer
     /// <summary>
     /// 数据库链接串
     /// </summary>
-    public static string DatabaseFilePath { get; set; } = string.Empty;
+    public static string SqliteFilePath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 活字格对于数据库的访问
+    /// </summary>
+    public static IDataAccess DataAccess { get; set; }
 
     /// <summary>
     /// 确保初始化
@@ -47,51 +54,27 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// 初始化（初始化表信息）
+    /// 初始化（初始化表信息）sd
     /// </summary>
     private static async Task InitAsync()
     {
+        Debugger.Launch();
         InitializeDatabaseConnectionString();
 
-        var sqLiteUtility = new SqLiteUtility();
-
-        await SqLiteUtility.EnsureTableExistsAsync(Constants.FileHashesTableName,
-            "id INTEGER PRIMARY KEY AUTOINCREMENT",
-            "hash TEXT NOT NULL",
-            "path TEXT NOT NULL"
-        );
-
-        await SqLiteUtility.EnsureTableExistsAsync(Constants.FilesTableName,
-            "id INTEGER PRIMARY KEY AUTOINCREMENT",
-            "key TEXT NOT NULL",
-            "name TEXT NOT NULL",
-            "hash TEXT",
-            "folder_path TEXT NOT NULL",
-            "content_type  TEXT NOT NULL",
-            "ext INT NOT NULL",
-            "size int(11) NOT NULL DEFAULT '0'",
-            "uploader TEXT NOT NULL",
-            "created_at int(11) NOT NULL DEFAULT '0'"
-        );
-
-        await SqLiteUtility.EnsureTableExistsAsync(Constants.TemporaryDownloadFiles,
-            "id INTEGER PRIMARY KEY AUTOINCREMENT",
-            "key TEXT NOT NULL",
-            "path TEXT NOT NULL",
-            "has_copy int(1) NOT NULL DEFAULT '0'",
-            "expiration_at int(11) NOT NULL DEFAULT '60'"
-        );
-
-        await sqLiteUtility.EnsureIndexExistsAsync(Constants.FileHashesTableName, "ix_arsenal_file_hashes_hash",
-            "hash");
-
-        await sqLiteUtility.EnsureIndexExistsAsync(Constants.FilesTableName, "ix_arsenal_files_key", "key");
-        await sqLiteUtility.EnsureIndexExistsAsync(Constants.TemporaryDownloadFiles,
-            "ix_arsenal_temporary_download_files_key", "key");
-
-        if (!Configuration.Configuration.RunAtLocal)
+        if (!string.IsNullOrWhiteSpace(Configuration.Configuration.PluginConfig.DatabaseConnectionName))
         {
-            await MergeDatabaseAsync();
+            var connectionString =
+                DataAccess.GetConnectionStringByID(Configuration.Configuration.PluginConfig.DatabaseConnectionName);
+            await new MysqlBuilder().InitializeAsync(connectionString);
+        }
+        else
+        {
+            await new SqliteBuilder().InitializeAsync(Configuration.Configuration.DatabaseConnectionString);
+
+            if (!Configuration.Configuration.RunAtLocal)
+            {
+                await MergeDatabaseAsync();
+            }
         }
     }
 
@@ -146,7 +129,13 @@ public class DatabaseInitializer
     /// </summary>
     private static void InitializeDatabaseConnectionString()
     {
-        var filePath = string.IsNullOrWhiteSpace(DatabaseFilePath) ? GetDatabaseFilePath() : DatabaseFilePath;
+        var filePath = string.IsNullOrWhiteSpace(SqliteFilePath) ? GetDatabaseFilePath() : SqliteFilePath;
+
+        var dir = Path.GetDirectoryName(filePath);
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir!);
+        }
 
         Configuration.Configuration.DatabaseConnectionString =
             $"Data Source={filePath}";

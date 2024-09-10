@@ -2,6 +2,7 @@
 using System.Text;
 using Arsenal.Server.DataBase;
 using Arsenal.Server.Model;
+using Newtonsoft.Json;
 
 namespace Arsenal.Server.Configuration;
 
@@ -26,6 +27,16 @@ public class Configuration
     public static string TemporaryDownloadFolderPath => Path.Combine(RootFolderPath, "temporary_download_files");
 
     /// <summary>
+    /// 数据文件夹路径
+    /// </summary>
+    public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
+
+    /// <summary>
+    /// 配置文件路径
+    /// </summary>
+    public static string ConfigFilePath => Path.Combine(RootFolderPath, "config.json");
+
+    /// <summary>
     /// 转换后的文件夹路径
     /// </summary>
     public static string ConvertedFolderPath { get; private set; }
@@ -34,11 +45,6 @@ public class Configuration
     /// 临时文件夹路径
     /// </summary>
     public static string TempFolderPath { get; private set; }
-
-    /// <summary>
-    /// 数据文件夹路径
-    /// </summary>
-    public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
 
     /// <summary>
     /// 当前插件根目录
@@ -54,6 +60,11 @@ public class Configuration
     /// 应用相关配置
     /// </summary>
     public static AppConfig AppConfig { get; private set; }
+
+    /// <summary>
+    /// 插件配置
+    /// </summary>
+    public static PluginConfig PluginConfig { get; private set; }
 
     /// <summary>
     /// 懒加载实例
@@ -136,7 +147,7 @@ public class Configuration
     }
 
     /// <summary>
-    /// 创建所需目录
+    /// 创建所需目录和文件
     /// </summary>
     private static void CreateFolders()
     {
@@ -150,12 +161,30 @@ public class Configuration
             Directory.CreateDirectory(DataFolderPath);
         }
 
+        if (!File.Exists(ConfigFilePath))
+        {
+            File.WriteAllText(ConfigFilePath, JsonConvert.SerializeObject(new PluginConfig(), Formatting.Indented),
+                Encoding.UTF8);
+        }
+
         if (!Directory.Exists(ConvertedFolderPath))
         {
             Directory.CreateDirectory(ConvertedFolderPath);
         }
     }
 
+    /// <summary>
+    /// 初始化插件配置
+    /// </summary>
+    private static void InitPluginConfig()
+    {
+        PluginConfig = JsonConvert.DeserializeObject<PluginConfig>(File.ReadAllText(ConfigFilePath, Encoding.UTF8));
+    }
+
+    /// <summary>
+    /// 创建临时目录
+    /// </summary>
+    /// <returns></returns>
     private string GetArsenalTempPath()
     {
         var workFolder = GetParents(GetType().Assembly.Location, 4).FullName;
@@ -184,7 +213,7 @@ public class Configuration
             File.Copy(databaseFilePath, destDatabaseFilePath, true);
         }
 
-        DatabaseInitializer.DatabaseFilePath = destDatabaseFilePath;
+        DatabaseInitializer.SqliteFilePath = destDatabaseFilePath;
 
         File.WriteAllText(Path.Combine(arsenalTemp, "db_file_path"), destDatabaseFilePath, Encoding.UTF8);
     }
@@ -254,6 +283,7 @@ public class Configuration
         TempFolderPath = Path.Combine(path, "temp");
 
         CreateFolders();
+        InitPluginConfig();
 
         if (instance.IsRunAtLocal())
         {

@@ -109,6 +109,9 @@
 			<HintPath>..\ReferForguncyDLL\GrapeCity.Forguncy.ServerApi.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="MySql.Data">
+			<HintPath>..\Arsenal\ReferenceDll\MySql.Data.dll</HintPath>
+		</Reference>
 		<Reference Include="Microsoft.EntityFrameworkCore">
 			<HintPath>..\Arsenal\ReferenceDll\Microsoft.EntityFrameworkCore.dll</HintPath>
 		</Reference>
