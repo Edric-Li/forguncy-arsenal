@@ -102,7 +102,6 @@ public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly, I
     {
         return "文件上传";
     }
-
 }
 
 public enum FileSelectionType
@@ -156,6 +155,7 @@ public class WatermarkSettings : ObjectPropertyBase
 
     [DisplayName("字体大小")]
     [JsonProperty("fontSize")]
+    [DefaultValue(33)]
     public int FontSize { get; set; } = 33;
 
     [DisplayName("字体")]
@@ -169,10 +169,12 @@ public class WatermarkSettings : ObjectPropertyBase
 
     [DisplayName("X坐标")]
     [JsonProperty("x")]
+    [DefaultValue(20)]
     public int X { get; set; } = 20;
 
     [DisplayName("Y坐标")]
     [JsonProperty("y")]
+    [DefaultValue(20)]
     public int Y { get; set; } = 20;
 }
 
@@ -181,6 +183,7 @@ public class ImgCropSettings : ObjectPropertyBase
     [DisplayName("图片质量")]
     [JsonProperty("quality")]
     [PercentageProperty]
+    [DefaultValue(0.4)]
     public double Quality { get; set; } = 0.4;
 
     [DisplayName("重置按钮文字")]
@@ -270,6 +273,7 @@ public class UploadSettings : ObjectPropertyBase
     [DisplayName("冲突策略")]
     [Description("用于处理已存在相同名称文件的情况。")]
     [JsonProperty("conflictStrategy")]
+    [DefaultValue(ConflictStrategy.Reject)]
     public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
 
     [DisplayName("允许上传文件的扩展名")]
@@ -302,6 +306,7 @@ public class UploadSettings : ObjectPropertyBase
 
     [DisplayName("支持在文件对话框中多选文件")]
     [JsonProperty("multiple")]
+    [DefaultValue(true)]
     public bool Multiple { get; set; } = true;
 
     [DisplayName("支持上传前裁切图片")]
@@ -396,6 +401,7 @@ public class DragAndDropSettings : ObjectPropertyBase
 
     [DisplayName("拖拽区域对应组件高度")]
     [JsonProperty("height")]
+    [DefaultValue(300)]
     public int Height { get; set; } = 300;
 }
 

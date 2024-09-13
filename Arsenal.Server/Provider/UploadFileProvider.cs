@@ -19,8 +19,7 @@ public class UploadFileProvider : PhysicalFileProviderWrapper
 
         if (fullPath != null)
         {
-            return base.GetFileInfo(Path.GetRelativePath(Configuration.Configuration.AppConfig.LocalUploadFolderPath,
-                fullPath));
+            return new MemoryFileInfo(fullPath);
         }
 
         return base.GetFileInfo(subpath);

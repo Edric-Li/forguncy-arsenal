@@ -3,6 +3,7 @@ import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { getLanguageNameBySuffix } from './utils';
 import { editor } from '../../../../declarations/editor.api';
 import requestHelper from '../../../../common/request-helper';
+import { THEME_CONSTANT, setLogTheme } from './log-theme';
 
 loader.config({
   paths: {
@@ -46,14 +47,17 @@ const MonacoEditorView = (props: IPreviewComponentProps) => {
       return;
     }
     loaderRef.current?.then((monaco) => {
+      if (props.suffix === 'log') {
+        setLogTheme(monaco);
+      }
       editorRef.current = monaco.editor.create(rootRef.current!, {
-        language: language,
+        language: props.suffix === 'log' ? THEME_CONSTANT.LANGUAGE_NAME : language,
         value: value,
         selectOnLineNumbers: true,
         readOnly: true,
       }) as editor.IStandaloneCodeEditor;
     });
-  }, [value, language]);
+  }, [value, language, props.suffix]);
 
   return <div style={style} ref={rootRef}></div>;
 };

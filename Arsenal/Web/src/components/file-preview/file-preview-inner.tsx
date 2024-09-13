@@ -42,7 +42,7 @@ const viewMap: {
   { type: /jpg|jpeg|png|gif|bmp|webp/, Component: ImagePreview },
   { type: /svg/, Component: SVGPreview },
   { type: /xlsx|xls|csv/, Component: ExcelPreview },
-  { type: /zip|fgcc|fgcp/, Component: ZipViewer },
+  { type: /zip|fgcc|fgcp|fubak/, Component: ZipViewer },
   { type: /md/, Component: MarkDownPreview },
   { type: /htm|html/, Component: HtmlPreview },
 ];
@@ -150,8 +150,7 @@ const FilePreviewInner = (props: IProps) => {
       <ResizeObserver
         onResize={(size) => {
           setSize(size);
-        }}
-      >
+        }}>
         <Component url={props.url} suffix={fileExtension} evaluateFormula={props.evaluateFormula} {...props.options} />
       </ResizeObserver>
 

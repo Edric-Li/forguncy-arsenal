@@ -105,20 +105,24 @@ public class PreviewWatermarkSettings : ObjectPropertyBase
 {
     [DisplayName("宽度")]
     [JsonProperty("width")]
+    [DefaultValue(120)]
     public int Width { get; set; } = 120;
 
     [DisplayName("高度")]
     [JsonProperty("height")]
+    [DefaultValue(64)]
     public int Height { get; set; } = 64;
 
     [DisplayName("旋转角度")]
     [JsonProperty("rotate")]
     [IntProperty(Min = -360, Max = 360)]
+    [DefaultValue(-22)]
     public int Rotate { get; set; } = -22;
 
     [DisplayName("层叠索引")]
     [JsonProperty("zIndex")]
     [IntProperty(Min = 0, Max = int.MaxValue)]
+    [DefaultValue(1000)]
     public int ZIndex { get; set; } = 1000;
 
     [DisplayName("间距")]
@@ -152,6 +156,7 @@ public class PreviewFontSettings : ObjectPropertyBase
 
     [DisplayName("大小")]
     [JsonProperty("fontSize")]
+    [DefaultValue(16)]
     public int FontSize { get; set; } = 16;
 
     [DisplayName("粗细")]
@@ -182,10 +187,12 @@ public class PdfSettings : ObjectPropertyBase
 
     [DisplayName("侧栏视图")]
     [JsonProperty("sidebarViewOnLoad")]
+    [DefaultValue(PdfSidebarView.Thumbs)]
     public PdfSidebarView SidebarViewOnLoad { get; set; } = PdfSidebarView.Thumbs;
 
     [DisplayName("光标工具")]
     [JsonProperty("cursorToolOnLoad")]
+    [DefaultValue(PdfCursorTool.Hand)]
     public PdfCursorTool CursorToolOnLoad { get; set; } = PdfCursorTool.Hand;
 
     [DisplayName("滚动模式")]

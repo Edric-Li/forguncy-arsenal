@@ -30,6 +30,7 @@ public class UploadFolderCommand : CommandBase
     [DisplayName("冲突策略")]
     [Description("用于处理已存在相同名称文件的情况。")]
     [JsonProperty("conflictStrategy")]
+    [DefaultValue(ConflictStrategy.Reject)]
     public ConflictStrategy ConflictStrategy { get; set; } = ConflictStrategy.Reject;
 
     [DisplayName("上传完成命令")]
