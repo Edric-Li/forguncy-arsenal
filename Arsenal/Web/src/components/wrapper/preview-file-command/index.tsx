@@ -2,6 +2,7 @@ import FileModalPreview from '../../file-modal-preview';
 import isInternalFile from '../../../common/is-internal-file';
 import FileUploadEngine from '../../../common/file-upload-engine';
 import { useEffect, useState } from 'react';
+import getInternalFileName from '../../../common/get-internal-file-name';
 
 interface IParams {
   url: string;
@@ -20,7 +21,7 @@ const PreviewFileCommandWrapper = (props: { ctx: Forguncy.Plugin.CommandBase; on
     let _url = ctx.evaluateFormula(params.url) as string;
 
     if (isInternalFile(_url)) {
-      _title = _url.substring(37);
+      _title = getInternalFileName(_url);
       _url = FileUploadEngine.getAccessUrl(_url);
     } else {
       _title = _url.split('/').at(-1) ?? '';

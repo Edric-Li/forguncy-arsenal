@@ -3,6 +3,7 @@ import FileUploadEngine from '../../common/file-upload-engine';
 import FilePreviewInner from './file-preview-inner';
 import { Tabs, TabsProps } from 'antd';
 import isInternalFile from '../../common/is-internal-file';
+import getInternalFileName from '../../common/get-internal-file-name';
 
 const rootStyle: React.CSSProperties = {
   height: '100%',
@@ -38,7 +39,7 @@ const FilePreview = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         let url = item;
         const key = item?.toString();
         if (isInternalFile(item)) {
-          name = item.substring(37);
+          name = getInternalFileName(item);
           url = FileUploadEngine.getAccessUrl(item);
         } else {
           name = item.split('/').at(-1);

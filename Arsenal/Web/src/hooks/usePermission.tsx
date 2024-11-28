@@ -28,7 +28,7 @@ const usePermission = () => {
       return true;
     }
     if (roles.includes('FGC_LoginUser')) {
-      return roles.length;
+      return !!roles.length;
     }
     return !!roles.find((i) => getRoleSet().has(i));
   }, []);

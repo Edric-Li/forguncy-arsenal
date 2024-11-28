@@ -33,6 +33,7 @@ import parseDataTransferItemList from '../../common/parse-data-transfer-iten-lis
 import parseAccept from '../../common/parse-accept';
 import { FileHashCalculationEngine } from '../../common/file-hash-calculation-engine';
 import FileModalPreview from '../file-modal-preview';
+import getInternalFileName from '../../common/get-internal-file-name';
 
 enum ListType {
   text,
@@ -249,7 +250,7 @@ const PCUpload = forwardRef<IReactCellTypeRef, IProps>((props, ref) => {
         fileListRef.current = files.map((i: string) => {
           return {
             uid: i,
-            name: isInternalFile(i) ? i.substring(37) : i,
+            name: isInternalFile(i) ? getInternalFileName(i) : i,
             status: 'done',
             percent: 100,
             url: FileUploadEngine.getAccessUrl(i),
