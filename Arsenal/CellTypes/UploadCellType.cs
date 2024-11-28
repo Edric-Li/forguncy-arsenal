@@ -13,7 +13,7 @@ namespace Arsenal;
 [Category("文件")]
 [Icon("pack://application:,,,/Arsenal;component/Resources/images/upload.png")]
 [Designer("Arsenal.Designer.UploadCellTypeDesigner, Arsenal")]
-public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly, ICellTypeChecker
+public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly
 {
     private ListType _listType = ListType.Text;
 
@@ -87,15 +87,6 @@ public class UploadCellType : CellTypeBase, ISupportDisable, ISupportReadOnly, I
         }
 
         return base.GetRunTimeMethodVisible(name);
-    }
-
-    // todo 不知道为什么不生效
-    public IEnumerable<ForguncyErrorInfo> CheckCellTypeErrors(IBuilderContext context)
-    {
-        if (!CommonUtils.IsValidFolder(UploadSettings.Folder?.ToString()))
-        {
-            yield return new ForguncyErrorInfo() { ErrorType = ForguncyErrorType.Warning, Message = "文件夹路径设置错误，请检查!" };
-        }
     }
 
     public override string ToString()
