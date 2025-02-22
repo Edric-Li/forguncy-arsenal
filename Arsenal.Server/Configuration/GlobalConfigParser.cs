@@ -294,7 +294,7 @@ public abstract class GlobalConfigParser
         if (appStorageInfo.UploadFolderPath is null &&
             (globalUploadFolderPath is not null || appStorageInfo.StorageType is not null))
         {
-            appStorageInfo.UploadFolderPath = $"{globalUploadFolderPath}/{appName}/";
+            appStorageInfo.UploadFolderPath = $"{globalUploadFolderPath}{Path.DirectorySeparatorChar.ToString()}{appName}{Path.DirectorySeparatorChar.ToString()}";
         }
 
         // 是云存储,那么LocalUploadFolderPath的值就是默认值

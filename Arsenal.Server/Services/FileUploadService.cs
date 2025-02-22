@@ -327,7 +327,7 @@ public static class FileUploadService
         catch (Exception)
         {
             File.Delete(fileTempPath);
-            throw;
+            throw new Exception($"分块上传文件失败:[{file.FileName}], 块号:{partNumber}");
         }
     }
 
