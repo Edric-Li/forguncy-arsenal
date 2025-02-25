@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Arsenal.Server.Common;
-using PowerPoint;
+using Microsoft.Office.Core;
+using Microsoft.Office.Interop.PowerPoint;
 
 namespace Arsenal.Server.Converters;
 

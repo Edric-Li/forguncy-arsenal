@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Arsenal.Server.Common;
-using Word;
+using Microsoft.Office.Interop.Word;
 using Task = System.Threading.Tasks.Task;
 
 namespace Arsenal.Server.Converters;

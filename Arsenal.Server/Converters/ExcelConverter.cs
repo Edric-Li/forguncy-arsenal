@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Arsenal.Server.Common;
-using Excel;
+using Microsoft.Office.Interop.Excel;
 
 namespace Arsenal.Server.Converters;
 
