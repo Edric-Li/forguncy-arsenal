@@ -129,7 +129,7 @@ public static class FileUploadService
 
         if (string.IsNullOrWhiteSpace(metadata.Hash))
         {
-            return GenerateAppropriateFileNameByMetaData(metadata);
+            return await GenerateAppropriateFileNameByMetaData(metadata);
         }
 
         return await GenerateAppropriateFileNameForFileWithHash(metadata);
@@ -148,7 +148,7 @@ public static class FileUploadService
         try
         {
             var fileEntity = await dbContext.Files.FirstOrDefaultAsync(
-                i => i.FolderPath == metadata.FolderPath && i.Name == metadata.Name);
+                i => i.FolderPath == SeparatorConverter.ConvertToDatabaseSeparator(metadata.FolderPath) && i.Name == metadata.Name);
 
             // 如果不存在, 直接返回原始名称即可
             if (fileEntity == null)
@@ -202,15 +202,24 @@ public static class FileUploadService
     /// <param name="metadata"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    private static string GenerateAppropriateFileNameByMetaData(FileMetaData metadata)
+    private static async Task<string> GenerateAppropriateFileNameByMetaData(FileMetaData metadata)
     {
         // 根据文件名和目标文件夹获取绝对路径
         string GetAbsolutePath(string filename) =>
             Path.Combine(Configuration.Configuration.UploadFolderPath, metadata.FolderPath, filename);
 
-        var targetFilePath = GetAbsolutePath(metadata.Name);
+        async Task<bool> FileExists(string filename)
+        {
+            if (Configuration.Configuration.AppConfig.UseCloudStorage)
+            {
+                return await CloudStorageService.FileExistsAsync(CloudStorageService.GetCloudStorageFilePath(Path.Combine(metadata.FolderPath, filename)));
+            }
 
-        if (!File.Exists(targetFilePath))
+            return File.Exists(GetAbsolutePath(filename));
+        }
+
+        var targetFilePath = GetAbsolutePath(metadata.Name);
+        if (!await FileExists(metadata.Name))
         {
             return Path.GetFileName(targetFilePath);
         }
@@ -228,7 +237,7 @@ public static class FileUploadService
 
                 string GetFilePathByNum() => GetAbsolutePath($"{fileNameWithoutExtension}({num}){extension}");
 
-                while (File.Exists(GetFilePathByNum()))
+                while (await FileExists(GetFilePathByNum()))
                 {
                     num++;
                 }
