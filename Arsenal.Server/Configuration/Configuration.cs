@@ -38,7 +38,7 @@ public class Configuration
     /// <summary>
     /// 数据文件夹路径
     /// </summary>
-    public static string DataFolderPath => Path.Combine(RootFolderPath, "data");
+    public static string DataFolderPath => Path.Combine(AppConfig.RootPath ?? string.Empty, "Arsenal", "data");
 
     /// <summary>
     /// 当前插件根目录

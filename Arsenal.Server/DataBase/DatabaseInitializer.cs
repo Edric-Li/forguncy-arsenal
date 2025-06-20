@@ -51,6 +51,8 @@ public class DatabaseInitializer
     /// </summary>
     private static async Task InitAsync()
     {
+        MoveDataBaseToNewDictionary();
+        
         InitializeDatabaseConnectionString();
 
         var sqLiteUtility = new SqLiteUtility();
@@ -137,6 +139,27 @@ public class DatabaseInitializer
         }
 
         return Path.Combine(Configuration.Configuration.DataFolderPath, dbFileName + ".sqlite3");
+    }
+
+    private static void MoveDataBaseToNewDictionary()
+    {
+        if (!string.IsNullOrWhiteSpace(DatabaseFilePath) || Configuration.Configuration.RunAtLocal)
+        {
+            //设计器不用考虑
+            return;
+        }
+
+        var newDatabaseFilePath = GetDatabaseFilePath();
+        if (File.Exists(newDatabaseFilePath))
+        {
+            return;
+        }
+        
+        var oldDatabaseFilePath = Path.Combine(Configuration.Configuration.RootFolderPath, "data", "db.sqlite3");
+        if (File.Exists(oldDatabaseFilePath))
+        {
+             File.Copy(oldDatabaseFilePath, newDatabaseFilePath!, true);
+        }
     }
 
     /// <summary>
